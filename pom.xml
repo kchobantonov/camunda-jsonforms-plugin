@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.kchobantonov</groupId>
+  <artifactId>camunda-jsonforms-plugin-parent</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Camunda JsonForms Plugin Parent</name>
+
+  <properties>
+    <camunda.platform.version>7.16.0</camunda.platform.version>
+    <spring.boot.version>2.5.4</spring.boot.version>
+
+    <javax-servlet-api.version>4.0.1</javax-servlet-api.version>
+
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <failOnMissingWebXml>false</failOnMissingWebXml>
+
+    <node.version>v14.7.0</node.version>
+    <frontend.working.directory>../plugin-ui</frontend.working.directory>
+    <frontend.build.path>${frontend.working.directory}/dist</frontend.build.path>
+    <frontend.target.path>META-INF/resources/webjars/camunda/app/tasklist</frontend.target.path>
+    <frontend-maven-plugin.version>1.12.0</frontend-maven-plugin.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.camunda.bpm</groupId>
+        <artifactId>camunda-bom</artifactId>
+        <version>${camunda.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <modules>
+    <module>plugin</module>
+    <module>demo</module>
+  </modules>
+</project>

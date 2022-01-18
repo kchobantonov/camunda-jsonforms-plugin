@@ -1,0 +1,40 @@
+{
+  "en": {
+    "loanRequest": {
+      "name": {
+        "label": "Name",
+        "description": "Please enter your name"
+      },
+      "amount": {
+        "label": "Amount"
+      },
+      "currency": {
+        "label": "Currency"
+      }
+    },
+    "error": {
+      "required": "field is required"
+    }
+  },
+  "bg": {
+    "loanRequest": {
+      "name": {
+        "label": "Име",
+        "description": "Моля въведете вашето име."
+      },
+      "amount": {
+        "label": "Сума"
+      },
+      "currency": {
+        "label": "Валута"
+      }
+    },
+    "error": {
+      "required": "Полето е задължително"
+    },
+    "Additional Information": "Допълнителна информация",
+    "button": {
+      "request-loan": "Искане на заем"
+    }
+  }
+}

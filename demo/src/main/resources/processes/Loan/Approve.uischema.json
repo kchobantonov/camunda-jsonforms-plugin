@@ -1,0 +1,50 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Control",
+      "scope": "#/properties/loanRequest/properties/name"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/loanRequest/properties/amount"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/loanRequest/properties/currency"
+    },
+    {
+      "type": "HorizontalLayout",
+      "elements": [
+        {
+          "type": "Button",
+          "text": "Approve",
+          "color": "primary",
+          "options": {
+            "i18n": "button.approve"
+          },
+          "variables": {
+            "approved": {
+              "type": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "text": "Decline",
+          "color": "secondary",
+          "options": {
+            "i18n": "button.decline"
+          },
+          "variables": {
+            "approved": {
+              "type": "boolean",
+              "value": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

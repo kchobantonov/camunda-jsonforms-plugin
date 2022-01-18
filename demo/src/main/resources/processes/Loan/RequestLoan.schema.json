@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "loanRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 3,
+          "description": "Please enter your name",
+          "i18n": "loanRequest.name"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "i18n": "loanRequest.amount"
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["USD", "EUR"],
+          "i18n": "loanRequest.currency"
+        }
+      },
+      "required": ["name", "amount", "currency"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["loanRequest"],
+  "additionalProperties": false
+}

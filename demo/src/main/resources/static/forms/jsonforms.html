@@ -1,0 +1,82 @@
+<form role="form" id="task-form-formio">
+  <!--    TODO make the stylesheets configured from the build so people can change what CSS to load-->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css"
+  />
+
+  <!-- TODO is it better to have the formio div in the <form> element or outside of it?   -->
+  <div id="jsonforms"></div>
+
+  <script cam-script type="text/form-script">
+
+    function isStartForm(camForm){
+        return camForm.taskId == null;
+    }
+
+    function hideStartFormStartButton(){
+        let element = document.querySelector("body > div.modal.fade.ng-scope.ng-isolate-scope.in > div > div > div.modal-footer.ng-scope > div > div.col-xs-8 > button.btn.btn-primary.ng-binding")
+        element.classList.add("hide-form-actions")
+    }
+
+    function hideUserTaskFormCompleteButton(){
+        let elements = document.getElementsByClassName("form-actions")
+        _.forEach(elements, element => {
+            element.classList.add("hide-form-actions")
+        })
+    }
+
+    function showNotification(type, duration, status, message){
+        inject(['Notifications', function(Notifications) {
+            Notifications.addMessage({
+                type: type,
+                duration: duration,
+                status: status,
+                message: message
+            });
+        }]);
+    }
+
+    camForm.on('form-loaded', function () {
+        $scope.options.hideCompleteButton = true
+
+        inject(['$http', 'Uri', function($http, Uri) {
+            let camundaUrl = Uri.appUri('engine://engine/:engine');
+
+            const xsrfHeaderName = $http.defaults.xsrfHeaderName;
+            const xsrfCookieName = $http.defaults.xsrfCookieName;
+            let cookieValue = undefined;
+            if (xsrfCookieName) {
+                cookieValue = document.cookie.split('; ').find(row => row.startsWith(xsrfCookieName + '=')).split('=')[1];
+            }
+
+            const headers = {};
+            if (cookieValue && xsrfHeaderName) {
+                headers[xsrfHeaderName] = cookieValue;
+            }
+            let locale = 'en';
+            
+            JsonFormsUtil.createForm('jsonforms', { camundaUrl: camundaUrl, processDefinitionId: camForm.processDefinitionId, formUrl: camForm.options.formUrl, taskId: camForm.taskId, locale: locale, submitHeaders: headers, onSubmitSuccessResponse: (response) => {
+                if (camForm.taskId) {
+                   angular.element('.task-card').scope().dismissTask();
+                } else {
+                    angular.element('.modal-dialog').scope().$parent.$dismiss();
+                }
+            }, onSubmitErrorResponse: (response) => {
+                response.json().then((data) => {
+                    showNotification('error', null, "Submit Error", `${data.message}`);
+                }).catch((error) => {
+                    showNotification('error', null, "Submit Error", `${response.text}`);
+                });
+            }, onSubmitError: (error) => {
+                showNotification('error', null, "Submit Error", `${error}`);
+            }});
+        }]);
+
+    });
+  </script>
+</form>

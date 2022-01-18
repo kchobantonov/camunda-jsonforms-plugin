@@ -1,0 +1,25 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Control",
+      "scope": "#/properties/loanRequest/properties/name"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/loanRequest/properties/amount"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/loanRequest/properties/currency"
+    },
+    {
+      "type": "Button",
+      "text": "Request Loan",
+      "color": "primary",
+      "options": {
+        "i18n": "button.request-loan"
+      }
+    }
+  ]
+}

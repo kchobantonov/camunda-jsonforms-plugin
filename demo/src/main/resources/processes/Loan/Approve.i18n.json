@@ -1,0 +1,40 @@
+{
+  "en": {
+    "loanRequest": {
+      "name": {
+        "label": "Name"
+      },
+      "amount": {
+        "label": "Amount"
+      },
+      "currency": {
+        "label": "Currency"
+      }
+    },
+    "error": {
+      "required": "field is required"
+    }
+  },
+  "bg": {
+    "loanRequest": {
+      "name": {
+        "label": "Име",
+        "description": "Име"
+      },
+      "amount": {
+        "label": "Сума"
+      },
+      "currency": {
+        "label": "Валута"
+      }
+    },
+    "error": {
+      "required": "Полето е задължително"
+    },
+    "Additional Information": "Допълнителна информация",
+    "button": {
+      "approve": "Одобряване",
+      "decline": "Отказ"
+    }
+  }
+}

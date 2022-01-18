@@ -1,0 +1,11 @@
+camunda:
+  bpm:
+    admin-user:
+      id: demo
+      password: demo
+    database:
+      type: h2
+
+logging:
+  level:
+    org.camunda.bpm.client: info
