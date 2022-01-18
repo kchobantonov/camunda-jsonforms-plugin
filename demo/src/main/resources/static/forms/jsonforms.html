@@ -1,5 +1,4 @@
-<form role="form" id="task-form-formio">
-  <!--    TODO make the stylesheets configured from the build so people can change what CSS to load-->
+<form role="form" id="task-form-jsonforms">
   <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
@@ -9,7 +8,6 @@
     href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css"
   />
 
-  <!-- TODO is it better to have the formio div in the <form> element or outside of it?   -->
   <div id="jsonforms"></div>
 
   <script cam-script type="text/form-script">
@@ -58,8 +56,10 @@
             if (cookieValue && xsrfHeaderName) {
                 headers[xsrfHeaderName] = cookieValue;
             }
-            let locale = 'en';
+
+            let locale = (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.userLanguage || navigator.language || navigator.browserLanguage || 'en';
             
+             
             JsonFormsUtil.createForm('jsonforms', { camundaUrl: camundaUrl, processDefinitionId: camForm.processDefinitionId, formUrl: camForm.options.formUrl, taskId: camForm.taskId, locale: locale, submitHeaders: headers, onSubmitSuccessResponse: (response) => {
                 if (camForm.taskId) {
                    angular.element('.task-card').scope().dismissTask();
