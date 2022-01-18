@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0uzkwkf" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.11.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.15.0">
   <bpmn:process id="Loan" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1" name="Loan Request" camunda:formKey="embedded:app:forms/jsonforms.html?deployment=processes/Loan/RequestLoan&#38;debug=true">
+    <bpmn:startEvent id="StartEvent_1" name="Loan Request" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/Loan/RequestLoan&#38;debug=true">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="FormField_1iplp4n" type="string">
@@ -14,7 +14,7 @@
       <bpmn:outgoing>Flow_04066pz</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_04066pz" sourceRef="StartEvent_1" targetRef="Activity_0dqqih2" />
-    <bpmn:userTask id="Activity_0dqqih2" name="Approve Loan" camunda:formKey="embedded:app:forms/jsonforms.html?deployment=processes/Loan/Approve">
+    <bpmn:userTask id="Activity_0dqqih2" name="Approve Loan" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/Loan/Approve">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="FormField_0sqgkbb" type="string">
