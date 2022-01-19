@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "firstName": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Please enter your first name",
+      "i18n": "firstName",
+      "readOnly": true
+    },
+    "lastName": {
+      "type": "string",
+      "minLength": 3,
+      "description": "Please enter your last name",
+      "i18n": "lastName",
+      "readOnly": true
+    },
+    "birthDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Please enter your birth date.",
+      "i18n": "birthDate",
+      "readOnly": true
+    },
+    "nationality": {
+      "type": "string",
+      "enum": ["DE", "IT", "JP", "US", "RU", "Other"],
+      "i18n": "nationality",
+      "readOnly": true
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string",
+          "i18n": "address.street",
+          "readOnly": true
+        },
+        "streetNumber": {
+          "type": "string",
+          "i18n": "address.streetNumber",
+          "readOnly": true
+        },
+        "city": {
+          "type": "string",
+          "i18n": "address.city",
+          "readOnly": true
+        },
+        "postalCode": {
+          "type": "string",
+          "i18n": "address.postalCode",
+          "maxLength": 5,
+          "readOnly": true
+        }
+      },
+      "readOnly": true,
+      "additionalProperties": false
+    },
+    "amount": {
+      "type": "number",
+      "minimum": 0,
+      "i18n": "amount",
+      "readOnly": true
+    },
+    "notes": {
+      "type": "string",
+      "i18n": "notes"
+    }
+  },
+  "patternProperties": {
+    "approved": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

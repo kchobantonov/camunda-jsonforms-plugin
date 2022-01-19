@@ -1,6 +1,13 @@
 <template>
   <v-btn
-    v-if="layout.visible"
+    v-if="
+      layout.visible &&
+      (isSubmitButton ||
+        isCompleteButton ||
+        isResolveButton ||
+        isErrorButton ||
+        isEscalationButton)
+    "
     :disabled="!layout.enabled || hasErrors"
     :color="color"
     :loading="loading"
@@ -60,7 +67,10 @@ interface ButtonElement extends UISchemaElement {
    */
   text: string;
 
-  action: 'submit' | 'back';
+  action: 'submit' | 'complete' | 'resolve' | 'error' | 'escalation'; //TODO: claim, unclaim, delegate etc. ?
+  errorCode?: string;
+  errorMessage?: string;
+  escalationCode?: string;
   color?: string;
   variables?: Record<
     string,
@@ -120,8 +130,54 @@ const buttonRenderer = defineComponent({
     };
   },
   computed: {
+    isSubmitButton(): boolean {
+      const action = (this.layout.uischema as ButtonElement).action;
+      return !action || action === 'submit';
+    },
+    isCompleteButton(): boolean {
+      const action = (this.layout.uischema as ButtonElement).action;
+      // complete is defined on task only
+      return action === 'complete' && this.camundaFormConfig.taskId;
+    },
+    isResolveButton(): boolean {
+      const action = (this.layout.uischema as ButtonElement).action;
+      // complete is defined on task only
+      return action === 'resolve' && this.camundaFormConfig.taskId;
+    },
+    isErrorButton(): boolean {
+      const action = (this.layout.uischema as ButtonElement).action;
+      // error is defined on task only
+      return action === 'error' && this.camundaFormConfig.taskId;
+    },
+    isEscalationButton(): boolean {
+      const action = (this.layout.uischema as ButtonElement).action;
+      // escalation is defined on task only
+      return action === 'escalation' && this.camundaFormConfig.taskId;
+    },
     hasErrors(): boolean {
-      return this.jsonforms.core?.errors?.length > 0;
+      if (
+        this.isSubmitButton ||
+        this.isCompleteButton ||
+        this.isResolveButton
+      ) {
+        return this.jsonforms.core?.errors?.length > 0;
+      } else if (this.isErrorButton) {
+        const errorCode = (this.layout.uischema as ButtonElement).errorCode;
+        return (
+          errorCode !== undefined &&
+          errorCode !== null &&
+          errorCode.trim().length > 0
+        );
+      } else if (this.isEscalationButton) {
+        const escalationCode = (this.layout.uischema as ButtonElement)
+          .escalationCode;
+        return (
+          escalationCode !== undefined &&
+          escalationCode !== null &&
+          escalationCode.trim().length > 0
+        );
+      }
+      return false;
     },
     translatedLabel(): string | undefined {
       if (this.layout.uischema.options?.i18n) {
@@ -155,18 +211,53 @@ const buttonRenderer = defineComponent({
 
       return null;
     },
-    click(event: Event) {
-      if (
-        this.jsonforms.core &&
-        (!this.jsonforms.core.errors || this.jsonforms.core.errors.length == 0)
-      ) {
-        this.loading = true;
+    async click(event: Event) {
+      this.loading = true;
 
+      try {
+        if (this.isSubmitButton) {
+          await this.send(event, true, 'submit-form');
+        } else if (this.isResolveButton) {
+          await this.send(event, true, 'resolve');
+        } else if (this.isCompleteButton) {
+          await this.send(event, true, 'complete');
+        } else if (this.isErrorButton) {
+          const errorCode = (this.layout.uischema as ButtonElement).errorCode;
+          const errorMessage = (this.layout.uischema as ButtonElement)
+            .errorMessage;
+
+          await this.send(event, false, 'bpmnError', {
+            errorCode: errorCode,
+            errorMessage: errorMessage,
+          });
+        } else if (this.isEscalationButton) {
+          const escalationCode = (this.layout.uischema as ButtonElement)
+            .escalationCode;
+
+          await this.send(event, false, 'bpmnEscalation', {
+            escalationCode: escalationCode,
+          });
+        }
+      } finally {
+        this.loading = false;
+      }
+    },
+    async send(
+      event: Event,
+      includeDataVariables: boolean,
+      actionPath: string,
+      payload?: Record<string, any>
+    ) {
+      if (!payload) {
+        payload = {};
+      }
+      if (!payload.variables) {
+        payload.variables = {};
+      }
+
+      if (includeDataVariables) {
         let data = this.jsonforms.core.data;
         let schema = this.jsonforms.core.schema;
-
-        const payload: any = { variables: {} }; // TODO: for start forms we can defined also businessKey
-
         if (schema && schema.properties) {
           let transient = this.getParameterByName(
             'transient',
@@ -194,55 +285,46 @@ const buttonRenderer = defineComponent({
             }
           });
         }
+      }
 
-        if ((this.layout.uischema as ButtonElement).variables) {
-          payload.variables = {
-            ...payload.variables,
-            ...(this.layout.uischema as ButtonElement).variables,
-          };
-        }
+      if ((this.layout.uischema as ButtonElement).variables) {
+        payload.variables = {
+          ...payload.variables,
+          ...(this.layout.uischema as ButtonElement).variables,
+        };
+      }
 
-        const url = this.camundaFormConfig.taskId
-          ? `${this.camundaFormConfig.camundaUrl}/task/${this.camundaFormConfig.taskId}/submit-form`
-          : `${this.camundaFormConfig.camundaUrl}/process-definition/${this.camundaFormConfig.processDefinitionId}/submit-form`;
+      const url = this.camundaFormConfig.taskId
+        ? `${this.camundaFormConfig.camundaUrl}/task/${this.camundaFormConfig.taskId}/${actionPath}`
+        : `${this.camundaFormConfig.camundaUrl}/process-definition/${this.camundaFormConfig.processDefinitionId}/${actionPath}`;
 
-        const headers = this.camundaFormConfig.submitHeaders
-          ? {
-              ...this.camundaFormConfig.submitHeaders,
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-            }
-          : { Accept: 'application/json', 'Content-Type': 'application/json' };
+      const headers = this.camundaFormConfig.submitHeaders
+        ? {
+            ...this.camundaFormConfig.submitHeaders,
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          }
+        : { Accept: 'application/json', 'Content-Type': 'application/json' };
 
-        fetch(url, {
+      try {
+        const response = await fetch(url, {
           body: JSON.stringify(payload),
           headers,
           method: 'post',
-        })
-          .then((response) => {
-            try {
-              if (response.status == 204 || response.status == 200) {
-                if (this.camundaFormConfig.onSubmitSuccessResponse) {
-                  this.camundaFormConfig.onSubmitSuccessResponse(response);
-                }
-              } else {
-                if (this.camundaFormConfig.onSubmitErrorResponse) {
-                  this.camundaFormConfig.onSubmitErrorResponse(response);
-                }
-              }
-            } finally {
-              this.loading = false;
-            }
-          })
-          .catch((error) => {
-            try {
-              if (this.camundaFormConfig.onSubmitError) {
-                this.camundaFormConfig.onSubmitError(error);
-              }
-            } finally {
-              this.loading = false;
-            }
-          });
+        });
+        if (response.status == 204 || response.status == 200) {
+          if (this.camundaFormConfig.onSubmitSuccessResponse) {
+            this.camundaFormConfig.onSubmitSuccessResponse(response);
+          }
+        } else {
+          if (this.camundaFormConfig.onSubmitErrorResponse) {
+            this.camundaFormConfig.onSubmitErrorResponse(response);
+          }
+        }
+      } catch (error) {
+        if (this.camundaFormConfig.onSubmitError) {
+          this.camundaFormConfig.onSubmitError(error);
+        }
       }
     },
   },

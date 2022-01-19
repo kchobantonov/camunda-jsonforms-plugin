@@ -1,0 +1,98 @@
+{
+  "en": {
+    "firstName": {
+      "label": "First Name",
+      "description": "Please enter your first name"
+    },
+    "lastName": {
+      "label": "Last Name",
+      "description": "Please enter your last name"
+    },
+    "birthDate": {
+      "label": "Birth Date",
+      "description": "Please enter your birth date."
+    },
+    "nationality": {
+      "label": "Nationality"
+    },
+    "address": {
+      "street": {
+        "label": "Street"
+      },
+      "streetNumber": {
+        "label": "Street Number"
+      },
+      "city": {
+        "label": "City"
+      },
+      "postalCode": {
+        "label": "Postal Code"
+      }
+    },
+    "amount": {
+      "label": "Loan Amount"
+    },
+    "notes": {
+      "label": "Notes",
+      "description": "Notes are required to decline the loan. Enter at least 5 characters."
+    },
+    "error": {
+      "required": "field is required"
+    },
+    "button": {
+      "approve": "Approve",
+      "decline": "Decline"
+    },
+    "label": {
+      "requested-amount": "Requested Amount: <span style=\"font-size: 50px;\">${{ data.amount }}</span>"
+    }
+  },
+  "bg": {
+    "firstName": {
+      "label": "Име",
+      "description": "Моля въведете вашето първо име"
+    },
+    "lastName": {
+      "label": "Фамилия",
+      "description": "Моля въведете вашата фамилия"
+    },
+    "birthDate": {
+      "label": "Дата на раждане",
+      "description": "Моля въведете вашата рождена дата."
+    },
+    "nationality": {
+      "label": "Националност"
+    },
+    "address": {
+      "street": {
+        "label": "Улица"
+      },
+      "streetNumber": {
+        "label": "Номер на улица"
+      },
+      "city": {
+        "label": "Град"
+      },
+      "postalCode": {
+        "label": "Пощенски код"
+      }
+    },
+    "amount": {
+      "label": "Сума на заема"
+    },
+    "notes": {
+      "label": "Бележки",
+      "description": "Бележките са задължителни, за да се откаже заема. Въведете минимум 5 знака/букви."
+    },
+    "error": {
+      "required": "Полето е задължително"
+    },
+    "button": {
+      "approve": "Одобряване",
+      "decline": "Отказ"
+    },
+    "label": {
+      "requested-amount": "Искана сума: <span style=\"font-size: 50px;\">${{ data.amount }}</span>"
+    }
+  }
+}

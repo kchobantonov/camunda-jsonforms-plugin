@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="_r7y_gEa-EeO5NO3lqhkDkg" targetNamespace="http://camunda.org/examples" exporter="Camunda Modeler" exporterVersion="4.8.0" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+  <bpmn2:process id="embeddedFormsQuickstart" name="Embedded Forms Quickstart" isExecutable="true">
+    <bpmn2:startEvent id="StartEvent_1" name="Loan Request&#10;Received" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/LoanApproval/forms/LoanRequest">
+      <bpmn2:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="FormField_0ln44v0" type="string">
+            <camunda:validation>
+              <camunda:constraint name="jsonforms" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="UserTask_1" />
+    <bpmn2:userTask id="UserTask_1" name="Approve Request" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/LoanApproval/forms/ApproveRequest" camunda:assignee="demo">
+      <bpmn2:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="FormField_119a7p5" type="string">
+            <camunda:validation>
+              <camunda:constraint name="jsonforms" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_3</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:sequenceFlow id="SequenceFlow_3" sourceRef="UserTask_1" targetRef="Gateway_1eu3plt" />
+    <bpmn2:scriptTask id="Activity_17si9s7" name="Loan Approved" scriptFormat="javascript">
+      <bpmn2:incoming>Flow_10sc5zr</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1vct86w</bpmn2:outgoing>
+      <bpmn2:script>java.lang.System.out.println("Loan Approved for " + firstName)</bpmn2:script>
+    </bpmn2:scriptTask>
+    <bpmn2:exclusiveGateway id="Gateway_1eu3plt" name="Approve?">
+      <bpmn2:incoming>SequenceFlow_3</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_10sc5zr</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_0gb0noj</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_10sc5zr" name="Yes" sourceRef="Gateway_1eu3plt" targetRef="Activity_17si9s7">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">${approved}</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:scriptTask id="Activity_0xhq7x9" name="Loan Declined" scriptFormat="javascript">
+      <bpmn2:incoming>Flow_0gb0noj</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0y7ydpy</bpmn2:outgoing>
+      <bpmn2:script>java.lang.System.out.println("Loan Declined for " + firstName + ". Reason:" + notes)</bpmn2:script>
+    </bpmn2:scriptTask>
+    <bpmn2:endEvent id="Event_0f4gt75">
+      <bpmn2:incoming>Flow_1vct86w</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_1vct86w" sourceRef="Activity_17si9s7" targetRef="Event_0f4gt75" />
+    <bpmn2:endEvent id="Event_07c2ukq">
+      <bpmn2:incoming>Flow_0y7ydpy</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_0y7ydpy" sourceRef="Activity_0xhq7x9" targetRef="Event_07c2ukq" />
+    <bpmn2:sequenceFlow id="Flow_0gb0noj" name="No" sourceRef="Gateway_1eu3plt" targetRef="Activity_0xhq7x9">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">${not approved}</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="embeddedFormsQuickstart">
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_3" bpmnElement="SequenceFlow_3" sourceElement="_BPMNShape_UserTask_3" targetElement="Gateway_1eu3plt_di">
+        <di:waypoint x="398" y="168" />
+        <di:waypoint x="455" y="168" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="533" y="268" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="SequenceFlow_1" sourceElement="_BPMNShape_StartEvent_3" targetElement="_BPMNShape_UserTask_3">
+        <di:waypoint x="212" y="168" />
+        <di:waypoint x="298" y="168" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="347" y="268" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10sc5zr_di" bpmnElement="Flow_10sc5zr">
+        <di:waypoint x="480" y="143" />
+        <di:waypoint x="480" y="120" />
+        <di:waypoint x="600" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="486" y="125" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vct86w_di" bpmnElement="Flow_1vct86w">
+        <di:waypoint x="700" y="120" />
+        <di:waypoint x="772" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y7ydpy_di" bpmnElement="Flow_0y7ydpy">
+        <di:waypoint x="700" y="220" />
+        <di:waypoint x="772" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gb0noj_di" bpmnElement="Flow_0gb0noj">
+        <di:waypoint x="480" y="193" />
+        <di:waypoint x="480" y="220" />
+        <di:waypoint x="600" y="220" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="488" y="202" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_3" bpmnElement="StartEvent_1">
+        <dc:Bounds x="176" y="150" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="160" y="186" width="69" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_UserTask_3" bpmnElement="UserTask_1">
+        <dc:Bounds x="298" y="128" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_17si9s7_di" bpmnElement="Activity_17si9s7">
+        <dc:Bounds x="600" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0f4gt75_di" bpmnElement="Event_0f4gt75">
+        <dc:Bounds x="772" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1eu3plt_di" bpmnElement="Gateway_1eu3plt" isMarkerVisible="true">
+        <dc:Bounds x="455" y="143" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="515" y="161" width="47" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0xhq7x9_di" bpmnElement="Activity_0xhq7x9">
+        <dc:Bounds x="600" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_07c2ukq_di" bpmnElement="Event_07c2ukq">
+        <dc:Bounds x="772" y="202" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

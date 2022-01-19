@@ -1,0 +1,134 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Group",
+      "elements": [
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/firstName"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/lastName"
+            }
+          ]
+        },
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/nationality"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/birthDate"
+            }
+          ]
+        },
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/address/properties/street"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/address/properties/streetNumber"
+            }
+          ]
+        },
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/address/properties/city"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/address/properties/postalCode"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Requested Amount: <span style=\"font-size: 50px;\">${{ data.amount }}</span>",
+          "options": {
+            "i18n": "label.requested-amount",
+            "template": true,
+            "dynamic": true
+          }
+        }
+      ],
+      "label": "Loan Request"
+    },
+    {
+      "type": "Group",
+      "elements": [
+        {
+          "type": "Control",
+          "scope": "#/properties/notes",
+          "options": {
+            "multi": true
+          }
+        }
+      ],
+      "label": "Loan Decision"
+    },
+    {
+      "type": "Group",
+      "elements": [
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Button",
+              "text": "Approve",
+              "color": "primary",
+              "action": "submit",
+              "options": {
+                "i18n": "button.approve"
+              },
+              "variables": {
+                "approved": {
+                  "type": "boolean",
+                  "value": true
+                }
+              }
+            },
+            {
+              "type": "Button",
+              "text": "Decline",
+              "color": "red",
+              "options": {
+                "i18n": "button.decline"
+              },
+              "variables": {
+                "approved": {
+                  "type": "boolean",
+                  "value": false
+                }
+              },
+              "rule": {
+                "effect": "ENABLE",
+                "condition": {
+                  "scope": "#/properties/notes",
+                  "schema": {
+                    "type": "string",
+                    "minLength": 5
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

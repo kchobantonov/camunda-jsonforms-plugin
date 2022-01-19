@@ -7,7 +7,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "readOnly": true,
+          "readOnly": false,
           "i18n": "loanRequest.name"
         },
         "amount": {
@@ -22,6 +22,7 @@
           "i18n": "loanRequest.currency"
         }
       },
+      "required": ["name", "amount", "currency"],
       "additionalProperties": false,
       "readOnly": true
     }

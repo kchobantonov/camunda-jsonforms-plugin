@@ -23,7 +23,7 @@
         justify="center"
       >
         <v-col class="text-subtitle-1 text-center" cols="12">
-          Resolving Schema Refs
+          Loading...
         </v-col>
         <v-col cols="6">
           <v-progress-linear
