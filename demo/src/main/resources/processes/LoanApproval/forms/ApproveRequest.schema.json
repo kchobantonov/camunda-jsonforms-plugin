@@ -65,6 +65,7 @@
     },
     "notes": {
       "type": "string",
+      "description": "Notes are required to decline the loan. Enter at least 5 characters.",
       "i18n": "notes"
     }
   },
