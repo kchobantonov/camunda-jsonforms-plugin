@@ -19,6 +19,7 @@ export interface CamundaFormConfig {
   taskId?: string;
   submitHeaders?: Headers;
   locale?: string;
+  onLoadError: (error: any) => void;
   onSubmitSuccessResponse: (response: Response) => void;
   onSubmitErrorResponse: (response: Response) => void;
   onSubmitError: (error: any) => void;

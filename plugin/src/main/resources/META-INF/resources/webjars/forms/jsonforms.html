@@ -17,15 +17,31 @@
     }
 
     function hideStartFormStartButton(){
-        let element = document.querySelector("body > div.modal.fade.ng-scope.ng-isolate-scope.in > div > div > div.modal-footer.ng-scope > div > div.col-xs-8 > button.btn.btn-primary.ng-binding")
-        element.classList.add("hide-form-actions")
+        let element = document.querySelector("button[ng-click='startProcessInstance()']");
+        if (element) {
+            element.classList.add("ng-hide");
+        }
+    }
+
+    function setStartFormMinHeight() {
+        // when is modal dialog then change the default min-height from 100vh to 100vh - 200px so that the whole start process dialog be visible
+        let element = document.querySelector("div[class='v-application--wrap']");
+        element.style = "min-height: calc(100vh - 200px);";
+    }
+
+    function setFormMinHeight() {
+        // when is modal dialog then change the default min-height from 100vh to 100vh - 200px so that the whole start process dialog be visible
+        let element = document.querySelector("div[class='v-application--wrap']");
+        element.style = "min-height: calc(100vh - 300px);";
     }
 
     function hideUserTaskFormCompleteButton(){
-        let elements = document.getElementsByClassName("form-actions")
-        _.forEach(elements, element => {
-            element.classList.add("hide-form-actions")
-        })
+        let elements = document.getElementsByClassName("form-actions");
+        if (elements) {
+          _.forEach(elements, element => {
+            element.classList.add("ng-hide");
+          })
+        }
     }
 
     function showNotification(type, duration, status, message){
@@ -41,6 +57,8 @@
 
     camForm.on('form-loaded', function () {
         $scope.options.hideCompleteButton = true
+
+        isStartForm(camForm) ? hideStartFormStartButton() : hideUserTaskFormCompleteButton();
 
         inject(['$http', 'Uri', function($http, Uri) {
             let camundaUrl = Uri.appUri('engine://engine/:engine');
@@ -74,7 +92,15 @@
                 });
             }, onSubmitError: (error) => {
                 showNotification('error', null, "Submit Error", `${error}`);
+            }, onLoadError: (error) => {
+                showNotification('error', null, "Load Error", `${error}`);
             }});
+
+            if (isStartForm(camForm)) {
+                setStartFormMinHeight();
+            } else {
+                setFormMinHeight();
+            }
         }]);
 
     });

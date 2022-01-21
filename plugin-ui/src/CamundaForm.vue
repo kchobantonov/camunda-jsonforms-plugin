@@ -2,10 +2,6 @@
   <v-app>
     <div v-if="loading" class="loading">Loading...</div>
 
-    <div v-if="error !== null" class="error">
-      {{ error.value }}
-    </div>
-
     <resolved-json-forms
       v-if="input != null"
       :input="input"
@@ -67,7 +63,6 @@ export default {
   data() {
     return {
       loading: false,
-      error: null as string | null,
       input: null as CamundaJsonFormInput | null,
       camundaFormContext: {} as CamundaFormContext,
 
@@ -104,25 +99,36 @@ export default {
       return null;
     },
     async getTask(taskId: string): Promise<Task> {
-      let task = await (
-        await fetch(`${this.camundaFormConfig.camundaUrl}/task/${taskId}`)
-      ).json();
-
-      return task;
+      return await (
+        await fetch(
+          `${this.camundaFormConfig.camundaUrl}/task/${taskId}`
+        ).catch((e) => {
+          throw new Error(`Unable to retrieve task: ${e}`);
+        })
+      )
+        .json()
+        .catch((e) => {
+          throw new Error(`Invalid JSON response when retrieving task: ${e}`);
+        });
     },
     async getProcessDefinition(
       processDefinitionId: string
     ): Promise<ProcessDefinition> {
-      let processDefinition = await (
+      return await (
         await fetch(
           `${this.camundaFormConfig.camundaUrl}/process-definition/${processDefinitionId}`
-        )
-      ).json();
-
-      return processDefinition;
+        ).catch((e) => {
+          throw new Error(`Unable to retrieve process definition: ${e}`);
+        })
+      )
+        .json()
+        .catch((e) => {
+          throw new Error(
+            `Invalid JSON response when retrieving process definition: ${e}`
+          );
+        });
     },
     async fetchData(): Promise<void> {
-      this.error = null;
       this.input = null;
 
       this.loading = true;
@@ -139,9 +145,9 @@ export default {
           task = await this.getTask(this.camundaFormConfig.taskId);
 
           if (!task.processDefinitionId) {
-            this.error = 'Unable to retrieve proceess definition id from task';
-            this.loading = false;
-            return;
+            throw new Error(
+              'Unable to retrieve proceess definition id from task'
+            );
           }
 
           this.camundaFormContext.task = task;
@@ -170,8 +176,18 @@ export default {
         let resources = await (
           await fetch(
             `${this.camundaFormConfig.camundaUrl}/deployment/${processDefinition.deploymentId}/resources`
-          )
-        ).json();
+          ).catch((e) => {
+            throw new Error(
+              `Unable to retrieve resources for deployment: ${e}`
+            );
+          })
+        )
+          .json()
+          .catch((e) => {
+            throw new Error(
+              `Invalid JSON response when retrieving resources for deployment: ${e}`
+            );
+          });
 
         let formSchemaResource = resources.find(
           (i) => i.name === formNameDeployment + '.schema.json'
@@ -183,74 +199,111 @@ export default {
           (i) => i.name === formNameDeployment + '.i18n.json'
         );
 
-        if (formSchemaResource == null || formUiResource == null) {
-          this.error = 'Unable to find schema or uischema resources';
-        } else {
-          let schema = await (
+        if (formSchemaResource == null) {
+          throw new Error('Unable to find JsonForms schema');
+        }
+
+        if (formUiResource == null) {
+          throw new Error('Unable to find JsonForms uischema');
+        }
+
+        let schema = await (
+          await fetch(
+            `${this.camundaFormConfig.camundaUrl}/deployment/${processDefinition.deploymentId}/resources/${formSchemaResource.id}/data`
+          ).catch((e) => {
+            throw new Error(`Unable to retrieve JsonForms schema: ${e}`);
+          })
+        )
+          .json()
+          .catch((e) => {
+            throw new Error(
+              `Invalid JSON response when retrieving JsonForms schema: ${e}`
+            );
+          });
+
+        let uischema = await (
+          await fetch(
+            `${this.camundaFormConfig.camundaUrl}/deployment/${processDefinition.deploymentId}/resources/${formUiResource.id}/data`
+          ).catch((e) => {
+            throw new Error(`Unable to retrieve JsonForms uischema: ${e}`);
+          })
+        )
+          .json()
+          .catch((e) => {
+            throw new Error(
+              `Invalid JSON response when retrieving JsonForms uischema: ${e}`
+            );
+          });
+
+        if (i18nResource) {
+          let i18n = await (
             await fetch(
-              `${this.camundaFormConfig.camundaUrl}/deployment/${processDefinition.deploymentId}/resources/${formSchemaResource.id}/data`
-            )
-          ).json();
+              `${this.camundaFormConfig.camundaUrl}/deployment/${processDefinition.deploymentId}/resources/${i18nResource.id}/data`
+            ).catch((e) => {
+              throw new Error(`Unable to retrieve JsonForms i18n: ${e}`);
+            })
+          )
+            .json()
+            .catch((e) => {
+              `Invalid JSON response when retrieving JsonForms i18n: ${e}`;
+            });
 
-          let uischema = await (
-            await fetch(
-              `${this.camundaFormConfig.camundaUrl}/deployment/${processDefinition.deploymentId}/resources/${formUiResource.id}/data`
-            )
-          ).json();
+          this.camundaFormContext.translations = i18n;
+        }
 
-          if (i18nResource) {
-            let i18n = await (
-              await fetch(
-                `${this.camundaFormConfig.camundaUrl}/deployment/${processDefinition.deploymentId}/resources/${i18nResource.id}/data`
-              )
-            ).json();
+        let data: any = {};
 
-            this.camundaFormContext.translations = i18n;
-          }
+        if (this.camundaFormConfig.taskId) {
+          let variableNames: string[] = [];
 
-          let data: any = {};
-
-          if (this.camundaFormConfig.taskId) {
-            let variableNames: string[] = [];
-
-            if (schema && schema.properties) {
-              forOwn(schema.properties, function (value: any, key: string) {
-                if (
-                  (schema.properties![key] as JsonSchema7).writeOnly !== true
-                ) {
-                  variableNames.push(key);
-                }
-              });
-            }
-
-            let variableObject = await (
-              await fetch(
-                `${this.camundaFormConfig.camundaUrl}/task/${
-                  this.camundaFormConfig.taskId
-                }/form-variables?deserializeValues=false&variableNames=${variableNames.join(
-                  ','
-                )}`
-              )
-            ).json();
-
-            forOwn(variableObject, function (value: any, key: string) {
-              if (value.type === 'Json') {
-                value.value = JSON.parse(value.value);
+          if (schema && schema.properties) {
+            forOwn(schema.properties, function (value: any, key: string) {
+              if ((schema.properties![key] as JsonSchema7).writeOnly !== true) {
+                variableNames.push(key);
               }
-              data[key] = value.value;
             });
           }
 
-          this.input = {
-            schema: schema,
-            uischema: uischema,
-            data: data,
-          };
+          let variableObject = await (
+            await fetch(
+              `${this.camundaFormConfig.camundaUrl}/task/${
+                this.camundaFormConfig.taskId
+              }/form-variables?deserializeValues=false&variableNames=${variableNames.join(
+                ','
+              )}`
+            ).catch((e) => {
+              throw new Error(`Unable to retrieve camunda variables: ${e}`);
+            })
+          )
+            .json()
+            .catch((e) => {
+              throw new Error(
+                `Invalid JSON response when retrieving camunda variables: ${e}`
+              );
+            });
+
+          forOwn(variableObject, function (value: any, key: string) {
+            if (value.type === 'Json') {
+              value.value = JSON.parse(value.value);
+            }
+            data[key] = value.value;
+          });
         }
+
+        this.input = {
+          schema: schema,
+          uischema: uischema,
+          data: data,
+        };
 
         this.loading = false;
       } catch (e) {
-        this.error = `${e}`;
+        if (this.camundaFormConfig.onLoadError) {
+          this.camundaFormConfig.onLoadError(e);
+        } else {
+          // just log the error
+          console.log(`Load Error: ${e}`);
+        }
         this.loading = false;
       }
     },

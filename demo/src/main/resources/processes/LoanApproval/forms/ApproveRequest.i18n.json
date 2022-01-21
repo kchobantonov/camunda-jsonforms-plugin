@@ -44,7 +44,7 @@
       "decline": "Decline"
     },
     "label": {
-      "requested-amount": "Requested Amount: <span style=\"font-size: 50px;\">${{ data.amount }}</span>"
+      "requested-amount": "Requested Amount:"
     }
   },
   "bg": {
@@ -92,7 +92,7 @@
       "decline": "Отказ"
     },
     "label": {
-      "requested-amount": "Искана сума: <span style=\"font-size: 50px;\">${{ data.amount }}</span>"
+      "requested-amount": "Искана сума:"
     }
   }
 }
