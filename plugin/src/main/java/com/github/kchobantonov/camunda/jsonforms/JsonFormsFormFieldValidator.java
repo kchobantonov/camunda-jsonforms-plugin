@@ -22,7 +22,6 @@ import org.camunda.bpm.model.bpmn.instance.FlowElement;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.spin.json.SpinJsonNode;
 import org.everit.json.schema.FormatValidator;
-import org.everit.json.schema.PrimitiveValidationStrategy;
 import org.everit.json.schema.ReadWriteContext;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;

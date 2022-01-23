@@ -26,6 +26,11 @@ public class Application {
         public JsonFormsFormFieldValidatorProcessEnginePlugin jsonFormsFormFieldValidatorProcessEnginePlugin() {
             return new JsonFormsFormFieldValidatorProcessEnginePlugin();
         }
+
+        @Bean
+        public JsonFormsFormServicePlugin jsonFormsFormServicePlugin() {
+            return new JsonFormsFormServicePlugin();
+        }
     }
 
 }
