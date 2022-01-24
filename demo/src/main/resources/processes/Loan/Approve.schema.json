@@ -20,6 +20,11 @@
           "enum": ["USD", "EUR"],
           "readOnly": true,
           "i18n": "loanRequest.currency"
+        },
+        "picture": {
+          "type": "string",
+          "format": "uri",
+          "readOnly": true
         }
       },
       "required": ["name", "amount", "currency"],

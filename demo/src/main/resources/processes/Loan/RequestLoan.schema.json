@@ -20,10 +20,20 @@
           "type": "string",
           "enum": ["USD", "EUR"],
           "i18n": "loanRequest.currency"
+        },
+        "picture": {
+          "type": "string",
+          "format": "uri",
+          "contentEncoding": "base64",
+          "contentMediaType": "image/png"
         }
       },
-      "required": ["name", "amount", "currency"],
+      "required": ["name", "amount", "currency", "picture"],
       "additionalProperties": false
+    },
+    "file": {
+      "type": "string",
+      "format": "file"
     }
   },
   "required": ["loanRequest"],

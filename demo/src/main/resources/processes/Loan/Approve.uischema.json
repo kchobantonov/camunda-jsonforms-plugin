@@ -2,8 +2,17 @@
   "type": "VerticalLayout",
   "elements": [
     {
-      "type": "Control",
-      "scope": "#/properties/loanRequest/properties/name"
+      "type": "HorizontalLayout",
+      "elements": [
+        {
+          "type": "Template",
+          "template": "<img :src=\"data.loanRequest.picture\" height=\"100\" width=\"100\"/>"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/loanRequest/properties/name"
+        }
+      ]
     },
     {
       "type": "Control",

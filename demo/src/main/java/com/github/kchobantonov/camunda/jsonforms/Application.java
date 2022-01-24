@@ -31,6 +31,7 @@ public class Application {
         public JsonFormsFormServicePlugin jsonFormsFormServicePlugin() {
             return new JsonFormsFormServicePlugin();
         }
+
     }
 
 }

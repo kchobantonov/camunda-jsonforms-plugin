@@ -14,6 +14,14 @@
       "scope": "#/properties/loanRequest/properties/currency"
     },
     {
+      "type": "Control",
+      "scope": "#/properties/loanRequest/properties/picture"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/file"
+    },
+    {
       "type": "Button",
       "text": "Request Loan",
       "color": "primary",

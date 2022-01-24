@@ -1,6 +1,7 @@
 package com.github.kchobantonov.camunda.jsonforms;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -61,10 +62,20 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
                         } else if (node.isArray()) {
                             object.put(entry.getKey(), new JSONArray(new JSONTokener(node.toString())));
                         } else {
-                            object.put(entry.getKey(), node.value());
+                            object.put(entry.getKey(), entry.getValue());
                         }
                     } else {
-                        object.put(entry.getKey(), entry.getValue());
+                        Object value = entry.getValue();
+                        if (value instanceof InputStream) {
+                            JSONObject propertySchema = jsonSchema.getJSONObject("properties").getJSONObject(entry.getKey());
+                            if (propertySchema != null) {
+                                if ("string".equals(propertySchema.getString("type")) && "file".equals(propertySchema.getString("format"))) {
+                                    // remove the type so that the validator won't require that the value of type InputStream be compatible with the type StringF
+                                    propertySchema.remove("type");
+                                }
+                            }
+                        }
+                        object.put(entry.getKey(), value);
                     }
                 }
 
@@ -77,7 +88,8 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
                 Schema schema = loader.load().build();
 
                 try {
-                    Validator validator = Validator.builder().readWriteContext(ReadWriteContext.WRITE).build();
+                    Validator validator = Validator.builder().failEarly().readWriteContext(ReadWriteContext.WRITE)
+                            .build();
                     validator.performValidation(schema, object);
 
                     return true;

@@ -43,7 +43,7 @@ import forOwn from 'lodash/forOwn';
 const getCamundaType = (schema: JsonSchema): string => {
   switch (schema.type) {
     case 'string':
-      return 'String';
+      return (schema as any).format === 'file' ? 'File' : 'String';
     case 'integer':
       return 'Integer';
     case 'number':
@@ -59,6 +59,89 @@ const getCamundaType = (schema: JsonSchema): string => {
   }
   return 'Json';
 };
+
+const attachCamundaVariable = (
+  variables: Record<string, any>,
+  variableName: string,
+  variableSchema: JsonSchema,
+  variableData: any
+): void => {
+  if ((variableSchema as any).readOnly !== true) {
+    const type = getCamundaType(variableSchema);
+
+    let value = variableData;
+    let valueInfo: ValueInfo = {};
+
+    if (type === 'Json') {
+      value = value ? JSON.stringify(value) : value;
+    } else if (type === 'File') {
+      if (!value) {
+        // invalid value
+        return;
+      }
+
+      const dataUrl = value as string;
+
+      const base64Index = dataUrl.indexOf(';base64,');
+
+      const header = dataUrl.substring(0, base64Index); // data header without the base64
+      value = dataUrl.substring(base64Index + ';base64,'.length); // get only the base64 value
+
+      const fileNameIndex = header.indexOf(';filename=');
+
+      const fileName = decodeURIComponent(
+        header.substring(fileNameIndex + ';filename='.length)
+      );
+
+      const mimeType = header.substring(
+        'data:'.length,
+        header.indexOf(';filename=')
+      );
+
+      (valueInfo as FileValueInfo).filename = fileName;
+      (valueInfo as FileValueInfo).mimeType = mimeType;
+    }
+
+    variables[variableName] = {
+      value: value,
+      type: type,
+      valueInfo: valueInfo,
+    };
+  }
+};
+
+interface ValueInfo {
+  /**
+   * A string representation of the object's type name.
+   */
+  objectTypeName?: string;
+  /**
+   * The serialization format used to store the variable.
+   */
+  serializationDataFormat?: string;
+
+  /**
+   * Mark the variables as transient
+   */
+  transient?: boolean;
+}
+
+interface FileValueInfo extends ValueInfo {
+  /**
+   * The name of the file. This is not the variable name but the name that will be used when downloading the file again.
+   */
+  filename: string;
+
+  /**
+   * The mime type of the file that is being uploaded.
+   */
+  mimeType?: string;
+
+  /**
+   *  Identifies the file's encoding as specified on value creation.
+   */
+  encoding?: string;
+}
 
 interface ButtonElement extends UISchemaElement {
   type: 'Button';
@@ -81,6 +164,8 @@ interface ButtonElement extends UISchemaElement {
     }
   >;
 }
+
+// TODO: pass withVariablesInReturn ??
 
 const buttonRenderer = defineComponent({
   name: 'button-renderer',
@@ -259,29 +344,14 @@ const buttonRenderer = defineComponent({
         let data = this.jsonforms.core.data;
         let schema = this.jsonforms.core.schema;
         if (schema && schema.properties) {
-          let transient = this.getParameterByName(
-            'transient',
-            this.camundaFormContext.task !== undefined
-              ? this.camundaFormContext.task.formKey
-              : this.camundaFormConfig.formUrl
-          );
-
           forOwn(schema.properties, function (value: any, key: string) {
             if (Object.prototype.hasOwnProperty.call(data, key)) {
-              const type = getCamundaType(schema.properties![key]);
-
-              if ((schema.properties![key] as JsonSchema7).readOnly !== true) {
-                payload.variables[key] = {
-                  value:
-                    type === 'Json'
-                      ? data[key]
-                        ? JSON.stringify(data[key])
-                        : null
-                      : data[key],
-                  type: type,
-                  valueInfo: { transient: transient === 'true' },
-                };
-              }
+              attachCamundaVariable(
+                payload!.variables,
+                key,
+                schema.properties![key],
+                data[key]
+              );
             }
           });
         }
