@@ -27,7 +27,7 @@
       </lane>
     </laneSet>
     <dataStoreReference id="DataStoreReference_1" name="Financial Accounting System" dataStoreRef="FinancialAccountingSystem" />
-    <userTask id="approveInvoice" name="Approve Invoice" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/invoice/forms/approve-invoice&#38;debug=true" camunda:candidateGroups="${approverGroups}" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}">
+    <userTask id="approveInvoice" name="Approve Invoice" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/invoice/forms/approve-invoice" camunda:candidateGroups="${approverGroups}" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}">
       <documentation>Approve the invoice (or not).</documentation>
       <extensionElements>
         <camunda:taskListener event="create">
