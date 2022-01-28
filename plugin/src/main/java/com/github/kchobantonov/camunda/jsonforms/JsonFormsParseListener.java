@@ -1,137 +1,108 @@
 package com.github.kchobantonov.camunda.jsonforms;
 
+import org.camunda.bpm.engine.delegate.VariableScope;
+import org.camunda.bpm.engine.form.StartFormData;
+import org.camunda.bpm.engine.form.TaskFormData;
+import org.camunda.bpm.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
 import org.camunda.bpm.engine.impl.bpmn.parser.AbstractBpmnParseListener;
+import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParse;
+import org.camunda.bpm.engine.impl.form.FormDataImpl;
+import org.camunda.bpm.engine.impl.form.handler.StartFormHandler;
+import org.camunda.bpm.engine.impl.form.handler.TaskFormHandler;
+import org.camunda.bpm.engine.impl.persistence.entity.DeploymentEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
+import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
+import org.camunda.bpm.engine.impl.pvm.process.ScopeImpl;
+import org.camunda.bpm.engine.impl.task.TaskDefinition;
+import org.camunda.bpm.engine.impl.util.xml.Element;
+import org.camunda.bpm.engine.variable.VariableMap;
 
 public class JsonFormsParseListener extends AbstractBpmnParseListener {
-    
 
-    // val FORMIO_PROPERTY_PREFIX: String = "formio_",
-    // val FORMIO_DEPLOYMENT_KEY: String = "deployment",
-    // val FORMIO_PATH_KEY: String = "path",
-    // val FORMIO_TRANSIENT_KEY: String = "transient",
-    // val FORMIO_VAR_KEY: String = "var",
-    // val FORMIO_BASE_FORM_KEY: String = "embedded:/forms/formio.html",
-    // val FORMIO_SERVER_VALIDATION_KEY: String = "validation",
-    // val FORM_KEY_PATH: String = "http://camunda.org/schema/1.0/bpmn:formKey",
+    public static final String ENABLE_JSONFORMS_JS_CONSOLE_LOG = "ENABLE_JSONFORMS_JS_CONSOLE_LOG";
 
+    @Override
+    public void parseUserTask(Element userTaskElement, ScopeImpl scope, ActivityImpl activity) {
+        TaskDefinition taskDefinition = ((UserTaskActivityBehavior) activity.getActivityBehavior()).getTaskDefinition();
+        TaskFormHandler handler = taskDefinition.getTaskFormHandler();
+        if (handler != null) {
+            taskDefinition.setTaskFormHandler(new JsonFormsFormHandler(handler));
+        }
+    }
 
-    // protected fun buildFormKeyFromExtensionProperties(element: Element, activity: ActivityImpl): String? {
-    //     val props: Map<String, String>? = element.element("extensionElements")
-    //             ?.element("properties")
-    //             ?.elements("property")
-    //             ?.filter { it.attribute("name").startsWith(FORMIO_PROPERTY_PREFIX) }
-    //             ?.associateBy(
-    //                     { it.attribute("name") },
-    //                     { it.attribute("value") }
-    //             )
-    //             ?.mapKeys {
-    //                 it.key.substringAfter(FORMIO_PROPERTY_PREFIX)
-    //             }
+    @Override
+    public void parseStartEvent(Element startEventElement, ScopeImpl scope, ActivityImpl startEventActivity) {
+        if (scope instanceof ProcessDefinitionEntity) {
+            ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity)scope;
+            StartFormHandler handler = processDefinition.getStartFormHandler();
+            if (handler != null) {
+                processDefinition.setStartFormHandler(new JsonFormsFormHandler(handler));
+            }
+        }
+    }
 
-    //     if (!props.isNullOrEmpty()){
+    protected boolean debugLogEnabled() {
+        return Boolean.valueOf(System.getProperty(ENABLE_JSONFORMS_JS_CONSOLE_LOG, "false"));
+    }
 
-    //         var formKey: String = "${FORMIO_BASE_FORM_KEY}?"
+    class JsonFormsFormHandler implements TaskFormHandler, StartFormHandler {
+        private StartFormHandler startFormHandler;
+        private TaskFormHandler taskFormHandler;
 
-    //         formKey = if (props.containsKey(FORMIO_DEPLOYMENT_KEY) && props.getValue(FORMIO_DEPLOYMENT_KEY).isNotBlank()){
-    //             val value = props[FORMIO_DEPLOYMENT_KEY]
-    //             formKey.plus("${FORMIO_DEPLOYMENT_KEY}=${value}")
+        public JsonFormsFormHandler(StartFormHandler startFormHandler) {
+            this.startFormHandler = startFormHandler;
+        }
 
-    //         } else if (props.containsKey(FORMIO_PATH_KEY) && props.getValue(FORMIO_VAR_KEY).isNotBlank()){
-    //             val value = props[FORMIO_PATH_KEY]
-    //             formKey.plus("${FORMIO_PATH_KEY}=${value}")
-    //         } else {
-    //             throw BpmnParseException("Formio Extension property configuration must have a deployment or a path property. (${activity.activityId})", element)
-    //         }
-
-    //         if (props.containsKey(FORMIO_VAR_KEY) && props.getValue(FORMIO_VAR_KEY).isNotBlank()){
-    //             val value = props[FORMIO_VAR_KEY]
-    //             formKey = formKey.plus("&${FORMIO_VAR_KEY}=${value}")
-    //         }
-
-    //         if (props.containsKey(FORMIO_TRANSIENT_KEY)){
-    //             val value = props[FORMIO_TRANSIENT_KEY]?: "false"
-    //             formKey = formKey.plus("&${FORMIO_TRANSIENT_KEY}=${value}")
-    //         }
-
-    //         return formKey
-
-    //     } else {
-    //         return null
-    //     }
-    // }
-
-    // protected fun hasFormioServerValidation(element: Element): Boolean{
-    //     val props: Map<String, String>? = element.element("extensionElements")
-    //             ?.element("properties")
-    //             ?.elements("property")
-    //             ?.filter { it.attribute("name").startsWith(FORMIO_PROPERTY_PREFIX) }
-    //             ?.associateBy(
-    //                     { it.attribute("name") },
-    //                     { it.attribute("value") }
-    //             )
-    //             ?.mapKeys {
-    //                 it.key.substringAfter(FORMIO_PROPERTY_PREFIX)
-    //             }
-
-    //     return if (!props.isNullOrEmpty()){
-    //         props[FORMIO_SERVER_VALIDATION_KEY].toBoolean()
-    //     } else {
-    //         false
-    //     }
-    // }
-
-    // protected fun createFormioServerValidation(handler: DefaultFormHandler){
-    //     val prop = handler::class.memberProperties.single { it.name == "formFieldHandlers" }.also { it.isAccessible = true } as KMutableProperty1<DefaultFormHandler, ArrayList<FormFieldHandler>>
-
-    //     val handlersList = prop.get(handler)
-
-    //     val ffH = FormFieldHandler().apply {
-    //         id = "formio"
-    //         setType(StringFormType())
-    //         validationHandlers = listOf(FormFieldValidationConstraintHandler().apply {
-    //             name = "formio"
-    //             validator = FormioFormFieldValidator()
-    //         })
-    //     }
-    //     handlersList.add(ffH)
-    // }
+        public JsonFormsFormHandler(TaskFormHandler taskFormHandler) {
+            this.taskFormHandler = taskFormHandler;
+        }
 
 
-    // override fun parseUserTask(userTaskElement: Element, scope: ScopeImpl, activity: ActivityImpl) {
-    //     val formKey = buildFormKeyFromExtensionProperties(userTaskElement, activity)
-    //     if (activity.activityBehavior is UserTaskActivityBehavior){
-    //         if (formKey != null){
-    //             val exp = Context.getProcessEngineConfiguration().expressionManager.createExpression(formKey)
-    //             (activity.activityBehavior as UserTaskActivityBehavior).taskDefinition.formKey = exp
+        @Override
+        public void parseConfiguration(Element activityElement, DeploymentEntity deployment,
+                ProcessDefinitionEntity processDefinition, BpmnParse bpmnParse) {
+            if (startFormHandler != null) {
+                startFormHandler.parseConfiguration(activityElement, deployment, processDefinition, bpmnParse);
+            } else {
+                taskFormHandler.parseConfiguration(activityElement, deployment, processDefinition, bpmnParse);
+            }
+        }
 
-    //             if (hasFormioServerValidation(userTaskElement)){
-    //                 createFormioServerValidation(((activity.activityBehavior as UserTaskActivityBehavior).taskDefinition.taskFormHandler as DelegateTaskFormHandler).formHandler as DefaultFormHandler)
-    //             }
-    //         }
-    //     }
-    // }
+        @Override
+        public void submitFormVariables(VariableMap properties, VariableScope variableScope) {
+            if (startFormHandler != null) {
+                startFormHandler.submitFormVariables(properties, variableScope);
+            } else {
+                taskFormHandler.submitFormVariables(properties, variableScope);
+            }
+        }
 
-    // protected fun modifyStartEventFormKey(formKey: String, handler: DefaultStartFormHandler){
-    //     val formKeyExp = Context.getProcessEngineConfiguration().expressionManager.createExpression(formKey)
-    //     val formKeyProp = handler::class.memberProperties.single { it.name == "formKey" }.also { it.isAccessible = true } as KMutableProperty1<DefaultStartFormHandler, Expression>
-    //     formKeyProp.set(handler, formKeyExp)
-    // }
+        @Override
+        public StartFormData createStartFormData(ProcessDefinitionEntity processDefinition) {
+            StartFormData data = startFormHandler.createStartFormData(processDefinition);
+            if (JsonFormsParseListener.this.debugLogEnabled()) {
+                String formKey = data.getFormKey();
+                if (formKey != null && formKey.startsWith("embedded:app:webjars/forms/jsonforms.html?") && data instanceof FormDataImpl) {
+                    formKey = formKey + "&debug=true";
+                    ((FormDataImpl)data).setFormKey(formKey);
+                }
+            }
+            return data;
+        }
 
-    // override fun parseStartEvent(startEventElement: Element, scope: ScopeImpl, startEventActivity: ActivityImpl) {
-    //     if (startEventActivity.properties.toMap().getValue("type") == "startEvent" && scope is ProcessDefinitionEntity){
-    //         val formKey = buildFormKeyFromExtensionProperties(startEventElement, startEventActivity)
-
-    //         if (formKey != null){
-    //             if (scope.startFormHandler is DelegateStartFormHandler){
-    //                 if ((scope.startFormHandler as DelegateStartFormHandler).formHandler is DefaultStartFormHandler){
-    //                     modifyStartEventFormKey(formKey, (scope.startFormHandler as DelegateStartFormHandler).formHandler as DefaultStartFormHandler)
-
-    //                     if (hasFormioServerValidation(startEventElement)){
-    //                         createFormioServerValidation((scope.startFormHandler as DelegateStartFormHandler).formHandler as DefaultFormHandler)
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+        @Override
+        public TaskFormData createTaskForm(TaskEntity task) {
+            TaskFormData  data = taskFormHandler.createTaskForm(task);
+            if (JsonFormsParseListener.this.debugLogEnabled()) {
+                String formKey = data.getFormKey();
+                if (formKey != null && formKey.startsWith("embedded:app:webjars/forms/jsonforms.html?") && data instanceof FormDataImpl) {
+                    formKey = formKey + "&debug=true";
+                    ((FormDataImpl)data).setFormKey(formKey);
+                }
+            }
+            return data;
+        }
+        
+    }
 }

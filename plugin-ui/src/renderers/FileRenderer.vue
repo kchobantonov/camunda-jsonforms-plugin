@@ -39,15 +39,7 @@ import {
 } from '@jsonforms/vue2';
 import { DisabledIconFocus, useVuetifyControl } from '@jsonforms/vue2-vuetify';
 import { defineComponent } from '@vue/composition-api';
-import {
-  VLabel,
-  VFileInput,
-  VCard,
-  VList,
-  VSubHeader,
-  VListItem,
-  VListItemGroup,
-} from 'vuetify/lib';
+import { VFileInput } from 'vuetify/lib';
 
 const toBase64 = (file: File, schemaFormat: string) =>
   new Promise((resolve, reject) => {
@@ -59,8 +51,12 @@ const toBase64 = (file: File, schemaFormat: string) =>
         resolve(dataurl);
       } else if (schemaFormat === 'file') {
         //special handling to encode the filename
-        const insertIndex = dataurl.indexOf(";base64,");
-        resolve(dataurl.substring(0, insertIndex) + `;filename=${encodeURIComponent(file.name)}` + dataurl.substring(insertIndex));
+        const insertIndex = dataurl.indexOf(';base64,');
+        resolve(
+          dataurl.substring(0, insertIndex) +
+            `;filename=${encodeURIComponent(file.name)}` +
+            dataurl.substring(insertIndex)
+        );
       } else {
         resolve(dataurl.substring(dataurl.indexOf(',') + 1));
       }
@@ -72,13 +68,7 @@ const fileRenderer = defineComponent({
   name: 'file-renderer',
   components: {
     DispatchRenderer,
-    VLabel,
     VFileInput,
-    VCard,
-    VList,
-    VSubHeader,
-    VListItem,
-    VListItemGroup,
   },
   directives: {
     DisabledIconFocus,

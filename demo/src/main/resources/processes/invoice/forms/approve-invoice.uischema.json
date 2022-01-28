@@ -1,0 +1,65 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Template",
+      "template": "<p>Do you approve this invoice?</p>"
+    },
+    {
+      "type": "HorizontalLayout",
+      "elements": [
+        {
+          "type": "Label",
+          "text": "Invoice Document"
+        },
+        {
+          "type": "Template",
+          "template": "<div><a v-if=\"context.variables?.invoiceDocument?.type === 'File'\" :href=\"config.camundaUrl + '/task/' + config.taskId + '/variables/invoiceDocument/data'\">{{ context?.variables?.invoiceDocument?.valueInfo?.filename }}</a><span v-else> No invoice provided </span></div> "
+        }
+      ]
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/creditor"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/amount"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/invoiceCategory"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/invoiceNumber"
+    },
+    {
+      "type": "HorizontalLayout",
+      "elements": [
+        {
+          "type": "Button",
+          "text": "Approve",
+          "color": "primary",
+          "variables": {
+            "approved": {
+              "type": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "type": "Button",
+          "text": "Decline",
+          "color": "red",
+          "variables": {
+            "approved": {
+              "type": "boolean",
+              "value": false
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

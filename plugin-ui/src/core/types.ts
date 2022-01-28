@@ -39,5 +39,7 @@ export interface CamundaFormContext {
   task?: Task;
   processDefinition?: ProcessDefinition;
   translations?: Record<string, any>;
+  variables: Record<string, any>;
   debug?: boolean;
 };
+

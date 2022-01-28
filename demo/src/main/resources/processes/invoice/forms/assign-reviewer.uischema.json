@@ -1,0 +1,26 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Control",
+      "scope": "#/properties/creditor"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/amount"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/invoiceNumber"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/reviewer"
+    },
+    {
+      "type": "Button",
+      "text": "Submit",
+      "color": "primary"
+    }
+  ]
+}

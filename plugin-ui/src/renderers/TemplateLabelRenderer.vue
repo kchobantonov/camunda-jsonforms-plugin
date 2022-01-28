@@ -31,6 +31,7 @@ import { VLabel } from 'vuetify/lib';
 import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler';
 import Vue from 'vue';
 import { ErrorObject } from 'ajv';
+import { CamundaFormConfig, CamundaFormContext } from '@/core/types';
 
 const templateLabelRenderer = defineComponent({
   name: 'template-label-renderer',
@@ -52,9 +53,38 @@ const templateLabelRenderer = defineComponent({
         "'jsonforms' couldn't be injected. Are you within JSON Forms?"
       );
     }
+
+    const camundaFormConfig = inject<CamundaFormConfig>('camundaFormConfig');
+
+    if (!camundaFormConfig) {
+      throw new Error(
+        "'camundaFormConfig' couldn't be injected. Are you within CamundaForm?"
+      );
+    }
+
+    const camundaFormContext = inject<CamundaFormContext>('camundaFormContext');
+
+    if (!camundaFormContext) {
+      throw new Error(
+        "'camundaFormContext' couldn't be injected. Are you within CamundaForm?"
+      );
+    }
+
     let templateError: string | null = null;
 
-    return { ...layout, t, jsonforms, parentComponent: this, templateError };
+    let camundaForm = {
+      config: camundaFormConfig,
+      context: camundaFormContext,
+    };
+
+    return {
+      ...layout,
+      t,
+      jsonforms,
+      parentComponent: this,
+      templateError,
+      camundaForm,
+    };
   },
   errorCaptured: function (err: Error, vm: Vue, info: string) {
     if (info == 'render') {
@@ -69,6 +99,22 @@ const templateLabelRenderer = defineComponent({
       const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
 
       return jsonforms.core?.data;
+    },
+    config(): CamundaFormConfig {
+      let form: {
+        config: CamundaFormConfig;
+        context: CamundaFormContext;
+      } = this.$parent.$parent.camundaForm;
+
+      return form?.config;
+    },
+    context(): CamundaFormContext {
+      let form: {
+        config: CamundaFormConfig;
+        context: CamundaFormContext;
+      } = this.$parent.$parent.camundaForm;
+      
+      return form?.context;
     },
     errors(): ErrorObject[] | undefined {
       // this refers to the created element by RuntimeTemplateCompiler ( the span )
@@ -91,10 +137,9 @@ const templateLabelRenderer = defineComponent({
           (this.layout.uischema as LabelElement).text
         );
       }
-      return this.t(
-        (this.layout.uischema as LabelElement).text,
-        (this.layout.uischema as LabelElement).text
-      );
+
+      // do not try to translate the template text
+      return (this.layout.uischema as LabelElement).text;
     },
   },
   methods: {

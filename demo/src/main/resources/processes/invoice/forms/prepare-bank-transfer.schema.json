@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "invoiceDocument": {
+      "type": "string",
+      "readOnly": true
+    },
+    "creditor": {
+      "type": "string",
+      "title": "Creditor",
+      "readOnly": true
+    },
+    "amount": {
+      "type": "number",
+      "title": "Amount",
+      "readOnly": true
+    },
+    "invoiceNumber": {
+      "type": "string",
+      "title": "Invoice Number",
+      "readOnly": true
+    },
+    "approver": {
+      "type": "string",
+      "title": "Approved By",
+      "readOnly": true
+    }
+  },
+  "additionalProperties": false
+}

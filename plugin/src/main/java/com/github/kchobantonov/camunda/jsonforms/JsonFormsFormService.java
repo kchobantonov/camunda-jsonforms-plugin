@@ -21,6 +21,9 @@ import org.camunda.bpm.engine.variable.VariableMap;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+/**
+ * JsonFormFormService restricts the access to process variables based on the attached json forms schema.
+ */
 public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServiceImpl {
 
     // TODO: other variable methods
@@ -36,6 +39,7 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
      * }
      * 
      */
+
 
     @Override
     public VariableMap getTaskFormVariables(String taskId, Collection<String> formVariables,

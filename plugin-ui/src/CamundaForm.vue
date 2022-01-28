@@ -282,11 +282,17 @@ export default {
               );
             });
 
+          this.camundaFormContext.variables = variableObject;
+
           forOwn(variableObject, function (value: any, key: string) {
             if (value.type === 'Json') {
-              value.value = JSON.parse(value.value);
+              value.value = value.value ? JSON.parse(value.value) : value.value;
             }
-            data[key] = value.value;
+
+            if (value.value) {
+              // set only when the value is not undefined or null
+              data[key] = value.value;
+            }
           });
         }
 

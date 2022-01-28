@@ -17,16 +17,21 @@ public class Application {
     @Configuration
     class Config {
 
+        // enable JS logs for all forms by using JVM option
+        // -DENABLE_JSONFORMS_JS_CONSOLE_LOG=true
         @Bean
         public JsonFormsParseListenerProcessEnginePlugin jsonFormsParseListenerProcessEnginePlugin() {
             return new JsonFormsParseListenerProcessEnginePlugin();
         }
 
+        // enable server side validation when custom validator jsonforms is set for any
+        // form property - need to have at least one with that custom validator.
         @Bean
         public JsonFormsFormFieldValidatorProcessEnginePlugin jsonFormsFormFieldValidatorProcessEnginePlugin() {
             return new JsonFormsFormFieldValidatorProcessEnginePlugin();
         }
 
+        // do not return process variables that are not defined in the jsonform schema.
         @Bean
         public JsonFormsFormServicePlugin jsonFormsFormServicePlugin() {
             return new JsonFormsFormServicePlugin();

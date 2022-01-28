@@ -1,0 +1,30 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Control",
+      "scope": "#/properties/invoiceDocument"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/creditor"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/amount"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/invoiceCategory"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/invoiceNumber"
+    },
+    {
+      "type": "Button",
+      "text": "Start",
+      "color": "primary"
+    }
+  ]
+}

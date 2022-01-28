@@ -29,6 +29,7 @@ import { VLabel, VBtn, VSpacer } from 'vuetify/lib';
 import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler';
 import Vue from 'vue';
 import { ErrorObject } from 'ajv';
+import { CamundaFormConfig, CamundaFormContext } from '@/core/types';
 
 interface TemplateElement extends UISchemaElement {
   type: 'Template';
@@ -62,9 +63,30 @@ const templateRenderer = defineComponent({
       );
     }
 
+    const camundaFormConfig = inject<CamundaFormConfig>('camundaFormConfig');
+
+    if (!camundaFormConfig) {
+      throw new Error(
+        "'camundaFormConfig' couldn't be injected. Are you within CamundaForm?"
+      );
+    }
+
+    const camundaFormContext = inject<CamundaFormContext>('camundaFormContext');
+
+    if (!camundaFormContext) {
+      throw new Error(
+        "'camundaFormContext' couldn't be injected. Are you within CamundaForm?"
+      );
+    }
+
     let templateError: string | null = null;
 
-    return { ...layout, t, jsonforms, templateError };
+    let camundaForm = {
+      config: camundaFormConfig,
+      context: camundaFormContext,
+    };
+
+    return { ...layout, t, jsonforms, templateError, camundaForm };
   },
   errorCaptured: function (err: Error, vm: Vue, info: string) {
     if (info == 'render') {
@@ -75,6 +97,22 @@ const templateRenderer = defineComponent({
     data(): any {
       const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
       return jsonforms.core?.data;
+    },
+    config(): CamundaFormConfig {
+      let form: {
+        config: CamundaFormConfig;
+        context: CamundaFormContext;
+      } = this.$parent.$parent.camundaForm;
+
+      return form?.config;
+    },
+    context(): CamundaFormContext {
+      let form: {
+        config: CamundaFormConfig;
+        context: CamundaFormContext;
+      } = this.$parent.$parent.camundaForm;
+      
+      return form?.context;
     },
     errors(): ErrorObject[] | undefined {
       const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
