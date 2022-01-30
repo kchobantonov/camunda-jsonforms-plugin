@@ -11,7 +11,7 @@
     :disabled="!layout.enabled || hasErrors"
     :color="color"
     :loading="loading"
-    @click="click()"
+    @click="click"
   >
     {{ translatedLabel }}
   </v-btn>
@@ -22,7 +22,6 @@ import {
   JsonFormsRendererRegistryEntry,
   JsonFormsSubStates,
   JsonSchema,
-  JsonSchema7,
   Layout,
   rankWith,
   UISchemaElement,
@@ -37,7 +36,7 @@ import {
 } from '@jsonforms/vue2';
 import { useVuetifyLayout, useTranslator } from '@jsonforms/vue2-vuetify';
 import { VBtn } from 'vuetify/lib';
-import { CamundaFormConfig, CamundaFormContext } from '@/core/types';
+import { CamundaFormConfig } from '../core/types';
 import forOwn from 'lodash/forOwn';
 
 const getCamundaType = (schema: JsonSchema): string => {
@@ -173,6 +172,12 @@ const buttonRenderer = defineComponent({
     DispatchRenderer,
     VBtn,
   },
+  emits: [
+    'submit-headers-built',
+    'submit-success-response',
+    'submit-error-response',
+    'submit-error',
+  ],
   props: {
     ...rendererProps<Layout>(),
   },
@@ -195,14 +200,6 @@ const buttonRenderer = defineComponent({
       );
     }
 
-    const camundaFormContext = inject<CamundaFormContext>('camundaFormContext');
-
-    if (!camundaFormContext) {
-      throw new Error(
-        "'camundaFormContext' couldn't be injected. Are you within CamundaForm?"
-      );
-    }
-
     const loading = false;
 
     return {
@@ -210,7 +207,6 @@ const buttonRenderer = defineComponent({
       t,
       jsonforms,
       camundaFormConfig,
-      camundaFormContext,
       loading,
     };
   },
@@ -222,22 +218,28 @@ const buttonRenderer = defineComponent({
     isCompleteButton(): boolean {
       const action = (this.layout.uischema as ButtonElement).action;
       // complete is defined on task only
-      return action === 'complete' && this.camundaFormConfig.taskId;
+      return (
+        action === 'complete' && this.camundaFormConfig.taskId !== undefined
+      );
     },
     isResolveButton(): boolean {
       const action = (this.layout.uischema as ButtonElement).action;
       // complete is defined on task only
-      return action === 'resolve' && this.camundaFormConfig.taskId;
+      return (
+        action === 'resolve' && this.camundaFormConfig.taskId !== undefined
+      );
     },
     isErrorButton(): boolean {
       const action = (this.layout.uischema as ButtonElement).action;
       // error is defined on task only
-      return action === 'error' && this.camundaFormConfig.taskId;
+      return action === 'error' && this.camundaFormConfig.taskId !== undefined;
     },
     isEscalationButton(): boolean {
       const action = (this.layout.uischema as ButtonElement).action;
       // escalation is defined on task only
-      return action === 'escalation' && this.camundaFormConfig.taskId;
+      return (
+        action === 'escalation' && this.camundaFormConfig.taskId !== undefined
+      );
     },
     hasErrors(): boolean {
       if (
@@ -245,7 +247,8 @@ const buttonRenderer = defineComponent({
         this.isCompleteButton ||
         this.isResolveButton
       ) {
-        return this.jsonforms.core?.errors?.length > 0;
+        const numberOfErrors = this.jsonforms!.core?.errors?.length;
+        return numberOfErrors == undefined || numberOfErrors > 0;
       } else if (this.isErrorButton) {
         const errorCode = (this.layout.uischema as ButtonElement).errorCode;
         return (
@@ -284,34 +287,22 @@ const buttonRenderer = defineComponent({
     },
   },
   methods: {
-    getParameterByName(name: string, url: string | undefined): string | null {
-      if (!url) return null;
-
-      let parts = url.split('?');
-      if (parts.length > 1) {
-        const params = new URLSearchParams('?' + parts[1]);
-
-        return params.get(name);
-      }
-
-      return null;
-    },
-    async click(event: Event) {
+    async click() {
       this.loading = true;
 
       try {
         if (this.isSubmitButton) {
-          await this.send(event, true, 'submit-form');
+          await this.send(true, 'submit-form');
         } else if (this.isResolveButton) {
-          await this.send(event, true, 'resolve');
+          await this.send(true, 'resolve');
         } else if (this.isCompleteButton) {
-          await this.send(event, true, 'complete');
+          await this.send(true, 'complete');
         } else if (this.isErrorButton) {
           const errorCode = (this.layout.uischema as ButtonElement).errorCode;
           const errorMessage = (this.layout.uischema as ButtonElement)
             .errorMessage;
 
-          await this.send(event, false, 'bpmnError', {
+          await this.send(false, 'bpmnError', {
             errorCode: errorCode,
             errorMessage: errorMessage,
           });
@@ -319,7 +310,7 @@ const buttonRenderer = defineComponent({
           const escalationCode = (this.layout.uischema as ButtonElement)
             .escalationCode;
 
-          await this.send(event, false, 'bpmnEscalation', {
+          await this.send(false, 'bpmnEscalation', {
             escalationCode: escalationCode,
           });
         }
@@ -328,7 +319,6 @@ const buttonRenderer = defineComponent({
       }
     },
     async send(
-      event: Event,
       includeDataVariables: boolean,
       actionPath: string,
       payload?: Record<string, any>
@@ -341,8 +331,8 @@ const buttonRenderer = defineComponent({
       }
 
       if (includeDataVariables) {
-        let data = this.jsonforms.core.data;
-        let schema = this.jsonforms.core.schema;
+        let data = this.jsonforms!.core.data;
+        let schema = this.jsonforms!.core.schema;
         if (schema && schema.properties) {
           forOwn(schema.properties, function (value: any, key: string) {
             if (Object.prototype.hasOwnProperty.call(data, key)) {
@@ -368,13 +358,13 @@ const buttonRenderer = defineComponent({
         ? `${this.camundaFormConfig.camundaUrl}/task/${this.camundaFormConfig.taskId}/${actionPath}`
         : `${this.camundaFormConfig.camundaUrl}/process-definition/${this.camundaFormConfig.processDefinitionId}/${actionPath}`;
 
-      const headers = this.camundaFormConfig.submitHeaders
-        ? {
-            ...this.camundaFormConfig.submitHeaders,
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          }
-        : { Accept: 'application/json', 'Content-Type': 'application/json' };
+      const headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
+
+      // outside function can provide additional headers during the submit like xsrf
+      this.$root.$emit('submit-headers-built', headers);
 
       try {
         const response = await fetch(url, {
@@ -383,18 +373,12 @@ const buttonRenderer = defineComponent({
           method: 'post',
         });
         if (response.status == 204 || response.status == 200) {
-          if (this.camundaFormConfig.onSubmitSuccessResponse) {
-            this.camundaFormConfig.onSubmitSuccessResponse(response);
-          }
+          this.$root.$emit('submit-success-response', response);
         } else {
-          if (this.camundaFormConfig.onSubmitErrorResponse) {
-            this.camundaFormConfig.onSubmitErrorResponse(response);
-          }
+          this.$root.$emit('submit-error-response', response);
         }
       } catch (error) {
-        if (this.camundaFormConfig.onSubmitError) {
-          this.camundaFormConfig.onSubmitError(error);
-        }
+        this.$root.$emit('submit-error', error);
       }
     },
   },

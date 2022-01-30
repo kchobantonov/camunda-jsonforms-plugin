@@ -1,16 +1,22 @@
-<form role="form" id="task-form-jsonforms">
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css"
-  />
-
-  <div id="jsonforms"></div>
+<form role="form" id="task-form-camunda-json-forms">
+  
+  <!-- data-app required by vuetify -->
+  <div id="json-forms-root" data-app></div>
 
   <script cam-script type="text/form-script">
+
+    function getParameterByName(name, url)  {
+        if (!url) return null;
+
+        let parts = url.split('?');
+        if (parts.length > 1) {
+            const params = new URLSearchParams('?' + parts[1]);
+
+            return params.get(name);
+        }
+
+        return null;
+    }
 
     function isStartForm(camForm){
         return camForm.taskId == null;
@@ -21,18 +27,6 @@
         if (element) {
             element.classList.add("ng-hide");
         }
-    }
-
-    function setStartFormMinHeight() {
-        // when is modal dialog then change the default min-height from 100vh to 100vh - 200px so that the whole start process dialog be visible
-        let element = document.querySelector("div[class='v-application--wrap']");
-        element.style = "min-height: calc(100vh - 200px);";
-    }
-
-    function setFormMinHeight() {
-        // when is modal dialog then change the default min-height from 100vh to 100vh - 200px so that the whole start process dialog be visible
-        let element = document.querySelector("div[class='v-application--wrap']");
-        element.style = "min-height: calc(100vh - 300px);";
     }
 
     function hideUserTaskFormCompleteButton(){
@@ -55,13 +49,39 @@
         }]);
     }
 
-    camForm.on('form-loaded', function () {
-        $scope.options.hideCompleteButton = true
+    function onFormChange(jsonFormsChangeEvent) {
+        let debug = getParameterByName('debug', camForm.options.formUrl) === 'true';
+        if (debug) {
+            console.log("Form state changed:" + JSON.stringify(jsonFormsChangeEvent));
+        }
+    }
 
-        isStartForm(camForm) ? hideStartFormStartButton() : hideUserTaskFormCompleteButton();
+    function onFormLoadError(error) {
+        showNotification('error', null, "Load Error", `${error}`);
+    }
 
-        inject(['$http', 'Uri', function($http, Uri) {
-            let camundaUrl = Uri.appUri('engine://engine/:engine');
+    function onFormSubmitSuccessResponse(response) {
+        if (camForm.taskId) {
+            angular.element('.task-card').scope().dismissTask();
+         } else {
+             angular.element('.modal-dialog').scope().$parent.$dismiss();
+         }
+    }
+
+    function onFormSubmitErrorResponse(response) {
+        response.json().then((data) => {
+            showNotification('error', null, "Submit Error", `${data.message}`);
+        }).catch((error) => {
+            showNotification('error', null, "Submit Error", `${response.text}`);
+        });
+    }
+
+    function onFormSubmitError(error) {
+        showNotification('error', null, "Submit Error", `${error}`);
+    }
+
+    function onFormSubmitHeadersBuilt(headers) {
+        inject(['$http', function($http) {
 
             const xsrfHeaderName = $http.defaults.xsrfHeaderName;
             const xsrfCookieName = $http.defaults.xsrfCookieName;
@@ -70,37 +90,42 @@
                 cookieValue = document.cookie.split('; ').find(row => row.startsWith(xsrfCookieName + '=')).split('=')[1];
             }
 
-            const headers = {};
             if (cookieValue && xsrfHeaderName) {
                 headers[xsrfHeaderName] = cookieValue;
             }
 
-            let locale = (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.userLanguage || navigator.language || navigator.browserLanguage || 'en';
-            
-             
-            JsonFormsUtil.createForm('jsonforms', { camundaUrl: camundaUrl, processDefinitionId: camForm.processDefinitionId, formUrl: camForm.options.formUrl, taskId: camForm.taskId, locale: locale, submitHeaders: headers, onSubmitSuccessResponse: (response) => {
-                if (camForm.taskId) {
-                   angular.element('.task-card').scope().dismissTask();
-                } else {
-                    angular.element('.modal-dialog').scope().$parent.$dismiss();
-                }
-            }, onSubmitErrorResponse: (response) => {
-                response.json().then((data) => {
-                    showNotification('error', null, "Submit Error", `${data.message}`);
-                }).catch((error) => {
-                    showNotification('error', null, "Submit Error", `${response.text}`);
-                });
-            }, onSubmitError: (error) => {
-                showNotification('error', null, "Submit Error", `${error}`);
-            }, onLoadError: (error) => {
-                showNotification('error', null, "Load Error", `${error}`);
-            }});
+        }]);
 
-            if (isStartForm(camForm)) {
-                setStartFormMinHeight();
-            } else {
-                setFormMinHeight();
-            }
+    }
+
+    camForm.on('form-loaded', function () {
+        $scope.options.hideCompleteButton = true
+
+        isStartForm(camForm) ? hideStartFormStartButton() : hideUserTaskFormCompleteButton();
+
+        inject(['Uri', function(Uri) {
+            let camundaUrl = Uri.appUri('engine://engine/:engine');
+
+            let locale = (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.userLanguage || navigator.language || navigator.browserLanguage || 'en';
+
+            let root = document.querySelector('#json-forms-root');
+
+            let node = CamundaJsonFormsUtil.createCamundaJsonFormsElement({
+                camundaUrl: camundaUrl,
+                processDefinitionId: camForm.processDefinitionId,
+                formUrl: camForm.options.formUrl,
+                taskId: camForm.taskId,
+                locale: locale,
+                style: '.v-application--wrap { min-height: 0px; }',
+                onFormChange: onFormChange,                
+                onFormLoadError: onFormLoadError,
+                onFormSubmitSuccessResponse: onFormSubmitSuccessResponse,
+                onFormSubmitErrorResponse: onFormSubmitErrorResponse,
+                onFormSubmitError: onFormSubmitError,
+                onFormSubmitHeadersBuilt: onFormSubmitHeadersBuilt,
+            });
+
+            root.appendChild(node);
         }]);
 
     });

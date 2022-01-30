@@ -1,10 +1,14 @@
 module.exports = {
+  css: {
+    extract: {
+      filename: 'css/camunda-jsonforms.css',
+      chunkFilename: 'css/camunda-jsonforms-chunk.css',
+    },
+  },
   configureWebpack: {
     output: {
       filename: 'js/camunda-jsonforms.js',
-    },
-    optimization: {
-      splitChunks: false,
+      chunkFilename: 'js/camunda-jsonforms-chunk.js',
     },
   },
   filenameHashing: false,

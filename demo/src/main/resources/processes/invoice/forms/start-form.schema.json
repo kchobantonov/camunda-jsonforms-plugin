@@ -7,6 +7,7 @@
       "title": "Upload your Invoice Document",
       "description": "This field is required",
       "format": "file",
+      "i18n": "invoiceDocument",
       "contentSchema": {
         "type": "array",
         "maxItems": 10000000,

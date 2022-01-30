@@ -17,7 +17,7 @@ import {
   JsonFormsSubStates,
   UISchemaElement,
 } from '@jsonforms/core';
-import { defineComponent, inject } from '@vue/composition-api';
+import { defineComponent, inject, unref } from '@vue/composition-api';
 import {
   DispatchRenderer,
   rendererProps,
@@ -112,7 +112,7 @@ const templateRenderer = defineComponent({
         context: CamundaFormContext;
       } = this.$parent.$parent.camundaForm;
       
-      return form?.context;
+      return unref(form?.context);
     },
     errors(): ErrorObject[] | undefined {
       const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;

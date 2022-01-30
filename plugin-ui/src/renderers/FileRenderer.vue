@@ -1,22 +1,41 @@
 <template>
-  <v-file-input
-    v-disabled-icon-focus
-    :id="control.id + '-input'"
-    :class="styles.control.input"
-    :disabled="!control.enabled"
-    :autofocus="appliedOptions.focus"
-    :placeholder="appliedOptions.placeholder"
-    :label="computedLabel"
-    :hint="control.description"
-    :persistent-hint="persistentHint()"
-    :required="control.required"
-    :error-messages="control.errors"
-    :clearable="hover"
-    :accept="accept"
-    @change="selectFile"
-    @focus="isFocused = true"
-    @blur="isFocused = false"
-  ></v-file-input>
+  <div>
+    <v-file-input
+      v-disabled-icon-focus
+      :id="control.id + '-input'"
+      :class="styles.control.input"
+      :disabled="!control.enabled"
+      :autofocus="appliedOptions.focus"
+      :placeholder="appliedOptions.placeholder"
+      :label="computedLabel"
+      :hint="control.description"
+      :persistent-hint="persistentHint()"
+      :required="control.required"
+      :error-messages="errorMessages"
+      :clearable="hover"
+      :accept="accept"
+      @change="selectFile"
+      @focus="isFocused = true"
+      @blur="isFocused = false"
+    ></v-file-input>
+
+    <v-dialog v-model="dialog" hide-overlay persistent width="300">
+      <v-card color="primary" dark>
+        <v-card-text>
+          {{ standby }}
+          <v-progress-linear
+            v-model="progressValue"
+            :indeterminate="progressIndeterminate"
+            :query="true"
+            color="white"
+            class="mb-0"
+          >
+            <strong>{{ Math.ceil(progressValue) }}%</strong>
+          </v-progress-linear>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
 <script lang="ts">
@@ -30,6 +49,7 @@ import {
   rankWith,
   schemaMatches,
   uiTypeIs,
+  getI18nKey,
 } from '@jsonforms/core';
 import {
   DispatchRenderer,
@@ -37,14 +57,39 @@ import {
   RendererProps,
   useJsonFormsControl,
 } from '@jsonforms/vue2';
-import { DisabledIconFocus, useVuetifyControl } from '@jsonforms/vue2-vuetify';
-import { defineComponent } from '@vue/composition-api';
-import { VFileInput } from 'vuetify/lib';
+import {
+  DisabledIconFocus,
+  useVuetifyControl,
+  useTranslator,
+} from '@jsonforms/vue2-vuetify';
+import { defineComponent, unref } from '@vue/composition-api';
+import {
+  VFileInput,
+  VDialog,
+  VCard,
+  VCardText,
+  VProgressLinear,
+} from 'vuetify/lib';
 
-const toBase64 = (file: File, schemaFormat: string) =>
+function formatBytes(bytes: number, decimals = 2) {
+  if (bytes === 0) return '0 Bytes';
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+const toBase64 = (
+  file: File,
+  vm: { progressIndeterminate: boolean; progressValue: number },
+  schemaFormat?: string
+) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
     reader.onload = () => {
       const dataurl = reader.result as string;
       if (schemaFormat === 'uri') {
@@ -62,6 +107,13 @@ const toBase64 = (file: File, schemaFormat: string) =>
       }
     };
     reader.onerror = (error) => reject(error);
+    reader.onprogress = (progress) => {
+      if (progress.lengthComputable) {
+        vm.progressIndeterminate = false;
+        vm.progressValue = (progress.loaded / progress.total) * 100;
+      }
+    };
+    reader.readAsDataURL(file);
   });
 
 const fileRenderer = defineComponent({
@@ -69,6 +121,10 @@ const fileRenderer = defineComponent({
   components: {
     DispatchRenderer,
     VFileInput,
+    VDialog,
+    VCard,
+    VCardText,
+    VProgressLinear,
   },
   directives: {
     DisabledIconFocus,
@@ -77,23 +133,108 @@ const fileRenderer = defineComponent({
     ...rendererProps<Layout>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    let currentFile: File = undefined;
+    let currentFile: File | undefined = undefined;
+    let currentFileValidationErrors = null as string | null;
+
+    const t = useTranslator();
+    const input = useJsonFormsControl(props);
+
+    let dialog = false;
+    let progressIndeterminate = true;
+    let progressValue = 0;
+
+    let control = unref(input.control);
+
+    // implement the validation outside the Ajv since we do not want even to transform invalid files into string and then implement custom Avj validator
+    let maxFileSize: number | undefined = (control.schema as any)?.contentSchema?.maxItems;
+    let minFileSize: number | undefined = (control.schema as any)?.contentSchema?.minItems;
+
+    if (typeof maxFileSize !== 'number' || maxFileSize < 0) {
+      maxFileSize = undefined;
+    }
+    if (typeof minFileSize !== 'number' || minFileSize < 0) {
+      minFileSize = undefined;
+    }
 
     return {
-      ...useVuetifyControl(useJsonFormsControl(props)),
+      ...useVuetifyControl(input),
+      t,
+      dialog,
+      progressValue,
+      progressIndeterminate,
       currentFile,
+      currentFileValidationErrors,
+      maxFileSize,
+      minFileSize,
     };
   },
   computed: {
     accept() {
       return this.control.schema.contentMediaType;
     },
+    errorMessages() {
+      return this.currentFileValidationErrors ?? this.control.errors;
+    },
+    standby() {
+      return this.t('Attaching file...', 'Attaching file...');
+    },
   },
   methods: {
     async selectFile(value: File) {
       const schema: JsonSchema = this.control.schema;
 
-      this.onChange(value ? await toBase64(value, schema.format) : undefined);
+      if (value == null) {
+        this.currentFileValidationErrors = null;
+      } else {
+        this.currentFileValidationErrors = null;
+        
+        if (this.maxFileSize && value.size > this.maxFileSize) {
+          const key = getI18nKey(
+            this.control.schema,
+            this.control.uischema,
+            'error.contentSchema.maxItems'
+          );
+
+          this.currentFileValidationErrors = this.t(
+            key!,
+            `size should be less than ${formatBytes(this.maxFileSize)}`
+          );
+        }
+        if (this.minFileSize && value.size < this.minFileSize) {
+          const key = getI18nKey(
+            this.control.schema,
+            this.control.uischema,
+            'error.contentSchema.minItems'
+          );
+          this.currentFileValidationErrors = this.t(
+            key!,
+            `size should be greater than ${formatBytes(this.minFileSize)}`
+          );
+        }
+      }
+
+      if (this.currentFileValidationErrors !== null) {
+        this.currentFile = undefined;
+      } else {
+        if (value) {
+          this.dialog = true;
+
+          try {
+            const base64 = await toBase64(value, this, schema.format);
+
+            this.onChange(base64);
+          } catch (e) {
+            // clear the selected file when there is an error converting the file into base64
+            this.currentFile = undefined;
+          } finally {
+            this.dialog = false;
+            this.progressIndeterminate = true;
+            this.progressValue = 0;
+          }
+        } else {
+          this.onChange(undefined);
+        }
+      }
     },
   },
 });

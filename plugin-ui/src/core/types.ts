@@ -17,12 +17,8 @@ export interface CamundaFormConfig {
   processDefinitionId: string;
   formUrl: string;
   taskId?: string;
-  submitHeaders?: Headers;
   locale?: string;
-  onLoadError: (error: any) => void;
-  onSubmitSuccessResponse: (response: Response) => void;
-  onSubmitErrorResponse: (response: Response) => void;
-  onSubmitError: (error: any) => void;
+  style?: string;
 };
 
 export interface Task {
@@ -39,7 +35,41 @@ export interface CamundaFormContext {
   task?: Task;
   processDefinition?: ProcessDefinition;
   translations?: Record<string, any>;
-  variables: Record<string, any>;
-  debug?: boolean;
+  variables: Record<string, VariableValue>;
+  input: CamundaJsonFormInput,
 };
 
+export interface Resource {
+  /**
+   * The id of the deployment.
+   */
+  id: string;
+  /**
+   * The name of the deployment.
+
+   */
+  name: string;
+  /**
+   * The source of the deployment.
+
+   */
+  source: string;
+
+  /**
+   * The tenant id of the deployment.
+
+   */
+  tenantId: string;
+
+  /**
+   * The date and time of the deployment.
+   */
+  deploymentTime: string;
+}
+
+
+export interface VariableValue {
+  type: string;
+  value: any;
+  valueInfo: Record<string, any>
+}

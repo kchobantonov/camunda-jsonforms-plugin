@@ -1,9 +1,9 @@
 <template>
   <div>
     <json-forms
-      v-if="resolvedSchema.resolved && resolvedSchema.error === undefined"
+      v-if="resolved && error === undefined"
       :data="input.data"
-      :schema="resolvedSchema.schema"
+      :schema="schema"
       :uischema="input.uischema"
       :renderers="renderers"
       :cells="cells"
@@ -17,14 +17,14 @@
     />
     <v-container v-else>
       <v-row
-        v-if="!resolvedSchema.resolved"
+        v-if="!resolved"
         class="fill-height"
         align-content="center"
         justify="center"
       >
-        <v-col class="text-subtitle-1 text-center" cols="12">
-          Loading...
-        </v-col>
+        <v-col class="text-subtitle-1 text-center" cols="12"
+          >Resolving Schema...</v-col
+        >
         <v-col cols="6">
           <v-progress-linear
             indeterminate
@@ -34,15 +34,13 @@
         </v-col>
       </v-row>
       <v-row
-        v-else-if="resolvedSchema.error !== undefined"
+        v-else-if="error !== undefined"
         class="fill-height"
         align-content="center"
         justify="center"
       >
         <v-col class="text-subtitle-1 text-center" cols="12">
-          <v-alert color="red" dark>
-            {{ resolvedSchema.error }}
-          </v-alert>
+          <v-alert color="red" dark>{{ error }}</v-alert>
         </v-col>
       </v-row>
     </v-container>
@@ -50,100 +48,134 @@
 </template>
 
 <script lang="ts">
-import { PropType } from 'vue';
-import { CamundaJsonFormInput, ResolvedSchema } from '@/core/types';
-import { Ajv } from 'ajv';
+import { CamundaJsonFormInput, ResolvedSchema } from '../core/types';
+import Ajv from 'ajv';
 import {
-  ValidationMode,
   JsonFormsUISchemaRegistryEntry,
   JsonFormsRendererRegistryEntry,
   JsonFormsCellRendererRegistryEntry,
   JsonSchema,
   JsonFormsI18nState,
+  ValidationMode,
+  Translator,
 } from '@jsonforms/core';
 import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue2';
 import JsonRefs from 'json-refs';
 import { createTranslator } from '../i18n';
+import { defineComponent } from '@vue/composition-api';
+import { CompType } from '../config/config';
 
-export default {
+export const resolvedJsonFormsProps = () => ({
+  input: {
+    required: true,
+    type: [Object] as CompType<CamundaJsonFormInput, [ObjectConstructor]>,
+  },
+  renderers: {
+    required: true,
+    type: Array as CompType<JsonFormsRendererRegistryEntry, ArrayConstructor>,
+  },
+  cells: {
+    required: false,
+    type: Array as CompType<
+      JsonFormsCellRendererRegistryEntry[],
+      ArrayConstructor
+    >,
+    default: undefined,
+  },
+  config: {
+    required: false,
+    type: [Object] as CompType<Record<string, any>, [ObjectConstructor]>,
+  },
+  readonly: {
+    required: false,
+    type: Boolean,
+    default: false,
+  },
+  uischemas: {
+    required: false,
+    type: Array as CompType<JsonFormsUISchemaRegistryEntry, ArrayConstructor>,
+    default: () => [],
+  },
+  validationMode: {
+    required: false,
+    type: String as CompType<ValidationMode, StringConstructor>,
+    default: 'ValidateAndShow',
+  },
+  ajv: {
+    required: true,
+    type: [Object] as CompType<Ajv, [ObjectConstructor]>,
+  },
+  locale: {
+    required: false,
+    type: String,
+    default: 'en',
+  },
+  translations: {
+    required: false,
+    type: [Object] as CompType<Record<string, any>, [ObjectConstructor]>,
+  },
+});
+
+interface ResolvedJsonFormsProps {
+  input: CamundaJsonFormInput;
+  renderers: JsonFormsRendererRegistryEntry[];
+  cells: JsonFormsCellRendererRegistryEntry[];
+  config: Record<string, any>;
+  readonly?: boolean;
+  uischemas?: JsonFormsUISchemaRegistryEntry[];
+  validationMode?: ValidationMode;
+  ajv: Ajv;
+  locale: string;
+  translations: Record<string, any>;
+}
+
+const resolvedJsonForms = defineComponent({
   name: 'resolved-json-forms',
   components: {
     JsonForms,
   },
+  emits: ['change'],
   props: {
-    input: { type: Object as PropType<CamundaJsonFormInput>, required: true },
-    renderers: {
-      required: true,
-      type: Array as PropType<JsonFormsRendererRegistryEntry[]>,
-    },
-    cells: {
-      required: false,
-      type: Array as PropType<JsonFormsCellRendererRegistryEntry[]>,
-      default: () => [],
-    },
-    config: {
-      required: false,
-      type: Object as PropType<any>,
-      default: undefined,
-    },
-    readonly: {
-      required: false,
-      type: Boolean,
-      default: false,
-    },
-    uischemas: {
-      required: false,
-      type: Array as PropType<JsonFormsUISchemaRegistryEntry[]>,
-      default: () => [],
-    },
-    validationMode: {
-      required: false,
-      type: String as PropType<ValidationMode>,
-      default: 'ValidateAndShow',
-    },
-    ajv: {
-      required: false,
-      type: Object as PropType<Ajv>,
-      default: undefined,
-    },
-    locale: {
-      required: false,
-      type: String,
-      default: 'en',
-    },
-    translations: {
-      required: false,
-      type: Object as PropType<Record<string, any>>,
-    },
+    ...resolvedJsonFormsProps(),
   },
-  data() {
+  setup(props: ResolvedJsonFormsProps) {
     return {
-      resolvedSchema: {
-        schema: undefined,
-        resolved: false,
-        error: undefined,
-      } as ResolvedSchema,
+      resolved: false,
+      error: undefined as any,
+      schema: undefined as JsonSchema | undefined,
       i18n: {
-        locale: this.locale,
-        translations: this.translations,
-        translate: createTranslator(this.locale, this.translations),
-      } as JsonFormsI18nState,
+        locale: props.locale,
+        translations: props.translations,
+        translate: createTranslator(props.locale, props.translations),
+      } as JsonFormsI18nState & {
+        translations: Record<string, any>;
+        locale: string;
+      },
     };
   },
   watch: {
     input: {
       deep: true,
-      handler(newInput: CamundaJsonFormInput, _: CamundaJsonFormInput): void {
+      handler(
+        newInput: CamundaJsonFormInput,
+        _oldInput: CamundaJsonFormInput
+      ): void {
         this.resolveSchema(newInput.schema);
       },
     },
     locale(newLocale: string): void {
       this.i18n.locale = newLocale;
-      this.i18n.translate = createTranslator(newLocale, this.i18n.translations);
+      this.i18n.translate = createTranslator(
+        newLocale,
+        this.i18n.translations
+      ) as Translator;
     },
     translations(newTranslations: Record<string, any>): void {
       this.i18n.translations = newTranslations;
-      this.i18n.translate = createTranslator(this.i18n.locale, this.i18n.translations);
+      this.i18n.translate = createTranslator(
+        this.i18n.locale,
+        this.i18n.translations
+      ) as Translator;
     },
   },
   mounted() {
@@ -153,28 +185,21 @@ export default {
     onChange(event: JsonFormsChangeEvent): void {
       this.$emit('change', event);
     },
-    resolveSchema(schema?: JsonSchema): void {
-      const resolvedSchema = this.resolvedSchema;
-      resolvedSchema.schema = undefined;
-      resolvedSchema.resolved = false;
-      resolvedSchema.error = undefined;
+    async resolveSchema(schema?: JsonSchema): Promise<void> {
+      this.resolved = false;
 
-      if (schema) {
-        JsonRefs.resolveRefs(schema).then(
-          function (res) {
-            resolvedSchema.schema = res.resolved;
-            resolvedSchema.resolved = true;
-          },
-          function (err: Error) {
-            resolvedSchema.resolved = true;
-            resolvedSchema.error = err.message;
-          }
-        );
-      } else {
-        // nothing to resolve
-        resolvedSchema.resolved = true;
+      try {
+        if (schema) {
+          this.schema = (await JsonRefs.resolveRefs(schema)).resolved;
+        }
+      } catch (err) {
+        this.error = (err as Error).message;
+      } finally {
+        this.resolved = true;
       }
     },
   },
-};
+});
+
+export default resolvedJsonForms;
 </script>
