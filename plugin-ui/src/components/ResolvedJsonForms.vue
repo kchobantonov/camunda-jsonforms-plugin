@@ -15,16 +15,16 @@
       :i18n="i18n"
       @change="onChange"
     />
-    <v-container v-else>
+    <v-container v-else style="height: 400px">
       <v-row
         v-if="!resolved"
         class="fill-height"
         align-content="center"
         justify="center"
       >
-        <v-col class="text-subtitle-1 text-center" cols="12"
-          >Resolving Schema...</v-col
-        >
+        <v-col class="text-subtitle-1 text-center" cols="12">
+          Resolving Schema...
+        </v-col>
         <v-col cols="6">
           <v-progress-linear
             indeterminate

@@ -1,5 +1,9 @@
 <template>
-  <v-label v-if="layout.visible" :class="styles.label.root">
+  <v-label
+    v-if="layout.visible"
+    :class="styles.label.root"
+    v-bind="vuetifyProps('v-label')"
+  >
     <div v-if="templateError !== null" class="error">
       Template Error: {{ templateError }}
     </div>
@@ -113,7 +117,7 @@ const templateLabelRenderer = defineComponent({
         config: CamundaFormConfig;
         context: CamundaFormContext;
       } = this.$parent.$parent.camundaForm;
-      
+
       return form?.context;
     },
     errors(): ErrorObject[] | undefined {

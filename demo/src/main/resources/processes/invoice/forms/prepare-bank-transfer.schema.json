@@ -16,6 +16,11 @@
       "title": "Amount",
       "readOnly": true
     },
+    "invoiceCategory": {
+      "type": "string",
+      "title": "Invoice Category",
+      "readOnly": true
+    },
     "invoiceNumber": {
       "type": "string",
       "title": "Invoice Number",

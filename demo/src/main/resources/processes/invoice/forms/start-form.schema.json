@@ -37,6 +37,6 @@
       "description": "(e.g. \"I-12345\")"
     }
   },
-  "required": ["invoiceDocument", "creditor", "amount", "invoiceNumber"],
+  "required": ["invoiceDocument", "creditor", "amount", "invoiceCategory", "invoiceNumber"],
   "additionalProperties": false
 }

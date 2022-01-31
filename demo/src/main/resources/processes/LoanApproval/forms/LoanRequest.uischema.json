@@ -1,105 +1,133 @@
 {
-    "type": "Categorization",
-    "elements": [
-      {
-        "type": "Category",
-        "label": "Basic Information",
-        "elements": [
-          {
-            "type": "HorizontalLayout",
-            "elements": [
-              {
-                "type": "Control",
-                "scope": "#/properties/firstName"
-              },
-              {
-                "type": "Control",
-                "scope": "#/properties/lastName"
-              }
-            ]
-          },
-          {
-            "type": "HorizontalLayout",
-            "elements": [
-              {
-                "type": "Control",
-                "scope": "#/properties/birthDate"
-              },
-              {
-                "type": "Control",
-                "scope": "#/properties/nationality"
-              }
-            ]
-          },
-          {
-            "type": "Control",
-            "scope": "#/properties/provideAddress"
+  "type": "Categorization",
+  "elements": [
+    {
+      "type": "Category",
+      "label": "Basic Information",
+      "elements": [
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/firstName"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/lastName"
+            }
+          ]
+        },
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/birthDate"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/nationality"
+            }
+          ]
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/provideAddress"
+        }
+      ]
+    },
+    {
+      "type": "Category",
+      "label": "Address",
+      "elements": [
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/address/properties/street"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/address/properties/streetNumber"
+            }
+          ]
+        },
+        {
+          "type": "HorizontalLayout",
+          "elements": [
+            {
+              "type": "Control",
+              "scope": "#/properties/address/properties/city"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/address/properties/postalCode"
+            }
+          ]
+        }
+      ],
+      "rule": {
+        "effect": "SHOW",
+        "condition": {
+          "scope": "#/properties/provideAddress",
+          "schema": {
+            "const": true
           }
-        ]
-      },
-      {
-        "type": "Category",
-        "label": "Address",
-        "elements": [
-          {
-            "type": "HorizontalLayout",
-            "elements": [
-              {
-                "type": "Control",
-                "scope": "#/properties/address/properties/street"
-              },
-              {
-                "type": "Control",
-                "scope": "#/properties/address/properties/streetNumber"
-              }
-            ]
-          },
-          {
-            "type": "HorizontalLayout",
-            "elements": [
-              {
-                "type": "Control",
-                "scope": "#/properties/address/properties/city"
-              },
-              {
-                "type": "Control",
-                "scope": "#/properties/address/properties/postalCode"
-              }
-            ]
+        }
+      }
+    },
+    {
+      "type": "Category",
+      "label": "Request Loan",
+      "elements": [
+        {
+          "type": "Control",
+          "scope": "#/properties/amount"
+        },
+        {
+          "type": "Button",
+          "text": "Request Loan",
+          "color": "primary",
+          "options": {
+            "i18n": "button.request"
           }
-        ],
-        "rule": {
-          "effect": "SHOW",
-          "condition": {
-            "scope": "#/properties/provideAddress",
-            "schema": {
-              "const": true
+        }
+      ]
+    }
+  ],
+  "options": {
+    "variant": "stepper",
+    "showNavButtons": true,
+    "vuetify": {
+      "preset": {
+        "theme": {
+          "dark": true,
+          "default": "light",
+          "disable": false,
+          "themes": {
+            "light": {
+              "primary": "#1976D2",
+              "secondary": "#424242",
+              "accent": "#82B1FF",
+              "error": "#FF5252",
+              "info": "#2196F3",
+              "success": "#4CAF50",
+              "warning": "#FB8C00"
+            },
+            "dark": {
+              "primary": "#2196F3",
+              "secondary": "#424242",
+              "accent": "#FF4081",
+              "error": "#FF5252",
+              "info": "#2196F3",
+              "success": "#4CAF50",
+              "warning": "#FB8C00"
             }
           }
         }
-      },
-      {
-        "type": "Category",
-        "label": "Request Loan",
-        "elements": [
-          {
-            "type": "Control",
-            "scope": "#/properties/amount"
-          },
-          {
-            "type": "Button",
-            "text": "Request Loan",
-            "color": "primary",
-            "options": {
-              "i18n": "button.request"
-            }
-          }
-        ]
       }
-    ],
-    "options": {
-      "variant": "stepper",
-      "showNavButtons": true
     }
   }
-  
+}

@@ -15,7 +15,14 @@
     },
     {
       "type": "Control",
-      "scope": "#/properties/invoiceCategory"
+      "scope": "#/properties/invoiceCategory",
+      "options": {
+        "vuetify": {
+          "v-autocomplete": {
+            "prepend-icon": "mdi-shape"
+          }
+        }
+      }
     },
     {
       "type": "Control",

@@ -14,21 +14,26 @@
       :error-messages="errorMessages"
       :clearable="hover"
       :accept="accept"
+      v-model="currentFile"
+      v-bind="vuetifyProps('v-file-input')"
       @change="selectFile"
       @focus="isFocused = true"
       @blur="isFocused = false"
     ></v-file-input>
 
     <v-dialog v-model="dialog" hide-overlay persistent width="300">
-      <v-card color="primary" dark>
+      <v-card>
+        <v-toolbar dense flat>
+          <v-toolbar-title>{{ standby }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn @click="abort" icon> <v-icon>mdi-close</v-icon> </v-btn>
+        </v-toolbar>
         <v-card-text>
-          {{ standby }}
           <v-progress-linear
             v-model="progressValue"
             :indeterminate="progressIndeterminate"
             :query="true"
-            color="white"
-            class="mb-0"
+            height="25"
           >
             <strong>{{ Math.ceil(progressValue) }}%</strong>
           </v-progress-linear>
@@ -69,6 +74,10 @@ import {
   VCard,
   VCardText,
   VProgressLinear,
+  VSpacer,
+  VToolbar,
+  VToolbarTitle,
+  VBtn,
 } from 'vuetify/lib';
 
 function formatBytes(bytes: number, decimals = 2) {
@@ -85,11 +94,11 @@ function formatBytes(bytes: number, decimals = 2) {
 
 const toBase64 = (
   file: File,
+  reader: FileReader,
   vm: { progressIndeterminate: boolean; progressValue: number },
   schemaFormat?: string
 ) =>
   new Promise((resolve, reject) => {
-    const reader = new FileReader();
     reader.onload = () => {
       const dataurl = reader.result as string;
       if (schemaFormat === 'uri') {
@@ -125,6 +134,10 @@ const fileRenderer = defineComponent({
     VCard,
     VCardText,
     VProgressLinear,
+    VSpacer,
+    VToolbar,
+    VToolbarTitle,
+    VBtn,
   },
   directives: {
     DisabledIconFocus,
@@ -134,6 +147,7 @@ const fileRenderer = defineComponent({
   },
   setup(props: RendererProps<ControlElement>) {
     let currentFile: File | undefined = undefined;
+    let currentFileReader = new FileReader();
     let currentFileValidationErrors = null as string | null;
 
     const t = useTranslator();
@@ -146,8 +160,10 @@ const fileRenderer = defineComponent({
     let control = unref(input.control);
 
     // implement the validation outside the Ajv since we do not want even to transform invalid files into string and then implement custom Avj validator
-    let maxFileSize: number | undefined = (control.schema as any)?.contentSchema?.maxItems;
-    let minFileSize: number | undefined = (control.schema as any)?.contentSchema?.minItems;
+    let maxFileSize: number | undefined = (control.schema as any)?.contentSchema
+      ?.maxItems;
+    let minFileSize: number | undefined = (control.schema as any)?.contentSchema
+      ?.minItems;
 
     if (typeof maxFileSize !== 'number' || maxFileSize < 0) {
       maxFileSize = undefined;
@@ -163,6 +179,7 @@ const fileRenderer = defineComponent({
       progressValue,
       progressIndeterminate,
       currentFile,
+      currentFileReader,
       currentFileValidationErrors,
       maxFileSize,
       minFileSize,
@@ -180,6 +197,17 @@ const fileRenderer = defineComponent({
     },
   },
   methods: {
+    reset() {
+      this.dialog = false;
+      this.progressIndeterminate = true;
+      this.progressValue = 0;
+      this.currentFileReader = new FileReader();
+    },
+    abort() {
+      this.currentFileReader.abort();
+      this.currentFile = undefined;
+      this.reset();
+    },
     async selectFile(value: File) {
       const schema: JsonSchema = this.control.schema;
 
@@ -187,7 +215,7 @@ const fileRenderer = defineComponent({
         this.currentFileValidationErrors = null;
       } else {
         this.currentFileValidationErrors = null;
-        
+
         if (this.maxFileSize && value.size > this.maxFileSize) {
           const key = getI18nKey(
             this.control.schema,
@@ -220,16 +248,21 @@ const fileRenderer = defineComponent({
           this.dialog = true;
 
           try {
-            const base64 = await toBase64(value, this, schema.format);
+            this.currentFileReader = new FileReader();
+
+            const base64 = await toBase64(
+              value,
+              this.currentFileReader,
+              this,
+              schema.format
+            );
 
             this.onChange(base64);
           } catch (e) {
             // clear the selected file when there is an error converting the file into base64
             this.currentFile = undefined;
           } finally {
-            this.dialog = false;
-            this.progressIndeterminate = true;
-            this.progressValue = 0;
+            this.reset();
           }
         } else {
           this.onChange(undefined);

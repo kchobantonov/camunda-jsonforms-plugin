@@ -11,6 +11,7 @@
     :disabled="!layout.enabled || hasErrors"
     :color="color"
     :loading="loading"
+    v-bind="vuetifyProps('v-btn')"
     @click="click"
   >
     {{ translatedLabel }}
