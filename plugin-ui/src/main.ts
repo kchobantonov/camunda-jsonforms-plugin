@@ -3,8 +3,14 @@ import wrap from '@vue/web-component-wrapper';
 import Vue from 'vue';
 import RuntimeTemplateCompiler from 'vue-runtime-template-compiler';
 import CamundaJsonForms from './CamundaJsonForms.vue';
-import { CamundaFormConfig } from './core/types';
+import {
+  CamundaFormConfig,
+  isTaskIdConfig,
+  isProcessDefinitionIdConfig,
+  isProcessDefinitionKeyConfig,
+} from './core/types';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
+import isFunction from 'lodash/isFunction';
 
 Vue.use(VueCompositionAPI);
 Vue.use(RuntimeTemplateCompiler);
@@ -21,16 +27,19 @@ window.customElements.define(
 function htmlToElement(html: string): Element {
   const template = document.createElement('template');
   template.innerHTML = html.trim(); // Never return a text node of whitespace as the result;
-  return (template.content.cloneNode(true) as Element);
+  return template.content.cloneNode(true) as Element;
 }
 
 interface CamundaFormCallback {
-  onFormChange: (event: JsonFormsChangeEvent) => void;
-  onFormLoadError: (error: any) => void;
-  onFormSubmitSuccessResponse: (response: Response) => void;
-  onFormSubmitErrorResponse: (response: Response) => void;
-  onFormSubmitError: (error: any) => void;
-  onFormSubmitHeadersBuilt: (headers: Record<string, string>) => void;
+  onChange: (event: JsonFormsChangeEvent) => void;
+
+  onLoadRequest: (input: RequestInfo, init?: RequestInit) => void;
+  onLoadResponse: (response: Response) => void;
+  onLoadError: (error: any) => void;
+
+  onSubmitRequest: (input: RequestInfo, init?: RequestInit) => void;
+  onSubmitResponse: (response: Response) => void;
+  onSubmitError: (error: any) => void;
 }
 
 class CamundaJsonFormsUtil {
@@ -40,7 +49,7 @@ class CamundaJsonFormsUtil {
   ): Node {
     const element = htmlToElement(
       template ??
-        `<camunda-json-forms>
+      `<camunda-json-forms>
             <link slot="link" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
             <link slot="link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css" integrity="sha512-Zw6ER2h5+Zjtrej6afEKgS8G5kehmDAHYp9M2xf38MPmpUWX39VrYmdGtCrDQbdLQrTnBVT8/gcNhgS4XPgvEg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
             <link slot="link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.3/vuetify.min.css" integrity="sha512-yqxpsXY362HEPwSAOWC2FOd8ZCCuJVrTgZSd/0hPmuGUqG19+J2ULPQnc7p795j5mNYZMNHuq5CHPPHnOqapdw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -51,19 +60,19 @@ class CamundaJsonFormsUtil {
         </camunda-json-forms>`
     );
 
-    const form = element.querySelector("camunda-json-forms") as Element;
+    const form = element.querySelector('camunda-json-forms') as Element;
 
     // attributes
     if (config.camundaUrl) {
       form.setAttribute('camunda-url', config.camundaUrl);
     }
-    if (config.processDefinitionId) {
+    if (isProcessDefinitionIdConfig(config) && config.processDefinitionId) {
       form.setAttribute('process-definition-id', config.processDefinitionId);
     }
-    if (config.formUrl) {
-      form.setAttribute('form-url', config.formUrl);
+    if (isProcessDefinitionKeyConfig(config) && config.processDefinitionKey) {
+      form.setAttribute('process-definition-key', config.processDefinitionKey);
     }
-    if (config.taskId) {
+    if (isTaskIdConfig(config) && config.taskId) {
       form.setAttribute('task-id', config.taskId);
     }
     if (config.locale) {
@@ -71,46 +80,63 @@ class CamundaJsonFormsUtil {
     }
 
     //event listeners
-    if (config.onFormChange) {
-      form.addEventListener('change', (event: Event) =>
-        config.onFormChange(
-          ((event as CustomEvent).detail as JsonFormsChangeEvent[])[0]
-        )
-      );
-    }
-    if (config.onFormLoadError) {
-      form.addEventListener('load-error', (event: Event) =>
-        config.onFormLoadError(((event as CustomEvent).detail as any[])[0])
-      );
-    }
-    if (config.onFormSubmitHeadersBuilt) {
-      form.addEventListener('submit-headers-built', (event: Event) =>
-        config.onFormSubmitHeadersBuilt(
-          ((event as CustomEvent).detail as Record<string, string>[])[0]
-        )
-      );
-    }
-    if (config.onFormSubmitSuccessResponse) {
-      form.addEventListener('submit-success-response', (event: Event) =>
-        config.onFormSubmitSuccessResponse(
-          ((event as CustomEvent).detail as Response[])[0]
-        )
-      );
+    if (isFunction(config.onChange)) {
+      form.addEventListener('change', (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        config.onChange(detail[0] as JsonFormsChangeEvent);
+      });
     }
 
-    if (config.onFormSubmitErrorResponse) {
-      form.addEventListener('submit-error-response', (event: Event) =>
-        config.onFormSubmitErrorResponse(
-          ((event as CustomEvent).detail as Response[])[0]
-        )
-      );
-    }
-    if (config.onFormSubmitError) {
-      form.addEventListener('submit-error', (event: Event) =>
-        config.onFormSubmitError(((event as CustomEvent).detail as any[])[0])
-      );
+    if (isFunction(config.onLoadRequest)) {
+      form.addEventListener('load-request', (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        if (detail.length > 1) {
+          config.onLoadRequest(detail[0] as RequestInfo, detail[1] as RequestInit);
+        } else {
+          config.onLoadRequest(detail[0] as RequestInfo);
+        }
+      });
     }
 
+    if (isFunction(config.onLoadResponse)) {
+      form.addEventListener('load-response', (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        config.onLoadResponse(detail[0] as Response);
+      });
+    }
+
+    if (isFunction(config.onLoadError)) {
+      form.addEventListener('load-error', (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        config.onLoadError(detail[0] as any);
+      });
+    }
+
+
+    if (isFunction(config.onSubmitRequest)) {
+      form.addEventListener('submit-request', (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        if (detail.length > 1) {
+          config.onSubmitRequest(detail[0] as RequestInfo, detail[1] as RequestInit);
+        } else {
+          config.onSubmitRequest(detail[0] as RequestInfo);
+        }
+      });
+    }
+
+    if (isFunction(config.onSubmitResponse)) {
+      form.addEventListener('submit-response', (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        config.onSubmitResponse(detail[0] as Response);
+      });
+    }
+
+    if (isFunction(config.onSubmitError)) {
+      form.addEventListener('submit-error', (event: Event) => {
+        const detail = (event as CustomEvent).detail;
+        config.onSubmitError(detail[0] as any);
+      });
+    }
     return element;
   }
 }

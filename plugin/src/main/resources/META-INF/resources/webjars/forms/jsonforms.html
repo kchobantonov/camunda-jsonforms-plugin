@@ -49,38 +49,28 @@
         }]);
     }
 
-    function onFormChange(jsonFormsChangeEvent) {
+    function onChange(jsonFormsChangeEvent) {
         let debug = getParameterByName('debug', camForm.options.formUrl) === 'true';
         if (debug) {
             console.log("Form state changed:" + JSON.stringify(jsonFormsChangeEvent));
         }
     }
 
-    function onFormLoadError(error) {
+    function onLoadRequest(requestInfo, requestInit) {
+        // no need to setup xsrf for loading
+    }
+
+    function onLoadResponse(response) {
+        if (response.status >= 300) {
+            showNotification('error', null, "Submit Error", `response.statusText`);
+        }
+    }
+    
+    function onLoadError(error) {
         showNotification('error', null, "Load Error", `${error}`);
     }
 
-    function onFormSubmitSuccessResponse(response) {
-        if (camForm.taskId) {
-            angular.element('.task-card').scope().dismissTask();
-         } else {
-             angular.element('.modal-dialog').scope().$parent.$dismiss();
-         }
-    }
-
-    function onFormSubmitErrorResponse(response) {
-        response.json().then((data) => {
-            showNotification('error', null, "Submit Error", `${data.message}`);
-        }).catch((error) => {
-            showNotification('error', null, "Submit Error", `${response.text}`);
-        });
-    }
-
-    function onFormSubmitError(error) {
-        showNotification('error', null, "Submit Error", `${error}`);
-    }
-
-    function onFormSubmitHeadersBuilt(headers) {
+    function onSubmitRequest(requestInfo, requestInit) {
         inject(['$http', function($http) {
 
             const xsrfHeaderName = $http.defaults.xsrfHeaderName;
@@ -91,11 +81,31 @@
             }
 
             if (cookieValue && xsrfHeaderName) {
-                headers[xsrfHeaderName] = cookieValue;
+                requestInit.headers[xsrfHeaderName] = cookieValue;
             }
 
         }]);
+    }
 
+    function onSubmitResponse(response) {
+
+        if (response.status >= 200 && response.status < 300) {
+            if (camForm.taskId) {
+                angular.element('.task-card').scope().dismissTask();
+             } else {
+                 angular.element('.modal-dialog').scope().$parent.$dismiss();
+             }
+        } else if (response.status == 401) {
+            showNotification('error', null, "Submit Error", `You are not authenticated`);
+        } else if (response.status == 403) {
+            showNotification('error', null, "Submit Error", `You are not authorized`);
+        } else {
+            showNotification('error', null, "Submit Error", `response.statusText`);
+        }
+    }
+
+    function onSubmitError(error) {
+        showNotification('error', null, "Submit Error", `${error}`);
     }
 
     camForm.on('form-loaded', function () {
@@ -113,16 +123,16 @@
             let node = CamundaJsonFormsUtil.createCamundaJsonFormsElement({
                 camundaUrl: camundaUrl,
                 processDefinitionId: camForm.processDefinitionId,
-                formUrl: camForm.options.formUrl,
                 taskId: camForm.taskId,
                 locale: locale,
                 style: '.v-application--wrap { min-height: 0px; }',
-                onFormChange: onFormChange,                
-                onFormLoadError: onFormLoadError,
-                onFormSubmitSuccessResponse: onFormSubmitSuccessResponse,
-                onFormSubmitErrorResponse: onFormSubmitErrorResponse,
-                onFormSubmitError: onFormSubmitError,
-                onFormSubmitHeadersBuilt: onFormSubmitHeadersBuilt,
+                onChange: onChange,                
+                onLoadRequest: onLoadRequest,                
+                onLoadResponse: onLoadResponse,                
+                onLoadError: onLoadError,                
+                onSubmitRequest: onSubmitRequest,                
+                onSubmitResponse: onSubmitResponse,                
+                onSubmitError: onSubmitError,                
             });
 
             root.appendChild(node);

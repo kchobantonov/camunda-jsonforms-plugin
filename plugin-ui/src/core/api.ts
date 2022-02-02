@@ -1,20 +1,35 @@
+import { JsonSchema, JsonSchema7, UISchemaElement } from '@jsonforms/core';
 import forOwn from 'lodash/forOwn';
-
 import {
+  getDeploymentResourceJsonData,
+  getDeploymentResources,
+  getProcessDefinition,
+  getProcessDefinitionByKey,
+  getProcessDefinitionStartForm,
+  getTask,
+  getVariables,
+} from './camunda';
+import { AppErrorCode, AppException } from './errors';
+import { RestClient } from './rest';
+import {
+  Action,
   CamundaFormConfig,
   CamundaFormContext,
-  ProcessDefinition,
-  Task,
-  Resource,
-  VariableValue,
+  CAMUNDA_FORM_KEY_QUERY_PARAM_JSONFORM_LOCATION,
+  FileValueInfo,
+  isProcessDefinitionIdConfig,
+  isProcessDefinitionKeyConfig,
+  isTaskIdConfig,
+  RESOURCE_I18N_SUFFIX,
+  RESOURCE_SCHEMA_SUFFIX,
+  RESOURCE_UISCHEMA_SUFFIX,
+  ValueInfo,
 } from './types';
 
-import { JsonSchema7, UISchemaElement } from '@jsonforms/core';
-
-function getParameterByName(
+export const getParameterByName = (
   name: string,
   url: string | undefined
-): string | null {
+): string | null => {
   if (!url) return null;
 
   const parts = url.split('?');
@@ -25,89 +40,263 @@ function getParameterByName(
   }
 
   return null;
-}
+};
+
+const getCamundaType = (schema: JsonSchema): string => {
+  switch (schema.type) {
+    case 'string':
+      return (schema as any).format === 'file' ? 'File' : 'String';
+    case 'integer':
+      return 'Integer';
+    case 'number':
+      return 'Double';
+    case 'object':
+      return 'Json';
+    case 'array':
+      return 'Json';
+    case 'boolean':
+      return 'Boolean';
+    case 'null':
+      return 'Null';
+  }
+  return 'Json';
+};
+
+const attachCamundaVariable = (
+  variables: Record<string, any>,
+  variableName: string,
+  variableSchema: JsonSchema,
+  variableData: any
+): void => {
+  if ((variableSchema as any).readOnly !== true) {
+    const type = getCamundaType(variableSchema);
+
+    let value = variableData;
+    const valueInfo: ValueInfo = {};
+
+    if (type === 'Json') {
+      value = value ? JSON.stringify(value) : value;
+    } else if (type === 'File') {
+      if (!value) {
+        // invalid value
+        return;
+      }
+
+      const dataUrl = value as string;
+
+      const base64Index = dataUrl.indexOf(';base64,');
+
+      const header = dataUrl.substring(0, base64Index); // data header without the base64
+      value = dataUrl.substring(base64Index + ';base64,'.length); // get only the base64 value
+
+      const fileNameIndex = header.indexOf(';filename=');
+
+      const fileName = decodeURIComponent(
+        header.substring(fileNameIndex + ';filename='.length)
+      );
+
+      const mimeType = header.substring(
+        'data:'.length,
+        header.indexOf(';filename=')
+      );
+
+      (valueInfo as FileValueInfo).filename = fileName;
+      (valueInfo as FileValueInfo).mimeType = mimeType;
+    }
+
+    variables[variableName] = {
+      value: value,
+      type: type,
+      valueInfo: valueInfo,
+    };
+  }
+};
 
 export class CamundaFormApi {
-  private camundaUrl: string;
-  private processDefinitionId: string;
-  private formUrl: string;
-  private taskId?: string;
+  constructor(private config: CamundaFormConfig) {}
 
-  constructor(config: CamundaFormConfig) {
-    this.camundaUrl = config.camundaUrl;
-    this.processDefinitionId = config.processDefinitionId;
-    this.formUrl = config.formUrl;
-    this.taskId = config.taskId;
+  private toCamudaPath(action: Action) {
+    switch (action) {
+      case 'submit':
+        return 'submit-form';
+      case 'complete':
+        return 'complete';
+      case 'resolve':
+        return 'resolve';
+      case 'error':
+        return 'bpmnError';
+      case 'escalation':
+        return 'bpmnEscalation';
+    }
   }
 
-  async getCamundaFormContext(): Promise<CamundaFormContext> {
+  async submitForm(
+    client: RestClient,
+    schema: JsonSchema,
+    data: Record<string, any>,
+    context: CamundaFormContext,
+    action: Action,
+    payload?: Record<string, any>
+  ) {
+    if (!payload) {
+      payload = {};
+    }
+
+    const includeDataVariables =
+      action == 'submit' || action == 'resolve' || action == 'complete';
+
+    if (includeDataVariables) {
+      const dataVariables = {};
+      if (schema && schema.properties) {
+        forOwn(schema.properties, function (value: any, key: string) {
+          if (Object.prototype.hasOwnProperty.call(data, key)) {
+            attachCamundaVariable(
+              dataVariables,
+              key,
+              schema.properties![key],
+              data[key]
+            );
+          }
+        });
+      }
+
+      // the variables from button have presedence
+      payload.variables = payload.variables
+        ? {
+            ...dataVariables,
+            ...payload.variables,
+          }
+        : dataVariables;
+    }
+
+    const url = context.task
+      ? `${this.config.camundaUrl}/task/${context.task.id}/${this.toCamudaPath(
+          action
+        )}`
+      : `${this.config.camundaUrl}/process-definition/${
+          context.processDefinition.id
+        }/${this.toCamudaPath(action)}`;
+
+    const headers = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    };
+
+    await client.fetch(url, {
+      body: JSON.stringify(payload),
+      headers,
+      method: 'post',
+    });
+  }
+
+  async loadForm(client: RestClient): Promise<CamundaFormContext> {
     const result: Partial<CamundaFormContext> = {};
 
-    if (this.taskId) {
-      const task = await this.getTask(this.taskId);
+    if (isTaskIdConfig(this.config)) {
+      const task = await getTask(
+        client,
+        this.config.camundaUrl,
+        this.config.taskId
+      );
 
       if (!task.processDefinitionId) {
-        throw new Error('Unable to retrieve proceess definition id from task');
+        throw new AppException(AppErrorCode.INVALID_TASK_RESPONSE);
       }
 
       result.task = task;
+      result.processDefinition = await getProcessDefinition(
+        client,
+        this.config.camundaUrl,
+        task.processDefinitionId
+      );
+    } else if (isProcessDefinitionIdConfig(this.config)) {
+      result.processDefinition = await getProcessDefinition(
+        client,
+        this.config.camundaUrl,
+        this.config.processDefinitionId
+      );
+    } else if (isProcessDefinitionKeyConfig(this.config)) {
+      result.processDefinition = await getProcessDefinitionByKey(
+        client,
+        this.config.camundaUrl,
+        this.config.processDefinitionKey
+      );
+    } else {
+      throw new AppException(AppErrorCode.INVALID_CAMUNDA_FORM_CONFIG);
     }
 
-    const formNameDeployment = getParameterByName(
-      'deployment',
-      result.task !== undefined ? result.task.formKey : this.formUrl
-    );
-
-    const processDefinition = await this.getProcessDefinition(
+    const formKey =
       result.task !== undefined
-        ? result.task.processDefinitionId!
-        : this.processDefinitionId
+        ? result.task.formKey
+        : (
+            await getProcessDefinitionStartForm(
+              client,
+              this.config.camundaUrl,
+              result.processDefinition.id
+            )
+          ).key;
+    const formNameDeployment = getParameterByName(
+      CAMUNDA_FORM_KEY_QUERY_PARAM_JSONFORM_LOCATION,
+      formKey
     );
+    if (!formNameDeployment) {
+      throw new AppException(AppErrorCode.INVALID_CAMUNDA_FORM_KEY, {
+        formKey: formKey,
+      });
+    }
 
-    result.processDefinition = processDefinition;
-
-    const resources = await this.getDeploymentResources(
-      processDefinition.deploymentId!
+    const resources = await getDeploymentResources(
+      client,
+      this.config.camundaUrl,
+      result.processDefinition.deploymentId!
     );
 
     const formSchemaResource = resources.find(
-      (i) => i.name === formNameDeployment + '.schema.json'
+      (i) => i.name === formNameDeployment + RESOURCE_SCHEMA_SUFFIX
     );
     const formUiResource = resources.find(
-      (i) => i.name === formNameDeployment + '.uischema.json'
+      (i) => i.name === formNameDeployment + RESOURCE_UISCHEMA_SUFFIX
     );
     const i18nResource = resources.find(
-      (i) => i.name === formNameDeployment + '.i18n.json'
+      (i) => i.name === formNameDeployment + RESOURCE_I18N_SUFFIX
     );
 
     if (formSchemaResource == null) {
-      throw new Error('Unable to find JsonForms schema');
+      throw new AppException(AppErrorCode.MISSING_JSONFORMS_SCHEMA);
     }
 
     if (formUiResource == null) {
-      throw new Error('Unable to find JsonForms uischema');
+      throw new AppException(AppErrorCode.MISSING_JSONFORMS_UISCHEMA);
     }
 
-    const schema = await this.getDeploymentResourceJsonData(
-      processDefinition.deploymentId!,
+    const schema = await getDeploymentResourceJsonData(
+      client,
+      this.config.camundaUrl,
+      result.processDefinition.deploymentId!,
       formSchemaResource.id,
-      'Unable to retrieve JsonForms schema',
-      'Invalid JSON response when retrieving JsonForms schema'
+      AppErrorCode.RETRIEVE_JSONFORMS_SCHEMA,
+      AppErrorCode.INVALID_JSONFORMS_SCHEMA
     );
 
-    const uischema = await this.getDeploymentResourceJsonData(
-      processDefinition.deploymentId!,
+    const uischema = await getDeploymentResourceJsonData(
+      client,
+      this.config.camundaUrl,
+      result.processDefinition.deploymentId!,
       formUiResource.id,
-      'Unable to retrieve JsonForms uischema',
-      'Invalid JSON response when retrieving JsonForms uischema'
+      AppErrorCode.RETRIEVE_JSONFORMS_UISCHEMA,
+
+      AppErrorCode.INVALID_JSONFORMS_UISCHEMA
     );
 
     if (i18nResource) {
-      const i18n = await this.getDeploymentResourceJsonData(
-        processDefinition.deploymentId!,
+      const i18n = await getDeploymentResourceJsonData(
+        client,
+        this.config.camundaUrl,
+        result.processDefinition.deploymentId!,
         i18nResource.id,
-        'Unable to retrieve JsonForms i18n',
-        'Invalid JSON response when retrieving JsonForms i18n'
+        AppErrorCode.RETRIEVE_JSONFORMS_I18N,
+
+        AppErrorCode.INVALID_JSONFORMS_I18N
       );
 
       result.translations = i18n;
@@ -115,7 +304,7 @@ export class CamundaFormApi {
 
     const data: any = {};
 
-    if (this.taskId) {
+    if (result.task) {
       const variableNames: string[] = [];
 
       if (schema && schema.properties) {
@@ -126,8 +315,10 @@ export class CamundaFormApi {
         });
       }
 
-      const variableObject = await this.getVariables(
-        this.taskId,
+      const variableObject = await getVariables(
+        client,
+        this.config.camundaUrl,
+        result.task.id,
         variableNames
       );
 
@@ -152,84 +343,5 @@ export class CamundaFormApi {
     };
 
     return result as CamundaFormContext;
-  }
-
-  async getVariables(
-    taskId: string,
-    variableNames: string[]
-  ): Promise<Record<string, VariableValue>> {
-    const response = await fetch(
-      `${
-        this.camundaUrl
-      }/task/${taskId}/form-variables?deserializeValues=false&variableNames=${variableNames.join(
-        ','
-      )}`
-    ).catch((e) => {
-      throw new Error(`Unable to retrieve camunda variables: ${e}`);
-    });
-
-    return response.json().catch((e) => {
-      throw new Error(
-        `Invalid JSON response when retrieving camunda variables: ${e}`
-      );
-    });
-  }
-
-  async getDeploymentResources(deploymentId: string): Promise<Resource[]> {
-    const response = await fetch(
-      `${this.camundaUrl}/deployment/${deploymentId}/resources`
-    ).catch((e) => {
-      throw new Error(`Unable to retrieve resources for deployment: ${e}`);
-    });
-
-    return response.json().catch((e) => {
-      throw new Error(
-        `Invalid JSON response when retrieving resources for deployment: ${e}`
-      );
-    });
-  }
-
-  async getDeploymentResourceJsonData(
-    deploymentId: string,
-    resourceId: string,
-    resourceErrorMessage: string,
-    jsonErrorMessage: string
-  ): Promise<Record<string, any>> {
-    const response = await fetch(
-      `${this.camundaUrl}/deployment/${deploymentId}/resources/${resourceId}/data`
-    ).catch((e) => {
-      throw new Error(`${resourceErrorMessage}: ${e}`);
-    });
-    return response.json().catch((e) => {
-      `${jsonErrorMessage}: ${e}`;
-    });
-  }
-
-  async getTask(taskId: string): Promise<Task> {
-    const response = await fetch(`${this.camundaUrl}/task/${taskId}`).catch(
-      (e) => {
-        throw new Error(`Unable to retrieve task: ${e}`);
-      }
-    );
-
-    return response.json().catch((e) => {
-      throw new Error(`Invalid JSON response when retrieving task: ${e}`);
-    });
-  }
-
-  async getProcessDefinition(
-    processDefinitionId: string
-  ): Promise<ProcessDefinition> {
-    const response = await fetch(
-      `${this.camundaUrl}/process-definition/${processDefinitionId}`
-    ).catch((e) => {
-      throw new Error(`Unable to retrieve process definition: ${e}`);
-    });
-
-    return response.json().catch((e) => {
-      throw new Error(
-        `Invalid JSON response when retrieving process definition: ${e}`
-      );
-    });
   }
 }

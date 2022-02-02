@@ -38,7 +38,6 @@
 
 <script lang="ts">
 import ResolvedJsonForms from './components/ResolvedJsonForms.vue';
-import { createAjv } from '@jsonforms/vue2-vuetify';
 import { allRenderers } from './renderers';
 import { CamundaFormApi } from './core/api';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
@@ -50,16 +49,8 @@ import get from 'lodash/get';
 import isPlainObject from 'lodash/isPlainObject';
 import merge from 'lodash/merge';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
-
-const ajv = createAjv({ useDefaults: true });
-
-interface CamundaFormProps {
-  camundaUrl: string;
-  processDefinitionId: string;
-  formUrl: string;
-  taskId?: string;
-  locale?: string;
-}
+import { ajv, validateCamundaFormConfig } from './core/validate';
+import { RestClient, LoadEmitter } from './core/rest';
 
 const camundaForm = defineComponent({
   name: 'camunda-json-forms',
@@ -74,56 +65,45 @@ const camundaForm = defineComponent({
   },
   emits: [
     'change',
+    'load-request',
+    'load-response',
     'load-error',
-    'submit-headers-built',
-    'submit-success-response',
-    'submit-error-response',
+    'submit-request',
+    'submit-response',
     'submit-error',
   ],
   props: {
     camundaUrl: {
       required: true,
       type: String,
-      validator: (value: string) => {
-        return value.trim().length > 0;
-      },
     },
     processDefinitionId: {
-      required: true,
+      required: false,
       type: String,
-      validator: (value: string) => {
-        return value.trim().length > 0;
-      },
     },
-    formUrl: {
-      required: true,
+    processDefinitionKey: {
+      required: false,
       type: String,
-      validator: (value: string) => {
-        return value.trim().length > 0;
-      },
     },
     taskId: {
       required: false,
       type: String,
-      validator: (value: string) => {
-        return value.trim().length > 0;
-      },
     },
     locale: {
       required: false,
       type: String,
       default: 'en',
-      validator: (value: string) => {
-        return value.trim().length > 0;
-      },
     },
   },
-  setup(props: CamundaFormProps) {
+  setup(props: CamundaFormConfig) {
     const context = ref<CamundaFormContext | null>(null);
+    const api = ref<CamundaFormApi | null>(null);
 
     return {
       loading: false,
       context: context,
+      api: api,
+      props: props,
 
       readonly: false,
       validationMode: 'ValidateAndShow',
@@ -133,32 +113,24 @@ const camundaForm = defineComponent({
         showUnfocusedDescription: false,
         hideRequiredAsterisk: true,
       },
-      config: {
-        locale: props.locale,
-        camundaUrl: props.camundaUrl,
-        processDefinitionId: props.processDefinitionId,
-        formUrl: props.formUrl,
-        taskId: props.taskId,
-      } as CamundaFormConfig,
       renderers: allRenderers,
       cells: allRenderers,
       ajv,
     };
   },
   async mounted() {
-    this.$root.$on('submit-headers-built', (event: Event) => {
-      this.$emit('submit-headers-built', event);
+    /*
+    this.$root.$on('submit-request', (...args: any[]) => {
+      this.$emit('submit-request', ...args);
     });
-    this.$root.$on('submit-success-response', (event: Event) => {
-      this.$emit('submit-success-response', event);
+    this.$root.$on('submit-response', (...args: any[]) => {
+      this.$emit('submit-response', ...args);
     });
-    this.$root.$on('submit-error-response', (event: Event) => {
-      this.$emit('submit-error-response', event);
+    this.$root.$on('submit-error', (...args: any[]) => {
+      this.$emit('submit-error', ...args);
     });
-    this.$root.$on('submit-error', (event: Event) => {
-      this.$emit('submit-error', event);
-    });
-
+    */
+   
     await this.loadContext();
 
     // apply any themes
@@ -180,13 +152,20 @@ const camundaForm = defineComponent({
       this.$vuetify.icons = merge(this.$vuetify.icons, defaultPreset.icons);
     }
   },
+  computed: {
+    config(): CamundaFormConfig {
+      return validateCamundaFormConfig(this.props);
+    },
+  },
   provide() {
     // provide as a reactive property
-    const { context } = toRefs(this);
+    const { context, api } = toRefs(this);
 
     return {
       camundaFormConfig: this.config,
       camundaFormContext: context,
+      camundaFormApi: api,
+      camundaFormEmitter: this.$emit.bind(this),
     };
   },
   methods: {
@@ -197,12 +176,15 @@ const camundaForm = defineComponent({
       this.loading = true;
 
       try {
-        const api = new CamundaFormApi(this.config);
+        this.api = new CamundaFormApi(this.config);
 
-        const context = await api.getCamundaFormContext();
+        const restClient = new RestClient([
+          new LoadEmitter(this.$emit.bind(this)),
+        ]);
+        const context = await this.api.loadForm(restClient);
+
         this.context = context;
       } catch (e) {
-        console.log('load error: ' + e);
         this.$emit('load-error', e);
       } finally {
         this.loading = false;
