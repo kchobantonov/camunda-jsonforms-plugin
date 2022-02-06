@@ -1,16 +1,18 @@
 import { CamundaFormConfig } from './types';
-import { SchemaObject, ValidateFunction } from 'ajv';
+import { SchemaObject, ValidateFunction, CurrentOptions } from 'ajv';
 import { createAjv as createDefaultAjv } from '@jsonforms/vue2-vuetify';
 import { ajvKeywords } from './keywords';
 
 export const createAjv = () => {
-  const ajv = createDefaultAjv({
+  const options: CurrentOptions = {
     useDefaults: true,
     $data: true,
     discriminator: true,
-  });
-  ajvKeywords(ajv);
+  };
   
+  const ajv = createDefaultAjv(options);
+  ajvKeywords(ajv);
+
   return ajv;
 };
 
@@ -107,9 +109,9 @@ export const validateCamundaFormConfig = (
         isCamundaFormConfig.errors?.filter((e: any) => e.keyword !== 'if'),
         { separator: '\n', dataVar: 'CamundaFormConfig' }
       ) +
-        '\n\n' +
-        'current input data:\n' +
-        (config ? JSON.stringify(config) : config)
+      '\n\n' +
+      'current input data:\n' +
+      (config ? JSON.stringify(config) : config)
     );
   }
 };

@@ -27,7 +27,7 @@
       :cells="cells"
       :config="jsonformsConfig"
       :validationMode="validationMode"
-      :ajv="ajv"
+      :ajv="$ajv"
       :locale="locale"
       :translations="context.translations"
       :readonly="readonly"
@@ -95,9 +95,11 @@ const camundaForm = defineComponent({
       default: 'en',
     },
   },
+  beforeCreate() {
+    // create AJV inside the component but before any watchers and listeners, otherwise there will be endless loop in certain scenarios
+    (this as any).$ajv = createAjv();
+  },
   setup(props: CamundaFormConfig) {
-    const ajv = createAjv();
-
     const context = ref<CamundaFormContext | null>(null);
     const api = ref<CamundaFormApi | null>(null);
 
@@ -117,7 +119,7 @@ const camundaForm = defineComponent({
       },
       renderers: allRenderers,
       cells: allRenderers,
-      ajv: ajv,
+      ///ajv: ajv,
     };
   },
   async mounted() {
