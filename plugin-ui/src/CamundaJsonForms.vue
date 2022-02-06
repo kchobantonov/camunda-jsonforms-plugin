@@ -49,8 +49,8 @@ import get from 'lodash/get';
 import isPlainObject from 'lodash/isPlainObject';
 import merge from 'lodash/merge';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
-import { ajv, validateCamundaFormConfig } from './core/validate';
-import { RestClient, LoadEmitter } from './core/rest';
+import { createAjv, validateCamundaFormConfig } from './core/validate';
+import { RestClient, LoadEmitter, ResponseOkInterceptor } from './core/rest';
 
 const camundaForm = defineComponent({
   name: 'camunda-json-forms',
@@ -96,6 +96,8 @@ const camundaForm = defineComponent({
     },
   },
   setup(props: CamundaFormConfig) {
+    const ajv = createAjv();
+
     const context = ref<CamundaFormContext | null>(null);
     const api = ref<CamundaFormApi | null>(null);
 
@@ -115,22 +117,10 @@ const camundaForm = defineComponent({
       },
       renderers: allRenderers,
       cells: allRenderers,
-      ajv,
+      ajv: ajv,
     };
   },
   async mounted() {
-    /*
-    this.$root.$on('submit-request', (...args: any[]) => {
-      this.$emit('submit-request', ...args);
-    });
-    this.$root.$on('submit-response', (...args: any[]) => {
-      this.$emit('submit-response', ...args);
-    });
-    this.$root.$on('submit-error', (...args: any[]) => {
-      this.$emit('submit-error', ...args);
-    });
-    */
-   
     await this.loadContext();
 
     // apply any themes
@@ -180,6 +170,7 @@ const camundaForm = defineComponent({
 
         const restClient = new RestClient([
           new LoadEmitter(this.$emit.bind(this)),
+          new ResponseOkInterceptor(),
         ]);
         const context = await this.api.loadForm(restClient);
 

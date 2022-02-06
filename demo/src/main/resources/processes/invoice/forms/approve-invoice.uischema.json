@@ -2,7 +2,7 @@
   "type": "VerticalLayout",
   "elements": [
     {
-      "type": "Template",
+      "type": "TemplateLayout",
       "template": "<p>Do you approve this invoice?</p>"
     },
     {
@@ -13,7 +13,7 @@
           "text": "Invoice Document"
         },
         {
-          "type": "Template",
+          "type": "TemplateLayout",
           "template": "<div><a v-if=\"context.variables?.invoiceDocument?.type === 'File'\" :href=\"config.camundaUrl + '/task/' + config.taskId + '/variables/invoiceDocument/data'\">{{ context?.variables?.invoiceDocument?.valueInfo?.filename }}</a><span v-else> No invoice provided </span></div> "
         }
       ]
@@ -46,12 +46,20 @@
               "type": "boolean",
               "value": true
             }
+          },
+          "rule": {
+            "effect": "ENABLE",
+            "condition": {
+              "scope": "#/",
+              "schema": { "$ref": "/#" }
+            }
           }
         },
         {
           "type": "Button",
           "text": "Decline",
           "color": "red",
+          "action": "submit-without-data",
           "variables": {
             "approved": {
               "type": "boolean",

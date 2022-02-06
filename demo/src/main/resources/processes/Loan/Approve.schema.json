@@ -27,8 +27,6 @@
           "readOnly": true
         }
       },
-      "required": ["name", "amount", "currency"],
-      "additionalProperties": false,
       "readOnly": true
     }
   },

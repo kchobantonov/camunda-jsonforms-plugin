@@ -6,15 +6,9 @@
       "type": "string",
       "title": "Upload your Invoice Document",
       "description": "This field is required",
-      "format": "file",
-      "i18n": "invoiceDocument",
-      "contentSchema": {
-        "type": "array",
-        "maxItems": 10000000,
-        "items": {
-          "type": "number"
-        }
-      }
+      "format": "binary",
+      "formatMaximum": "10000000",
+      "i18n": "invoiceDocument"
     },
     "creditor": {
       "type": "string",

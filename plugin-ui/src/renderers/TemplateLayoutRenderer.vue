@@ -1,10 +1,43 @@
 <template>
-  <div>
+  <div v-if="layout.visible">
     <div v-if="templateError !== null" class="error">
       Template Error: {{ templateError }}
     </div>
 
-    <runtime-template-compiler :template="template" />
+    <template-compiler
+      :template="template"
+      :parent="parentComponent"
+      :elements="elements"
+    >
+      <template
+        v-if="elements !== undefined && elements.length == 1"
+        v-slot:default
+      >
+        <dispatch-renderer
+          :key="`${layout.path}-${0}`"
+          :schema="layout.schema"
+          :uischema="elements[0]"
+          :path="layout.path"
+          :enabled="layout.enabled"
+          :renderers="layout.renderers"
+          :cells="layout.cells"
+        />
+      </template>
+      <template
+        v-for="(element, index) in elements"
+        v-slot:[`${index}`]
+      >
+        <dispatch-renderer
+          :key="`${layout.path}-${index}`"
+          :schema="layout.schema"
+          :uischema="element"
+          :path="layout.path"
+          :enabled="layout.enabled"
+          :renderers="layout.renderers"
+          :cells="layout.cells"
+        />
+      </template>
+    </template-compiler>
   </div>
 </template>
 
@@ -26,13 +59,13 @@ import {
 } from '@jsonforms/vue2';
 import { useVuetifyLayout, useTranslator } from '@jsonforms/vue2-vuetify';
 import { VLabel, VBtn, VSpacer } from 'vuetify/lib';
-import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler';
+import TemplateCompiler from '../components/TemplateCompiler.vue';
 import Vue from 'vue';
 import { ErrorObject } from 'ajv';
-import { CamundaFormConfig, CamundaFormContext } from '@/core/types';
+import { CamundaFormConfig, CamundaFormContext } from '../core/types';
 
-interface TemplateElement extends UISchemaElement {
-  type: 'Template';
+interface TemplateElement extends Layout {
+  type: 'TemplateLayout';
   /**
    * The template string.
    */
@@ -40,14 +73,14 @@ interface TemplateElement extends UISchemaElement {
 }
 
 // Register any components that are not yet provided by other jsonforms renderers and we want to use them in the template like VOtpInput
-const templateRenderer = defineComponent({
-  name: 'template-renderer',
+const templateLayoutRenderer = defineComponent({
+  name: 'template-layout-renderer',
   components: {
     DispatchRenderer,
     VLabel,
     VBtn,
     VSpacer,
-    RuntimeTemplateCompiler,
+    TemplateCompiler,
   },
   props: {
     ...rendererProps<Layout>(),
@@ -86,7 +119,14 @@ const templateRenderer = defineComponent({
       context: camundaFormContext,
     };
 
-    return { ...layout, t, jsonforms, templateError, camundaForm };
+    return {
+      ...layout,
+      t,
+      jsonforms,
+      parentComponent: this,
+      templateError,
+      camundaForm,
+    };
   },
   errorCaptured: function (err: Error, vm: Vue, info: string) {
     if (info == 'render') {
@@ -111,7 +151,7 @@ const templateRenderer = defineComponent({
         config: CamundaFormConfig;
         context: CamundaFormContext;
       } = this.$parent.$parent.camundaForm;
-      
+
       return unref(form?.context);
     },
     errors(): ErrorObject[] | undefined {
@@ -120,6 +160,9 @@ const templateRenderer = defineComponent({
     },
     template(): string | undefined {
       return (this.layout.uischema as TemplateElement).template;
+    },
+    elements(): UISchemaElement[] {
+      return (this.layout.uischema as TemplateElement).elements;
     },
   },
   methods: {
@@ -132,10 +175,10 @@ const templateRenderer = defineComponent({
   },
 });
 
-export default templateRenderer;
+export default templateLayoutRenderer;
 
 export const entry: JsonFormsRendererRegistryEntry = {
-  renderer: templateRenderer,
-  tester: rankWith(1, uiTypeIs('Template')),
+  renderer: templateLayoutRenderer,
+  tester: rankWith(1, uiTypeIs('TemplateLayout')),
 };
 </script>

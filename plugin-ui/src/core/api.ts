@@ -45,7 +45,7 @@ export const getParameterByName = (
 const getCamundaType = (schema: JsonSchema): string => {
   switch (schema.type) {
     case 'string':
-      return (schema as any).format === 'file' ? 'File' : 'String';
+      return (schema as any).format === 'binary' ? 'File' : 'String';
     case 'integer':
       return 'Integer';
     case 'number':
@@ -113,15 +113,21 @@ const attachCamundaVariable = (
 };
 
 export class CamundaFormApi {
-  constructor(private config: CamundaFormConfig) {}
+  constructor(private config: CamundaFormConfig) { }
 
   private toCamudaPath(action: Action) {
     switch (action) {
       case 'submit':
         return 'submit-form';
+      case 'submit-without-data':
+        return 'submit-form';
       case 'complete':
         return 'complete';
+      case 'complete-without-data':
+        return 'complete';
       case 'resolve':
+        return 'resolve';
+      case 'resolve-without-data':
         return 'resolve';
       case 'error':
         return 'bpmnError';
@@ -163,19 +169,18 @@ export class CamundaFormApi {
       // the variables from button have presedence
       payload.variables = payload.variables
         ? {
-            ...dataVariables,
-            ...payload.variables,
-          }
+          ...dataVariables,
+          ...payload.variables,
+        }
         : dataVariables;
     }
 
     const url = context.task
       ? `${this.config.camundaUrl}/task/${context.task.id}/${this.toCamudaPath(
-          action
-        )}`
-      : `${this.config.camundaUrl}/process-definition/${
-          context.processDefinition.id
-        }/${this.toCamudaPath(action)}`;
+        action
+      )}`
+      : `${this.config.camundaUrl}/process-definition/${context.processDefinition.id
+      }/${this.toCamudaPath(action)}`;
 
     const headers = {
       Accept: 'application/json',
@@ -229,12 +234,12 @@ export class CamundaFormApi {
       result.task !== undefined
         ? result.task.formKey
         : (
-            await getProcessDefinitionStartForm(
-              client,
-              this.config.camundaUrl,
-              result.processDefinition.id
-            )
-          ).key;
+          await getProcessDefinitionStartForm(
+            client,
+            this.config.camundaUrl,
+            result.processDefinition.id
+          )
+        ).key;
     const formNameDeployment = getParameterByName(
       CAMUNDA_FORM_KEY_QUERY_PARAM_JSONFORM_LOCATION,
       formKey
@@ -342,6 +347,9 @@ export class CamundaFormApi {
       data: data,
     };
 
+    if (!(result.input.schema as any).$id) {
+      (result.input.schema as any).$id = '/';
+    }
     return result as CamundaFormContext;
   }
 }

@@ -57,24 +57,46 @@
       <bpmn:outgoing>Flow_0e71e3d</bpmn:outgoing>
       <bpmn:script>java.lang.System.out.println("Declined")</bpmn:script>
     </bpmn:scriptTask>
+    <bpmn:boundaryEvent id="Event_ApproveLoanEscalation" name="Loan Escalation" cancelActivity="false" attachedToRef="Activity_0dqqih2">
+      <bpmn:outgoing>Flow_1ayehma</bpmn:outgoing>
+      <bpmn:escalationEventDefinition id="EscalationEventDefinition_1kdly7y" escalationRef="Escalation_0ql3rf5" camunda:escalationCodeVariable="loanEscalation" />
+    </bpmn:boundaryEvent>
+    <bpmn:scriptTask id="Activity_1fpz17v" name="Loan Escalation" scriptFormat="javascript">
+      <bpmn:incoming>Flow_1ayehma</bpmn:incoming>
+      <bpmn:outgoing>Flow_0f5i0kj</bpmn:outgoing>
+      <bpmn:script>java.lang.System.out.println("Escalation")</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_1ayehma" sourceRef="Event_ApproveLoanEscalation" targetRef="Activity_1fpz17v" />
+    <bpmn:boundaryEvent id="Event_1wwp0yk" attachedToRef="Activity_0dqqih2">
+      <bpmn:outgoing>Flow_0vawuik</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0l515iq" errorRef="Error_1puvyqs" camunda:errorCodeVariable="errorCode" camunda:errorMessageVariable="errorMessage" />
+    </bpmn:boundaryEvent>
+    <bpmn:scriptTask id="Activity_0tt2h8g" name="Can&#39;t Decide" scriptFormat="javascript">
+      <bpmn:incoming>Flow_0vawuik</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pqj4ql</bpmn:outgoing>
+      <bpmn:script>java.lang.System.out.println("Can't Decide")</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="Flow_0vawuik" sourceRef="Event_1wwp0yk" targetRef="Activity_0tt2h8g" />
+    <bpmn:endEvent id="Event_1bbny1b">
+      <bpmn:incoming>Flow_0pqj4ql</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0pqj4ql" sourceRef="Activity_0tt2h8g" targetRef="Event_1bbny1b" />
+    <bpmn:endEvent id="Event_1ggweng">
+      <bpmn:incoming>Flow_0f5i0kj</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0f5i0kj" sourceRef="Activity_1fpz17v" targetRef="Event_1ggweng" />
   </bpmn:process>
+  <bpmn:error id="Error_1puvyqs" name="Error_2epmgnb" errorCode="myError" />
+  <bpmn:escalation id="Escalation_0ql3rf5" name="Escalation_2qiaekl" escalationCode="myescalation" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Loan">
-      <bpmndi:BPMNEdge id="Flow_04066pz_di" bpmnElement="Flow_04066pz">
-        <di:waypoint x="208" y="180" />
-        <di:waypoint x="320" y="180" />
+      <bpmndi:BPMNEdge id="Flow_0e71e3d_di" bpmnElement="Flow_0e71e3d">
+        <di:waypoint x="710" y="240" />
+        <di:waypoint x="782" y="240" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0uhmcr5_di" bpmnElement="Flow_0uhmcr5">
-        <di:waypoint x="420" y="180" />
-        <di:waypoint x="485" y="180" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0r19jma_di" bpmnElement="Flow_0r19jma">
-        <di:waypoint x="510" y="155" />
-        <di:waypoint x="510" y="120" />
-        <di:waypoint x="610" y="120" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="516" y="135" width="18" height="14" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNEdge id="Flow_18frmhc_di" bpmnElement="Flow_18frmhc">
+        <di:waypoint x="710" y="120" />
+        <di:waypoint x="782" y="120" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_14oi66s_di" bpmnElement="Flow_14oi66s">
         <di:waypoint x="510" y="205" />
@@ -84,13 +106,40 @@
           <dc:Bounds x="518" y="220" width="15" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_18frmhc_di" bpmnElement="Flow_18frmhc">
-        <di:waypoint x="710" y="120" />
-        <di:waypoint x="782" y="120" />
+      <bpmndi:BPMNEdge id="Flow_0r19jma_di" bpmnElement="Flow_0r19jma">
+        <di:waypoint x="510" y="155" />
+        <di:waypoint x="510" y="120" />
+        <di:waypoint x="610" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="516" y="135" width="18" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0e71e3d_di" bpmnElement="Flow_0e71e3d">
-        <di:waypoint x="710" y="240" />
-        <di:waypoint x="782" y="240" />
+      <bpmndi:BPMNEdge id="Flow_0uhmcr5_di" bpmnElement="Flow_0uhmcr5">
+        <di:waypoint x="420" y="180" />
+        <di:waypoint x="485" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04066pz_di" bpmnElement="Flow_04066pz">
+        <di:waypoint x="208" y="180" />
+        <di:waypoint x="320" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ayehma_di" bpmnElement="Flow_1ayehma">
+        <di:waypoint x="320" y="238" />
+        <di:waypoint x="320" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vawuik_di" bpmnElement="Flow_0vawuik">
+        <di:waypoint x="420" y="238" />
+        <di:waypoint x="420" y="380" />
+        <di:waypoint x="460" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pqj4ql_di" bpmnElement="Flow_0pqj4ql">
+        <di:waypoint x="560" y="380" />
+        <di:waypoint x="632" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0f5i0kj_di" bpmnElement="Flow_0f5i0kj">
+        <di:waypoint x="320" y="440" />
+        <di:waypoint x="320" y="480" />
+        <di:waypoint x="400" y="480" />
+        <di:waypoint x="400" y="512" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="172" y="162" width="36" height="36" />
@@ -118,6 +167,27 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0yb8gp3_di" bpmnElement="Activity_1tg08rb">
         <dc:Bounds x="610" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1fpz17v_di" bpmnElement="Activity_1fpz17v">
+        <dc:Bounds x="270" y="360" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0tt2h8g_di" bpmnElement="Activity_0tt2h8g">
+        <dc:Bounds x="460" y="340" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1bbny1b_di" bpmnElement="Event_1bbny1b">
+        <dc:Bounds x="632" y="362" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ggweng_di" bpmnElement="Event_1ggweng">
+        <dc:Bounds x="382" y="512" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_05t04b1_di" bpmnElement="Event_ApproveLoanEscalation">
+        <dc:Bounds x="302" y="202" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="212.5" y="213" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0on70cj_di" bpmnElement="Event_1wwp0yk">
+        <dc:Bounds x="402" y="202" width="36" height="36" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

@@ -2,7 +2,7 @@
   "type": "VerticalLayout",
   "elements": [
     {
-      "type": "Template",
+      "type": "TemplateLayout",
       "template": "<p><strong>Please clarify:</strong><br/>This invoice needs clarification and could not be approved due to missing data.</p>"
     },
     {
@@ -13,7 +13,7 @@
           "text": "Invoice Document"
         },
         {
-          "type": "Template",
+          "type": "TemplateLayout",
           "template": "<div><a v-if=\"context.variables?.invoiceDocument?.type === 'File'\" :href=\"config.camundaUrl + '/task/' + config.taskId + '/variables/invoiceDocument/data'\">{{ context?.variables?.invoiceDocument?.valueInfo?.filename }}</a><span v-else> No invoice provided </span></div> "
         }
       ]
@@ -41,7 +41,14 @@
     {
       "type": "Button",
       "text": "Complete",
-      "color": "primary"
+      "color": "primary",
+      "rule": {
+        "effect": "ENABLE",
+        "condition": {
+          "scope": "#/",
+          "schema": { "$ref": "/#" }
+        }
+      }
     }
   ]
 }

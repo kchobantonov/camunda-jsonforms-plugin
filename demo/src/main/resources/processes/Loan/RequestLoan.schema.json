@@ -2,24 +2,66 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "_context": {
+      "type": "object",
+      "default": {},
+      "dynamicDefaults": {
+        "currentDate": "date",
+        "aYearFromNow": {
+          "func": "date",
+          "args": { "duration": "P1Y", "op": "add" }
+        }
+      },
+      "properties": {
+        "currentDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "aYearFromNow": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "readOnly": true
+    },
     "loanRequest": {
       "type": "object",
+      "default": {},
+      "dynamicDefaults": {
+        "loanStartDate": "date",
+        "name": { "func": "searchParams", "args": { "param": "name" } },
+        "amount": { "func": "searchParams", "args": { "param": "amount" } }
+      },
       "properties": {
         "name": {
           "type": "string",
           "minLength": 3,
           "description": "Please enter your name",
-          "i18n": "loanRequest.name"
+          "i18n": "loanRequest.name",
+          "transform": ["trim", "startCase"]
         },
         "amount": {
           "type": "number",
+          "format": "double",
           "minimum": 0,
           "i18n": "loanRequest.amount"
         },
         "currency": {
           "type": "string",
           "enum": ["USD", "EUR"],
+          "transform": ["trim", "toEnumCase"],
           "i18n": "loanRequest.currency"
+        },
+        "loanStartDate": {
+          "type": "string",
+          "format": "date",
+          "formatMinimum": { "$data": "/_context/currentDate" }
+        },
+        "loanEndDate": {
+          "type": "string",
+          "format": "date",
+          "formatExclusiveMinimum": { "$data": "/loanRequest/loanStartDate" },
+          "formatExclusiveMaximum": { "$data": "/_context/aYearFromNow" }
         },
         "picture": {
           "type": "string",
@@ -28,14 +70,31 @@
           "contentMediaType": "image/png"
         }
       },
-      "required": ["name", "amount", "currency", "picture"],
+      "required": ["name", "amount", "loanStartDate", "loanEndDate"],
+      "dependentRequired": {
+        "currency": ["amount"]
+      },
       "additionalProperties": false
     },
     "file": {
       "type": "string",
-      "format": "file"
+      "format": "binary",
+      "formatMaximum": "10000000"
     }
   },
-  "required": ["loanRequest"],
+  "patternProperties": {
+    "action": {
+      "type": "string"
+    }
+  },
+  "if": {
+    "properties": { "action": { "const": "submit-with-file" } }
+  },
+  "then": {
+    "required": ["loanRequest", "file"]
+  },
+  "else": {
+    "required": ["loanRequest"]
+  },
   "additionalProperties": false
 }

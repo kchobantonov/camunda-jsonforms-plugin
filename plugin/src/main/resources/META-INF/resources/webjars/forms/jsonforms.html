@@ -62,7 +62,7 @@
 
     function onLoadResponse(response) {
         if (response.status >= 300) {
-            showNotification('error', null, "Submit Error", `response.statusText`);
+            showNotification('error', null, "Submit Error", response.statusText);
         }
     }
     
@@ -100,7 +100,7 @@
         } else if (response.status == 403) {
             showNotification('error', null, "Submit Error", `You are not authorized`);
         } else {
-            showNotification('error', null, "Submit Error", `response.statusText`);
+            showNotification('error', null, "Submit Error", response.statusText);
         }
     }
 

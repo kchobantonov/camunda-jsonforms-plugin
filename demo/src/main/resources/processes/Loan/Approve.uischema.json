@@ -5,7 +5,7 @@
       "type": "HorizontalLayout",
       "elements": [
         {
-          "type": "Template",
+          "type": "TemplateLayout",
           "template": "<img :src=\"data.loanRequest.picture\" height=\"100\" width=\"100\"/>"
         },
         {
@@ -103,12 +103,20 @@
               "type": "boolean",
               "value": true
             }
+          },
+          "rule": {
+            "effect": "ENABLE",
+            "condition": {
+              "scope": "#/",
+              "schema": { "$ref": "/#" }
+            }
           }
         },
         {
           "type": "Button",
           "text": "Decline",
-          "color": "red",
+          "color": "purple",
+          "action": "submit-without-data",
           "options": {
             "i18n": "button.decline"
           },
@@ -118,6 +126,21 @@
               "value": false
             }
           }
+        },
+        {
+          "type": "Button",
+          "text": "Can't Decide Error",
+          "color": "red",
+          "action": "error",
+          "errorCode": "myError",
+          "errorMessage": "my error message"
+        },
+        {
+          "type": "Button",
+          "text": "Escalation",
+          "color": "greem",
+          "action": "escalation",
+          "escalationCode": "myescalation"
         }
       ]
     }

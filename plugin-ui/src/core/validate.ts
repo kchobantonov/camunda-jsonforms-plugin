@@ -1,8 +1,18 @@
 import { CamundaFormConfig } from './types';
 import { SchemaObject, ValidateFunction } from 'ajv';
-import { createAjv } from '@jsonforms/vue2-vuetify';
+import { createAjv as createDefaultAjv } from '@jsonforms/vue2-vuetify';
+import { ajvKeywords } from './keywords';
 
-export const ajv = createAjv({ useDefaults: true });
+export const createAjv = () => {
+  const ajv = createDefaultAjv({
+    useDefaults: true,
+    $data: true,
+    discriminator: true,
+  });
+  ajvKeywords(ajv);
+  
+  return ajv;
+};
 
 export const CamundaFormConfigSchema: SchemaObject = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -82,7 +92,7 @@ export const CamundaFormConfigSchema: SchemaObject = {
 export type validate<T> = ((data: unknown) => data is T) &
   Pick<ValidateFunction, 'errors'>;
 
-const isCamundaFormConfig = ajv.compile(
+const isCamundaFormConfig = createDefaultAjv().compile(
   CamundaFormConfigSchema
 ) as validate<CamundaFormConfig>;
 

@@ -8,7 +8,7 @@
       Template Error: {{ templateError }}
     </div>
 
-    <runtime-template-compiler :template="template" :parent="parentComponent" />
+    <template-compiler :template="template" :parent="parentComponent" />
   </v-label>
 </template>
 
@@ -32,7 +32,7 @@ import {
 } from '@jsonforms/vue2';
 import { useVuetifyLayout, useTranslator } from '@jsonforms/vue2-vuetify';
 import { VLabel } from 'vuetify/lib';
-import { RuntimeTemplateCompiler } from 'vue-runtime-template-compiler';
+import TemplateCompiler from '../components/TemplateCompiler.vue';
 import Vue from 'vue';
 import { ErrorObject } from 'ajv';
 import { CamundaFormConfig, CamundaFormContext } from '@/core/types';
@@ -42,7 +42,7 @@ const templateLabelRenderer = defineComponent({
   components: {
     DispatchRenderer,
     VLabel,
-    RuntimeTemplateCompiler,
+    TemplateCompiler,
   },
   props: {
     ...rendererProps<Layout>(),

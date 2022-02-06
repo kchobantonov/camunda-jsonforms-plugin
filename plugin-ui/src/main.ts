@@ -1,7 +1,6 @@
 import VueCompositionAPI from '@vue/composition-api';
 import wrap from '@vue/web-component-wrapper';
 import Vue from 'vue';
-import RuntimeTemplateCompiler from 'vue-runtime-template-compiler';
 import CamundaJsonForms from './CamundaJsonForms.vue';
 import {
   CamundaFormConfig,
@@ -13,7 +12,6 @@ import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import isFunction from 'lodash/isFunction';
 
 Vue.use(VueCompositionAPI);
-Vue.use(RuntimeTemplateCompiler);
 
 Vue.config.productionTip = false;
 

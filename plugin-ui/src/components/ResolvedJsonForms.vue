@@ -48,7 +48,7 @@
 </template>
 
 <script lang="ts">
-import { CamundaJsonFormInput, ResolvedSchema } from '../core/types';
+import { CamundaJsonFormInput } from '../core/types';
 import Ajv from 'ajv';
 import {
   JsonFormsUISchemaRegistryEntry,

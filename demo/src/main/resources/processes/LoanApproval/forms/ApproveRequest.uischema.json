@@ -57,7 +57,7 @@
           ]
         },
         {
-          "type": "Template",
+          "type": "TemplateLayout",
           "template": "<div class=\"container d-flex\"><span class=\"align-self-center text-h3\">{{ translate('label.requested-amount', 'Requested Amount:') }}</span><span class=\"grow\"></span><span class=\"text-h3\">${{ data.amount }}</span></div>"
         }
       ],
@@ -96,6 +96,13 @@
                   "type": "boolean",
                   "value": true
                 }
+              },
+              "rule": {
+                "effect": "ENABLE",
+                "condition": {
+                  "scope": "#/",
+                  "schema": { "$ref": "/#" }
+                }
               }
             },
             {
@@ -116,8 +123,17 @@
                 "condition": {
                   "scope": "#/properties/notes",
                   "schema": {
-                    "type": "string",
-                    "minLength": 5
+                    "allOf": [
+                      { "$ref": "/#" },
+                      {
+                        "properties": {
+                          "notes": {
+                            "type": "string",
+                            "minLength": 5
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               }

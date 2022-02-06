@@ -92,6 +92,13 @@
           "color": "primary",
           "options": {
             "i18n": "button.request"
+          },
+          "rule": {
+            "effect": "ENABLE",
+            "condition": {
+              "scope": "#/",
+              "schema": { "$ref": "/#" }
+            }
           }
         }
       ]

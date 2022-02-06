@@ -156,4 +156,4 @@ export const CAMUNDA_FORM_KEY_QUERY_PARAM_JSONFORM_LOCATION = 'deployment';
 
 export type Emitter = (event: string, ...args: any[]) => void;
 
-export type Action = 'submit' | 'complete' | 'resolve' | 'error' | 'escalation';
+export type Action = 'submit' | 'submit-without-data' | 'complete' | 'complete-without-data' | 'resolve' | 'resolve-without-data' | 'error' | 'escalation';

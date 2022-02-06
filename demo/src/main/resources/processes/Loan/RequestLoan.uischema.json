@@ -1,33 +1,94 @@
 {
-  "type": "VerticalLayout",
+  "type": "TemplateLayout",
+  "template": "<div id=\"myform\"><slot></slot></div>",
   "elements": [
     {
-      "type": "Control",
-      "scope": "#/properties/loanRequest/properties/name"
-    },
-    {
-      "type": "Control",
-      "scope": "#/properties/loanRequest/properties/amount"
-    },
-    {
-      "type": "Control",
-      "scope": "#/properties/loanRequest/properties/currency"
-    },
-    {
-      "type": "Control",
-      "scope": "#/properties/loanRequest/properties/picture"
-    },
-    {
-      "type": "Control",
-      "scope": "#/properties/file"
-    },
-    {
-      "type": "Button",
-      "text": "Request Loan",
-      "color": "primary",
-      "options": {
-        "i18n": "button.request-loan"
-      }
+      "type": "VerticalLayout",
+      "elements": [
+        {
+          "type": "Control",
+          "scope": "#/properties/loanRequest/properties/name"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/loanRequest/properties/amount"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/loanRequest/properties/currency"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/loanRequest/properties/loanStartDate"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/loanRequest/properties/loanEndDate"
+        },
+        {
+          "type": "TemplateLayout",
+          "template": "<div class=\"container\"><slot name=\"0\"></slot><slot name=\"1\"></slot></div>",
+          "elements": [
+            {
+              "type": "TemplateLayout",
+              "template": "<img :src=\"data.loanRequest.picture\" style=\"height: 100px; width: 100px;\"></img>"
+            },
+            {
+              "type": "Control",
+              "scope": "#/properties/loanRequest/properties/picture"
+            }
+          ]
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/file"
+        },
+        {
+          "type": "TemplateLayout",
+          "template": "<div class=\"container\"><div class=\"row\"><div class=\"col shrink\"><slot name=\"0\"></slot></div><div class=\"col shrink\"><slot name=\"1\"></slot></div><div class=\"col grow\"></div></div></div>",
+          "elements": [
+            {
+              "type": "Button",
+              "text": "Request Loan",
+              "color": "primary",
+              "options": {
+                "i18n": "button.request-loan"
+              },
+              "variables": {
+                "action": {
+                  "type": "String",
+                  "value": "submit-with-file"
+                }
+              },
+              "rule": {
+                "effect": "ENABLE",
+                "condition": {
+                  "scope": "#/",
+                  "schema": { "$ref": "/#" }
+                }
+              }
+            },
+            {
+              "type": "Button",
+              "text": "Request Loan Without File",
+              "color": "secondary",
+              "variables": {
+                "action": {
+                  "type": "String",
+                  "value": "submit-no-file"
+                }
+              },
+              "rule": {
+                "effect": "ENABLE",
+                "condition": {
+                  "scope": "#/properties/loanRequest",
+                  "schema": { "$ref": "/#/properties/loanRequest" }
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }

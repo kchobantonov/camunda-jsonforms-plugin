@@ -8,7 +8,7 @@
         isErrorButton ||
         isEscalationButton)
     "
-    :disabled="!layout.enabled || hasErrors"
+    :disabled="!layout.enabled"
     :color="color"
     :loading="loading"
     v-bind="vuetifyProps('v-btn')"
@@ -39,7 +39,7 @@ import { VBtn } from 'vuetify/lib';
 import { CamundaFormApi } from '../core/api';
 import { RestClient } from '../core/rest';
 import { CamundaFormContext, Action, Emitter } from '../core/types';
-import { SubmitEmitter } from '../core/rest';
+import { SubmitEmitter, ResponseOkInterceptor } from '../core/rest';
 
 interface ButtonElement extends UISchemaElement {
   type: 'Button';
@@ -106,7 +106,6 @@ const buttonRenderer = defineComponent({
       );
     }
 
-
     const loading = false;
 
     return {
@@ -120,21 +119,24 @@ const buttonRenderer = defineComponent({
     };
   },
   computed: {
-    action(): string {
+    action(): Action {
       return (this.layout.uischema as ButtonElement).action ?? 'submit';
     },
     isSubmitButton(): boolean {
-      return this.action === 'submit';
+      return this.action === 'submit' || this.action === 'submit-without-data';
     },
     isCompleteButton(): boolean {
       // complete is defined on task only
       return (
-        this.action === 'complete' && this.camundaFormContext.task !== undefined
+        (this.action === 'complete' ||
+          this.action === 'complete-without-data') &&
+        this.camundaFormContext.task !== undefined
       );
     },
     isResolveButton(): boolean {
       return (
-        this.action === 'resolve' && this.camundaFormContext.task !== undefined
+        (this.action === 'resolve' || this.action === 'resolve-without-data') &&
+        this.camundaFormContext.task !== undefined
       );
     },
     isErrorButton(): boolean {
@@ -147,34 +149,6 @@ const buttonRenderer = defineComponent({
         this.action === 'escalation' &&
         this.camundaFormContext.task !== undefined
       );
-    },
-    hasErrors(): boolean {
-      if (
-        this.isSubmitButton ||
-        this.isCompleteButton ||
-        this.isResolveButton
-      ) {
-        const numberOfErrors = this.jsonforms
-          ? this.jsonforms.core?.errors?.length
-          : 0;
-        return numberOfErrors == undefined || numberOfErrors > 0;
-      } else if (this.isErrorButton) {
-        const errorCode = (this.layout.uischema as ButtonElement).errorCode;
-        return (
-          errorCode !== undefined &&
-          errorCode !== null &&
-          errorCode.trim().length > 0
-        );
-      } else if (this.isEscalationButton) {
-        const escalationCode = (this.layout.uischema as ButtonElement)
-          .escalationCode;
-        return (
-          escalationCode !== undefined &&
-          escalationCode !== null &&
-          escalationCode.trim().length > 0
-        );
-      }
-      return false;
     },
     translatedLabel(): string | undefined {
       if (this.layout.uischema.options?.i18n) {
@@ -223,6 +197,7 @@ const buttonRenderer = defineComponent({
         }
         const restClient = new RestClient([
           new SubmitEmitter(this.camundaFormEmitter),
+          new ResponseOkInterceptor(),
         ]);
 
         const data = this.jsonforms!.core.data;

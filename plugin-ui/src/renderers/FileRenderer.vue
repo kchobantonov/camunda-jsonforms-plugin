@@ -80,7 +80,9 @@ import {
   VBtn,
 } from 'vuetify/lib';
 
-function formatBytes(bytes: number, decimals = 2) {
+import toNumber from 'lodash/toNumber';
+
+const formatBytes = (bytes: number, decimals = 2) => {
   if (bytes === 0) return '0 Bytes';
 
   const k = 1024;
@@ -90,7 +92,48 @@ function formatBytes(bytes: number, decimals = 2) {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-}
+};
+
+const toNonNegativeNumber = (param: any): number | undefined => {
+  const result = param !== undefined ? toNumber(param) : undefined;
+  return result && result >= 0 ? result : undefined;
+};
+
+const getFileSize = (
+  schema: JsonSchema & {
+    formatMinimum: any;
+    formatMaximum: any;
+    formatExclusiveMinimum: any;
+    formatExclusiveMaximum: any;
+    contentSchema?: { minItems: any; maxItems: any };
+  },
+  variant: 'min' | 'max'
+): [number | undefined, boolean] => {
+  let exclusive = false;
+  let fileSize: number | undefined = undefined;
+
+  if (variant === 'min') {
+    fileSize = toNonNegativeNumber(schema?.formatMinimum);
+    if (fileSize === undefined) {
+      fileSize = toNonNegativeNumber(schema?.formatExclusiveMinimum);
+      exclusive = true;
+    }
+    if (fileSize === undefined) {
+      fileSize = toNonNegativeNumber(schema?.contentSchema?.minItems);
+    }
+  } else {
+    fileSize = toNonNegativeNumber(schema?.formatMaximum);
+    if (fileSize === undefined) {
+      fileSize = toNonNegativeNumber(schema?.formatExclusiveMaximum);
+      exclusive = true;
+    }
+    if (fileSize === undefined) {
+      fileSize = toNonNegativeNumber(schema?.contentSchema?.maxItems);
+    }
+  }
+
+  return [fileSize, exclusive];
+};
 
 const toBase64 = (
   file: File,
@@ -103,7 +146,7 @@ const toBase64 = (
       const dataurl = reader.result as string;
       if (schemaFormat === 'uri') {
         resolve(dataurl);
-      } else if (schemaFormat === 'file') {
+      } else if (schemaFormat === 'binary') {
         //special handling to encode the filename
         const insertIndex = dataurl.indexOf(';base64,');
         resolve(
@@ -160,17 +203,14 @@ const fileRenderer = defineComponent({
     let control = unref(input.control);
 
     // implement the validation outside the Ajv since we do not want even to transform invalid files into string and then implement custom Avj validator
-    let maxFileSize: number | undefined = (control.schema as any)?.contentSchema
-      ?.maxItems;
-    let minFileSize: number | undefined = (control.schema as any)?.contentSchema
-      ?.minItems;
-
-    if (typeof maxFileSize !== 'number' || maxFileSize < 0) {
-      maxFileSize = undefined;
-    }
-    if (typeof minFileSize !== 'number' || minFileSize < 0) {
-      minFileSize = undefined;
-    }
+    const [minFileSize, minFileSizeExclusive] = getFileSize(
+      control.schema as any,
+      'min'
+    );
+    const [maxFileSize, maxFileSizeExclusive] = getFileSize(
+      control.schema as any,
+      'max'
+    );
 
     return {
       ...useVuetifyControl(input),
@@ -182,7 +222,9 @@ const fileRenderer = defineComponent({
       currentFileReader,
       currentFileValidationErrors,
       maxFileSize,
+      maxFileSizeExclusive,
       minFileSize,
+      minFileSizeExclusive,
     };
   },
   computed: {
@@ -216,28 +258,38 @@ const fileRenderer = defineComponent({
       } else {
         this.currentFileValidationErrors = null;
 
-        if (this.maxFileSize && value.size > this.maxFileSize) {
-          const key = getI18nKey(
-            this.control.schema,
-            this.control.uischema,
-            'error.contentSchema.maxItems'
-          );
+        if (this.maxFileSize) {
+          const maxFileSizeValid = this.maxFileSizeExclusive
+            ? value.size < this.maxFileSize
+            : value.size <= this.maxFileSize;
+          if (!maxFileSizeValid) {
+            const key = getI18nKey(
+              this.control.schema,
+              this.control.uischema,
+              'error.contentSchema.maxItems'
+            );
 
-          this.currentFileValidationErrors = this.t(
-            key!,
-            `size should be less than ${formatBytes(this.maxFileSize)}`
-          );
+            this.currentFileValidationErrors = this.t(
+              key!,
+              `size should be less than ${formatBytes(this.maxFileSize)}`
+            );
+          }
         }
-        if (this.minFileSize && value.size < this.minFileSize) {
-          const key = getI18nKey(
-            this.control.schema,
-            this.control.uischema,
-            'error.contentSchema.minItems'
-          );
-          this.currentFileValidationErrors = this.t(
-            key!,
-            `size should be greater than ${formatBytes(this.minFileSize)}`
-          );
+        if (this.minFileSize) {
+          const minFileSizeValid = this.minFileSizeExclusive
+            ? value.size > this.minFileSize
+            : value.size >= this.minFileSize;
+          if (!minFileSizeValid) {
+            const key = getI18nKey(
+              this.control.schema,
+              this.control.uischema,
+              'error.contentSchema.minItems'
+            );
+            this.currentFileValidationErrors = this.t(
+              key!,
+              `size should be greater than ${formatBytes(this.minFileSize)}`
+            );
+          }
         }
       }
 
@@ -281,7 +333,8 @@ export const isBase64String = and(
     (schema) =>
       (Object.prototype.hasOwnProperty.call(schema, 'contentEncoding') &&
         (schema as any).contentEncoding == 'base64') ||
-      schema.format === 'file'
+      schema.format === 'binary' ||
+      schema.format === 'byte'
   )
 );
 

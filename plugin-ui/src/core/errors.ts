@@ -32,7 +32,7 @@ const codeErrors: Record<
 > = {
   INVALID_CAMUNDA_FORM_CONFIG: (params) => `Invalid configuration`,
   INVALID_CAMUNDA_FORM_KEY: (params) =>
-    'Unsupported form key ${params.formKey}',
+    `Unsupported form key ${params?.formKey}`,
   MISSING_JSONFORMS_SCHEMA: (params) => `Unable to find form schema`,
   MISSING_JSONFORMS_UISCHEMA: (params) => `Unable to find form UI`,
 
@@ -77,7 +77,7 @@ export class AppException extends Error {
     errorParams?: Record<string, any>,
     cause?: Error
   ) {
-    super(`${code}: ${codeErrors[code](errorParams)}`);
+    super(`${codeErrors[code](errorParams)}`);
 
     this.name = code;
     this.code = code;

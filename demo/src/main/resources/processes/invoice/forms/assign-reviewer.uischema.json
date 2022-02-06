@@ -20,7 +20,14 @@
     {
       "type": "Button",
       "text": "Submit",
-      "color": "primary"
+      "color": "primary",
+      "rule": {
+        "effect": "ENABLE",
+        "condition": {
+          "scope": "#/",
+          "schema": { "$ref": "/#" }
+        }
+      }
     }
   ]
 }

@@ -69,7 +69,7 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
                         if (value instanceof InputStream) {
                             JSONObject propertySchema = jsonSchema.getJSONObject("properties").getJSONObject(entry.getKey());
                             if (propertySchema != null) {
-                                if ("string".equals(propertySchema.getString("type")) && "file".equals(propertySchema.getString("format"))) {
+                                if ("string".equals(propertySchema.getString("type")) && "binary".equals(propertySchema.getString("format"))) {
                                     // remove the type so that the validator won't require that the value of type InputStream be compatible with the type StringF
                                     propertySchema.remove("type");
                                 }
