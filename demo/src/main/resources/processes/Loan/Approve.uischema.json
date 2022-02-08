@@ -34,15 +34,15 @@
       "type": "Label",
       "text": "Your name at loading is {{ data.loanRequest?.name }}",
       "options": {
-        "template": true
+        "template": true,
+        "v-once": true
       }
     },
     {
       "type": "Label",
-      "text": "Your name is <span style=\"color: red\">{{ data.loanRequest?.name }}</span>",
+      "text": "Your name is {{ data.loanRequest?.name }}",
       "options": {
-        "template": true,
-        "dynamic": true
+        "template": true
       }
     },
     {
@@ -53,12 +53,8 @@
           "text": "Display the name on right side only if the name is John"
         },
         {
-          "type": "Label",
-          "text": "<span v-if=\"data.loanRequest?.name == 'John'\">{{ data.loanRequest?.name }}</span>",
-          "options": {
-            "template": true,
-            "dynamic": true
-          }
+          "type": "TemplateLayout",
+          "template": "<span v-if=\"data.loanRequest?.name == 'John'\">{{ data.loanRequest?.name }}</span>"
         }
       ]
     },
@@ -73,16 +69,14 @@
           "type": "Label",
           "text": "Data: {{ data ? JSON.stringify( data ) : '' }}",
           "options": {
-            "template": true,
-            "dynamic": true
+            "template": true
           }
         },
         {
           "type": "Label",
           "text": "Errors: {{ errors ? JSON.stringify( errors ) : '' }}",
           "options": {
-            "template": true,
-            "dynamic": true
+            "template": true
           }
         }
       ]

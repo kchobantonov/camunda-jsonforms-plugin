@@ -69,6 +69,20 @@
       "i18n": "notes"
     }
   },
+  "if": {
+    "properties": {
+      "approved": { "const": false }
+    }
+  },
+  "then": {
+    "notes": {
+      "type": "string",
+      "minLength": 5
+    },
+    "dependentRequired": {
+      "approved": ["notes"]
+    }
+  },
   "patternProperties": {
     "approved": {
       "type": "boolean"

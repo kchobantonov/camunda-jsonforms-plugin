@@ -14,12 +14,18 @@
 </template>
 
 <script lang="ts">
-import { compileToFunctions } from 'vue-template-compiler';
+import {
+  CompiledResultFunctions,
+  compileToFunctions,
+} from 'vue-template-compiler';
 import Vue, { ComponentOptions } from 'vue';
 import { defineComponent } from '@vue/composition-api';
 import { CompType } from '../config/config';
 import { UISchemaElement } from '@jsonforms/core';
 import merge from 'lodash/merge';
+import { Accessors } from 'vue/types/options';
+
+type Methods<V> = { [key: string]: (this: V, ...args: any[]) => any };
 
 const templateCompiler = defineComponent({
   name: 'template-compiler',
@@ -28,13 +34,26 @@ const templateCompiler = defineComponent({
 
   props: {
     parent: {
-      type: Object,
+      type: Object as CompType<Vue, ObjectConstructor>,
       default: undefined,
     },
 
     template: {
       type: String,
       default: '<div></div>',
+    },
+
+    componentComputed: {
+      type: Object as CompType<
+        Accessors<{ [key: string]: any }>,
+        ObjectConstructor
+      >,
+      default: undefined,
+    },
+
+    componentMethods: {
+      type: Object as CompType<Methods<Vue>, ObjectConstructor>,
+      default: undefined,
     },
 
     elements: {
@@ -46,7 +65,7 @@ const templateCompiler = defineComponent({
   data() {
     return {
       isCompiling: false,
-      compiled: null,
+      compiled: null as CompiledResultFunctions | null,
     };
   },
 
@@ -55,47 +74,40 @@ const templateCompiler = defineComponent({
       const data = [
         this.parentData,
         this.parentProps,
-        this.parentComponent._provided,
+        (this.parentComponent as any)._provided,
       ];
+      const computed: any = this.componentComputed || {};
+      const methods: any = this.componentMethods || {};
+      const filters: any = {};
       return {
-        filters: this.parentFilters,
         components: this.parentComponents,
-        computed: this.parentComputed,
-        methods: this.parentMethods,
+        computed: computed,
+        filters: filters,
+        methods: methods,
         data: () => merge({}, ...data),
       };
     },
 
     parentComponent(): Vue {
-      return this.parent || this.$parent;
+      return (this.parent as Vue) || this.$parent;
     },
 
     parentData() {
-      return (this.parentComponent as Vue).$data || {};
+      return (this.parentComponent as any as Vue).$data || {};
     },
 
     parentProps() {
-      return (this.parentComponent as Vue).$props || {};
+      return (this.parentComponent as any as Vue).$props || {};
     },
 
-    parentOptions(): ComponentOptions<Vue> {
-      return (this.parentComponent as Vue).$options || {};
-    },
-
-    parentComputed() {
-      return (this.parentOptions as ComponentOptions<Vue>).computed || {};
+    parentOptions() {
+      return (this.parentComponent as any as Vue).$options.filters || {};
     },
 
     parentComponents() {
-      return (this.parentOptions as ComponentOptions<Vue>).components || {};
-    },
-
-    parentMethods() {
-      return (this.parentOptions as ComponentOptions<Vue>).methods || {};
-    },
-
-    parentFilters() {
-      return (this.parentOptions as ComponentOptions<Vue>).filters || {};
+      return (
+        (this.parentOptions as any as ComponentOptions<Vue>).components || {}
+      );
     },
   },
 

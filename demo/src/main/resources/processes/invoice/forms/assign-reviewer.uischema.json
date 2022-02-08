@@ -14,8 +14,19 @@
       "scope": "#/properties/invoiceNumber"
     },
     {
-      "type": "Control",
-      "scope": "#/properties/reviewer"
+      "type": "DataProvider",
+      "url": "{{ config.camundaUrl }}/user",
+      "elements": [
+        {
+          "type": "Control",
+          "scope": "#/properties/reviewer",
+          "options": {
+            "variant": "v-select",
+            "item-text": "{{ firstName }} {{ lastName }}",
+            "item-value": "{{ id }}"
+          }
+        }
+      ]
     },
     {
       "type": "Button",

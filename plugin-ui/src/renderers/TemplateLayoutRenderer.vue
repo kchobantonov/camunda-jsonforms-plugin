@@ -8,6 +8,8 @@
       :template="template"
       :parent="parentComponent"
       :elements="elements"
+      :componentComputed="componentComputed()"
+      :componentMethods="componentMethods()"
     >
       <template
         v-if="elements !== undefined && elements.length == 1"
@@ -23,10 +25,7 @@
           :cells="layout.cells"
         />
       </template>
-      <template
-        v-for="(element, index) in elements"
-        v-slot:[`${index}`]
-      >
+      <template v-for="(element, index) in elements" v-slot:[`${index}`]>
         <dispatch-renderer
           :key="`${layout.path}-${index}`"
           :schema="layout.schema"
@@ -46,11 +45,11 @@ import {
   JsonFormsRendererRegistryEntry,
   Layout,
   rankWith,
-  uiTypeIs,
   JsonFormsSubStates,
   UISchemaElement,
+  uiTypeIs,
 } from '@jsonforms/core';
-import { defineComponent, inject, unref } from '@vue/composition-api';
+import { defineComponent, inject, ref, unref } from '@vue/composition-api';
 import {
   DispatchRenderer,
   rendererProps,
@@ -112,12 +111,14 @@ const templateLayoutRenderer = defineComponent({
       );
     }
 
-    let templateError: string | null = null;
+    let templateError = ref<string | null>(null);
 
     let camundaForm = {
       config: camundaFormConfig,
       context: camundaFormContext,
     };
+
+    const scopeData = inject<any>('scopeData');
 
     return {
       ...layout,
@@ -126,6 +127,7 @@ const templateLayoutRenderer = defineComponent({
       parentComponent: this,
       templateError,
       camundaForm,
+      scopeData,
     };
   },
   errorCaptured: function (err: Error, vm: Vue, info: string) {
@@ -134,28 +136,43 @@ const templateLayoutRenderer = defineComponent({
     }
   },
   computed: {
+    dataProvider(): any {
+      //const scopeData: any = this.$parent.$parent.scopeData;
+      const scopeData: any = this.scopeData;
+      return scopeData;
+    },
     data(): any {
-      const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
+      //const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
+      const jsonforms: JsonFormsSubStates = this.jsonforms;
       return jsonforms.core?.data;
     },
     config(): CamundaFormConfig {
+      // let form: {
+      //   config: CamundaFormConfig;
+      //   context: CamundaFormContext;
+      // } = this.$parent.$parent.camundaForm;
       let form: {
         config: CamundaFormConfig;
         context: CamundaFormContext;
-      } = this.$parent.$parent.camundaForm;
+      } = this.camundaForm;
 
       return form?.config;
     },
     context(): CamundaFormContext {
+      // let form: {
+      //   config: CamundaFormConfig;
+      //   context: CamundaFormContext;
+      // } = this.$parent.$parent.camundaForm;
       let form: {
         config: CamundaFormConfig;
         context: CamundaFormContext;
-      } = this.$parent.$parent.camundaForm;
+      } = this.camundaForm;
 
       return unref(form?.context);
     },
     errors(): ErrorObject[] | undefined {
-      const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
+      //const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
+      const jsonforms: JsonFormsSubStates = this.jsonforms;
       return jsonforms.core?.errors;
     },
     template(): string | undefined {
@@ -166,11 +183,35 @@ const templateLayoutRenderer = defineComponent({
     },
   },
   methods: {
+    componentComputed() {
+      const proxy = {} as any;
+      const parentComponent = this as any;
+
+      for (const key of [
+        'dataProvider',
+        'data',
+        'config',
+        'context',
+        'errors',
+      ]) {
+        proxy[key] = function () {
+          return parentComponent?.[key];
+        };
+      }
+
+      return proxy;
+    },
+    componentMethods() {
+      return {
+        translate: this.translate.bind(this.parentComponent),
+      };
+    },
     translate(
       key: string,
       defaultMessage: string | undefined
     ): string | undefined {
-      return this.$parent.$parent.t(key, defaultMessage);
+      //return this.$parent.$parent.t(key, defaultMessage ?? '');
+      return this.t(key, defaultMessage ?? '');
     },
   },
 });

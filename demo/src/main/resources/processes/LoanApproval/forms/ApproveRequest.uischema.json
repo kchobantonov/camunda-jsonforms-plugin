@@ -121,17 +121,19 @@
               "rule": {
                 "effect": "ENABLE",
                 "condition": {
-                  "scope": "#/properties/notes",
+                  "scope": "#/",
                   "schema": {
                     "allOf": [
                       { "$ref": "/#" },
                       {
+                        "type": "object",
                         "properties": {
                           "notes": {
                             "type": "string",
                             "minLength": 5
                           }
-                        }
+                        },
+                        "required": ["notes"]
                       }
                     ]
                   }
