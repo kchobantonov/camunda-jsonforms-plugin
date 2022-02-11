@@ -15,7 +15,8 @@ import {
   Action,
   CamundaFormConfig,
   CamundaFormContext,
-  CAMUNDA_FORM_KEY_QUERY_PARAM_JSONFORM_LOCATION,
+  CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT,
+  CAMUNDA_FORM_KEY_QUERY_PARAM_PATH,
   FileValueInfo,
   isProcessDefinitionIdConfig,
   isProcessDefinitionKeyConfig,
@@ -240,70 +241,23 @@ export class CamundaFormApi {
             result.processDefinition.id
           )
         ).key;
-    const formNameDeployment = getParameterByName(
-      CAMUNDA_FORM_KEY_QUERY_PARAM_JSONFORM_LOCATION,
+    const deploymentLocation = getParameterByName(
+      CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT,
       formKey
     );
-    if (!formNameDeployment) {
+    const pathLocation = getParameterByName(
+      CAMUNDA_FORM_KEY_QUERY_PARAM_PATH,
+      formKey
+    );
+
+    if (!this.validDeploymentLocation(deploymentLocation) && !this.validPathLocation(pathLocation)) {
       throw new AppException(AppErrorCode.INVALID_CAMUNDA_FORM_KEY, {
         formKey: formKey,
       });
     }
 
-    const resources = await getDeploymentResources(
-      client,
-      this.config.camundaUrl,
-      result.processDefinition.deploymentId!
-    );
-
-    const formSchemaResource = resources.find(
-      (i) => i.name === formNameDeployment + RESOURCE_SCHEMA_SUFFIX
-    );
-    const formUiResource = resources.find(
-      (i) => i.name === formNameDeployment + RESOURCE_UISCHEMA_SUFFIX
-    );
-    const i18nResource = resources.find(
-      (i) => i.name === formNameDeployment + RESOURCE_I18N_SUFFIX
-    );
-
-    if (formSchemaResource == null) {
-      throw new AppException(AppErrorCode.MISSING_JSONFORMS_SCHEMA);
-    }
-
-    if (formUiResource == null) {
-      throw new AppException(AppErrorCode.MISSING_JSONFORMS_UISCHEMA);
-    }
-
-    const schema = await getDeploymentResourceJsonData(
-      client,
-      this.config.camundaUrl,
-      result.processDefinition.deploymentId!,
-      formSchemaResource.id,
-      AppErrorCode.RETRIEVE_JSONFORMS_SCHEMA,
-      AppErrorCode.INVALID_JSONFORMS_SCHEMA
-    );
-
-    const uischema = await getDeploymentResourceJsonData(
-      client,
-      this.config.camundaUrl,
-      result.processDefinition.deploymentId!,
-      formUiResource.id,
-      AppErrorCode.RETRIEVE_JSONFORMS_UISCHEMA,
-
-      AppErrorCode.INVALID_JSONFORMS_UISCHEMA
-    );
-
-    if (i18nResource) {
-      const i18n = await getDeploymentResourceJsonData(
-        client,
-        this.config.camundaUrl,
-        result.processDefinition.deploymentId!,
-        i18nResource.id,
-        AppErrorCode.RETRIEVE_JSONFORMS_I18N,
-
-        AppErrorCode.INVALID_JSONFORMS_I18N
-      );
-
+    const { schema, uischema, i18n } = deploymentLocation ? await this.loadResourcesFromDeployment(client, deploymentLocation, result.processDefinition.deploymentId!) : await this.loadResourcesFromPath(client, pathLocation!);
+    if (i18n) {
       result.translations = i18n;
     }
 
@@ -343,7 +297,7 @@ export class CamundaFormApi {
 
     result.input = {
       schema: schema,
-      uischema: uischema as UISchemaElement,
+      uischema: uischema ?? undefined,
       data: data,
     };
 
@@ -351,5 +305,114 @@ export class CamundaFormApi {
       (result.input.schema as any).$id = '/';
     }
     return result as CamundaFormContext;
+  }
+
+  private validDeploymentLocation(location?: string | null) {
+    return location !== undefined && location !== null;
+  }
+
+  private validPathLocation(location?: string | null) {
+    return location !== undefined && location !== null && location.startsWith('/');
+  }
+
+  private async loadResourcesFromPath(client: RestClient, pathLocation: string) {
+    const schemaResponse = await client
+      .fetch(
+        `${pathLocation}${RESOURCE_SCHEMA_SUFFIX}`
+      )
+      .catch((e) => {
+        throw new AppException(AppErrorCode.RETRIEVE_JSONFORMS_SCHEMA, e);
+      });
+    if (!schemaResponse.ok) {
+      throw new AppException(AppErrorCode.RETRIEVE_JSONFORMS_SCHEMA, e);
+    }
+    const schema = await schemaResponse.json().catch((e) => {
+      throw new AppException(AppErrorCode.INVALID_JSONFORMS_SCHEMA, e);
+    }) as JsonSchema;
+
+    let uischema: UISchemaElement | null = null;
+    let i18n: Record<string, any> | null = null;
+
+    const uischemaResponse = await client.fetch(`${pathLocation}${RESOURCE_UISCHEMA_SUFFIX}`).catch((e) => {
+      throw new AppException(AppErrorCode.RETRIEVE_JSONFORMS_UISCHEMA, e);
+    });
+    if (uischemaResponse.ok) {
+      uischema = await uischemaResponse.json().catch((e) => {
+        throw new AppException(AppErrorCode.INVALID_JSONFORMS_UISCHEMA, e);
+      });
+    }
+
+    const i18nResponse = await client.fetch(`${pathLocation}${RESOURCE_I18N_SUFFIX}`).catch((e) => {
+      throw new AppException(AppErrorCode.RETRIEVE_JSONFORMS_I18N, e);
+    });
+    if (i18nResponse.ok) {
+      i18n = await i18nResponse.json().catch((e) => {
+        throw new AppException(AppErrorCode.INVALID_JSONFORMS_I18N, e);
+      });
+    }
+
+    return { schema, uischema, i18n };
+  }
+
+  private async loadResourcesFromDeployment(client: RestClient, deploymentLocation: string, deploymentId: string) {
+    const resources = await getDeploymentResources(
+      client,
+      this.config.camundaUrl,
+      deploymentId
+    );
+
+    const formSchemaResource = resources.find(
+      (i) => i.name === deploymentLocation + RESOURCE_SCHEMA_SUFFIX
+    );
+    const formUiResource = resources.find(
+      (i) => i.name === deploymentLocation + RESOURCE_UISCHEMA_SUFFIX
+    );
+    const i18nResource = resources.find(
+      (i) => i.name === deploymentLocation + RESOURCE_I18N_SUFFIX
+    );
+
+    if (formSchemaResource == null) {
+      throw new AppException(AppErrorCode.MISSING_JSONFORMS_SCHEMA);
+    }
+
+    if (formUiResource == null) {
+      throw new AppException(AppErrorCode.MISSING_JSONFORMS_UISCHEMA);
+    }
+
+    const schema = await getDeploymentResourceJsonData(
+      client,
+      this.config.camundaUrl,
+      deploymentId!,
+      formSchemaResource.id,
+      AppErrorCode.RETRIEVE_JSONFORMS_SCHEMA,
+      AppErrorCode.INVALID_JSONFORMS_SCHEMA
+    ) as JsonSchema;
+
+
+    const uischema = await getDeploymentResourceJsonData(
+      client,
+      this.config.camundaUrl,
+      deploymentId!,
+      formUiResource.id,
+      AppErrorCode.RETRIEVE_JSONFORMS_UISCHEMA,
+
+      AppErrorCode.INVALID_JSONFORMS_UISCHEMA
+    ) as UISchemaElement;
+
+    let i18n: Record<string, any> | null = null;
+    if (i18nResource) {
+      i18n = await getDeploymentResourceJsonData(
+        client,
+        this.config.camundaUrl,
+        deploymentId!,
+        i18nResource.id,
+        AppErrorCode.RETRIEVE_JSONFORMS_I18N,
+
+        AppErrorCode.INVALID_JSONFORMS_I18N
+      );
+
+    }
+
+    return { schema, uischema, i18n };
   }
 }

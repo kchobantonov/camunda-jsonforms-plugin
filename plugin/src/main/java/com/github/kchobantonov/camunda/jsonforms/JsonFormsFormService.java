@@ -1,15 +1,9 @@
 package com.github.kchobantonov.camunda.jsonforms;
 
 import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.camunda.bpm.engine.impl.cmd.GetTaskFormVariablesCmd;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
@@ -22,7 +16,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 /**
- * JsonFormFormService restricts the access to process variables based on the attached json forms schema.
+ * JsonFormFormService restricts the access to process variables based on the
+ * attached json forms schema.
  */
 public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServiceImpl {
 
@@ -39,7 +34,6 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
      * }
      * 
      */
-
 
     @Override
     public VariableMap getTaskFormVariables(String taskId, Collection<String> formVariables,
@@ -66,14 +60,14 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
             task.initializeFormKey();
 
             if (task.getFormKey() != null
-                    && task.getFormKey().startsWith("embedded:app:webjars/forms/jsonforms.html")) {
+                    && task.getFormKey().startsWith(Utils.CAMUNDA_JSONFORMS_URL)) {
 
                 DeploymentEntity deploymentEntity = commandContext.getDeploymentManager()
                         .findDeploymentById(task.getProcessDefinition().getDeploymentId());
                 if (deploymentEntity != null) {
-                    String formFile = getFormFile(task.getFormKey());
+                    String formFile = Utils.getFormFile(task.getFormKey());
 
-                    ResourceEntity schema = deploymentEntity.getResource(formFile + ".schema.json");
+                    ResourceEntity schema = deploymentEntity.getResource(formFile + Utils.RESOURCE_SCHEMA_SUFFIX);
                     if (schema != null) {
                         JSONObject jsonSchema = new JSONObject(
                                 new JSONTokener(new ByteArrayInputStream(schema.getBytes())));
@@ -95,41 +89,6 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
             }
 
             return result;
-        }
-
-        private Map<String, List<String>> parseQueryString(String s) {
-            Map<String, List<String>> ht = new HashMap<>();
-            StringTokenizer st = new StringTokenizer(s, "&");
-            while (st.hasMoreTokens()) {
-                String pair = st.nextToken();
-                int pos = pair.indexOf('=');
-                List<String> values = ht.computeIfAbsent(pair.substring(0, pos), (key) -> new ArrayList<>());
-                if (pos == -1) {
-                    values.add("");
-                } else {
-                    try {
-                        values.add(URLDecoder.decode(pair.substring(pos + 1), "UTF-8"));
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-            return ht;
-        }
-
-        private String getFormFile(String formKey) {
-            int queryStart = formKey.indexOf("?");
-            if (queryStart == -1 && queryStart < formKey.length() - 1) {
-                return null;
-            }
-
-            Map<String, List<String>> parameters = parseQueryString(formKey.substring(queryStart + 1));
-            List<String> deployment = parameters.get("deployment");
-            if (deployment == null || deployment.isEmpty()) {
-                return null;
-            }
-
-            return deployment.get(0);
         }
     }
 }

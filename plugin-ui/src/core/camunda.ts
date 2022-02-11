@@ -33,6 +33,9 @@ export const getDeploymentResources = async (
     .catch((e) => {
       throw new AppException(AppErrorCode.RETRIEVE_DEPLOYMENT_RESOURCES, e);
     });
+  if (!response.ok) {
+    throw new AppException(AppErrorCode.RETRIEVE_DEPLOYMENT_RESOURCES);
+  }
 
   return response.json().catch((e) => {
     throw new AppException(
@@ -57,6 +60,9 @@ export const getDeploymentResourceJsonData = async (
     .catch((e) => {
       throw new AppException(resourceErrorCode, e);
     });
+  if (!response.ok) {
+    throw new AppException(resourceErrorCode);
+  }
   return response.json().catch((e) => {
     throw new AppException(jsonErrorCode, e);
   });
@@ -72,6 +78,9 @@ export const getTask = async (
     .catch((e) => {
       throw new AppException(AppErrorCode.RETRIEVE_TASK, e);
     });
+  if (!response.ok) {
+    throw new AppException(AppErrorCode.RETRIEVE_TASK);
+  }
 
   return response.json().catch((e) => {
     throw new AppException(AppErrorCode.INVALID_TASK_RESPONSE, e);
@@ -88,6 +97,9 @@ export const getProcessDefinition = async (
     .catch((e) => {
       throw new AppException(AppErrorCode.RETRIEVE_PROCESS_DEFINITION, e);
     });
+  if (!response.ok) {
+    throw new AppException(AppErrorCode.RETRIEVE_PROCESS_DEFINITION);
+  }
 
   return response.json().catch((e) => {
     throw new AppException(AppErrorCode.INVALID_PROCESS_DEFINITION_RESPONSE, e);
@@ -104,6 +116,9 @@ export const getProcessDefinitionByKey = async (
     .catch((e) => {
       throw new AppException(AppErrorCode.RETRIEVE_PROCESS_DEFINITION, e);
     });
+  if (!response.ok) {
+    throw new AppException(AppErrorCode.RETRIEVE_PROCESS_DEFINITION);
+  }
 
   return response.json().catch((e) => {
     throw new AppException(AppErrorCode.INVALID_PROCESS_DEFINITION_RESPONSE, e);
@@ -123,6 +138,9 @@ export const getProcessDefinitionStartForm = async (
         e
       );
     });
+  if (!response.ok) {
+    throw new AppException(AppErrorCode.RETRIEVE_PROCESS_DEFINITION_START_FORM);
+  }
 
   return response.json().catch((e) => {
     throw new AppException(

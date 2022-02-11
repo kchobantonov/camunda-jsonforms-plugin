@@ -2,13 +2,7 @@ package com.github.kchobantonov.camunda.jsonforms;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import org.camunda.bpm.engine.delegate.VariableScope;
 import org.camunda.bpm.engine.impl.context.Context;
@@ -35,18 +29,21 @@ import org.json.JSONTokener;
 public class JsonFormsFormFieldValidator implements FormFieldValidator {
 
     @Override
-    public boolean validate(Object submittedValue, FormFieldValidatorContext validatorContext) {
+    public boolean validate(Object submittedValue,
+            FormFieldValidatorContext validatorContext) {
 
         Map<String, Object> submittedValues = validatorContext.getSubmittedValues();
 
         String formKey = getFormKey(validatorContext.getVariableScope());
         String deploymentId = getDeploymentId(validatorContext.getVariableScope());
-        String formFile = getFormFile(formKey);
+        String formFile = Utils.getFormFile(formKey);
 
         if (formFile != null) {
 
-            ResourceEntity resource = Context.getCommandContext().getDeploymentManager()
-                    .findDeploymentById(deploymentId).getResource(formFile + ".schema.json");
+            ResourceEntity resource = Context.getCommandContext()
+                    .getDeploymentManager()
+                    .findDeploymentById(deploymentId)
+                    .getResource(formFile + Utils.RESOURCE_SCHEMA_SUFFIX);
 
             if (resource != null) {
                 JSONObject jsonSchema = new JSONObject(
@@ -58,19 +55,25 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
                         SpinJsonNode node = (SpinJsonNode) entry.getValue();
 
                         if (node.isObject()) {
-                            object.put(entry.getKey(), new JSONObject(new JSONTokener(node.toString())));
+                            object.put(entry.getKey(),
+                                    new JSONObject(new JSONTokener(node.toString())));
                         } else if (node.isArray()) {
-                            object.put(entry.getKey(), new JSONArray(new JSONTokener(node.toString())));
+                            object.put(entry.getKey(),
+                                    new JSONArray(new JSONTokener(node.toString())));
                         } else {
                             object.put(entry.getKey(), entry.getValue());
                         }
                     } else {
                         Object value = entry.getValue();
                         if (value instanceof InputStream) {
-                            JSONObject propertySchema = jsonSchema.getJSONObject("properties").getJSONObject(entry.getKey());
+                            JSONObject propertySchema = jsonSchema.getJSONObject("properties")
+                                    .getJSONObject(entry.getKey());
                             if (propertySchema != null) {
-                                if ("string".equals(propertySchema.getString("type")) && "binary".equals(propertySchema.getString("format"))) {
-                                    // remove the type so that the validator won't require that the value of type InputStream be compatible with the type StringF
+                                if ("string".equals(propertySchema.getString("type")) &&
+                                        "binary".equals(propertySchema.getString("format"))) {
+                                    // remove the type so that the validator won't require that
+                                    // the value of type InputStream be compatible with the type
+                                    // StringF
                                     propertySchema.remove("type");
                                 }
                             }
@@ -88,64 +91,36 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
                 Schema schema = loader.load().build();
 
                 try {
-                    Validator validator = Validator.builder().failEarly().readWriteContext(ReadWriteContext.WRITE)
+                    Validator validator = Validator.builder()
+                            .failEarly()
+                            .readWriteContext(ReadWriteContext.WRITE)
                             .build();
                     validator.performValidation(schema, object);
 
                     return true;
                 } catch (ValidationException e) {
-                    throw new FormFieldValidatorException("jsonforms", "jsonforms", null, submittedValue,
+                    throw new FormFieldValidatorException(
+                            Utils.CUSTOM_FORM_FIELD_VALIDATOR_NAME,
+                            Utils.CUSTOM_FORM_FIELD_VALIDATOR_NAME, null, submittedValue,
                             e.getErrorMessage(), e);
                 }
-
             }
         }
 
         return true;
     }
 
-    private static Map<String, List<String>> parseQueryString(String s) {
-        Map<String, List<String>> ht = new HashMap<>();
-        StringTokenizer st = new StringTokenizer(s, "&");
-        while (st.hasMoreTokens()) {
-            String pair = st.nextToken();
-            int pos = pair.indexOf('=');
-            List<String> values = ht.computeIfAbsent(pair.substring(0, pos), (key) -> new ArrayList<>());
-            if (pos == -1) {
-                values.add("");
-            } else {
-                try {
-                    values.add(URLDecoder.decode(pair.substring(pos + 1), "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        return ht;
-    }
-
-    private String getFormFile(String formKey) {
-        int queryStart = formKey.indexOf("?");
-        if (queryStart == -1 && queryStart < formKey.length() - 1) {
-            return null;
-        }
-
-        Map<String, List<String>> parameters = parseQueryString(formKey.substring(queryStart + 1));
-        List<String> deployment = parameters.get("deployment");
-        if (deployment == null || deployment.isEmpty()) {
-            return null;
-        }
-
-        return deployment.get(0);
-    }
-
     private String getDeploymentId(VariableScope variableScope) {
         if (variableScope instanceof TaskEntity) {
-            return ((TaskEntity) variableScope).getProcessDefinition().getDeploymentId();
+            return ((TaskEntity) variableScope)
+                    .getProcessDefinition()
+                    .getDeploymentId();
         }
 
         if (variableScope instanceof ExecutionEntity) {
-            return ((ExecutionEntity) variableScope).getProcessDefinition().getDeploymentId();
+            return ((ExecutionEntity) variableScope)
+                    .getProcessDefinition()
+                    .getDeploymentId();
         }
         throw new FormFieldConfigurationException("Could not get deployment id");
     }
@@ -163,7 +138,7 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
             }
         }
 
-        throw new IllegalStateException("Did not receive a expected variable scope.");
+        throw new IllegalStateException(
+                "Did not receive a expected variable scope.");
     }
-
 }

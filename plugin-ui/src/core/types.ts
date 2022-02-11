@@ -2,7 +2,7 @@ import { UISchemaElement, JsonSchema } from '@jsonforms/core';
 
 export type CamundaJsonFormInput = {
   schema: JsonSchema;
-  uischema: UISchemaElement;
+  uischema?: UISchemaElement;
   data: Record<string, any>;
 };
 
@@ -152,7 +152,8 @@ export interface FileValueInfo extends ValueInfo {
 export const RESOURCE_SCHEMA_SUFFIX = '.schema.json';
 export const RESOURCE_UISCHEMA_SUFFIX = '.uischema.json';
 export const RESOURCE_I18N_SUFFIX = '.i18n.json';
-export const CAMUNDA_FORM_KEY_QUERY_PARAM_JSONFORM_LOCATION = 'deployment';
+export const CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT = 'deployment';
+export const CAMUNDA_FORM_KEY_QUERY_PARAM_PATH = 'path';
 
 export type Emitter = (event: string, ...args: any[]) => void;
 

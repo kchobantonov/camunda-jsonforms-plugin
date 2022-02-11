@@ -12,7 +12,8 @@ public class JsonFormsFormFieldValidatorProcessEnginePlugin implements ProcessEn
         if (processEngineConfiguration.getCustomFormFieldValidators() == null) {
             processEngineConfiguration.setCustomFormFieldValidators(new HashMap<>());
         }
-        processEngineConfiguration.getCustomFormFieldValidators().put("jsonforms", JsonFormsFormFieldValidator.class);
+        processEngineConfiguration.getCustomFormFieldValidators().put(Utils.CUSTOM_FORM_FIELD_VALIDATOR_NAME,
+                JsonFormsFormFieldValidator.class);
     }
 
     @Override
