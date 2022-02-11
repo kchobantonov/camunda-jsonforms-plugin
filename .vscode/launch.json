@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-Application<camunda-jsonforms-plugin-demo>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "mainClass": "com.github.kchobantonov.camunda.jsonforms.Application",
+            "projectName": "camunda-jsonforms-plugin-demo",
+            "vmArgs": "-DCAMUNDA_JSONFORMS_ENABLE_JS_CONSOLE_LOG=true -DCAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH=/forms -DCAMUNDA_JSONFORMS_RESOURCES_FOLDER=${workspaceFolder}/demo/src/main/resources"
+        }
+    ]
+}
