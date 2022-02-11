@@ -62,7 +62,7 @@
 
     function onLoadResponse(response) {
         if (response.status >= 300) {
-            showNotification('error', null, "Submit Error", response.statusText);
+            showNotification('error', null, "Load Error", response.statusText);
         }
     }
     
