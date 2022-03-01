@@ -20,27 +20,27 @@
       @focus="isFocused = true"
       @blur="isFocused = false"
     ></v-file-input>
-
-    <v-dialog v-model="dialog" hide-overlay persistent width="300">
-      <v-card>
-        <v-toolbar dense flat>
-          <v-toolbar-title>{{ standby }}</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-btn @click="abort" icon> <v-icon>mdi-close</v-icon> </v-btn>
-        </v-toolbar>
-        <v-card-text>
-          <v-progress-linear
-            v-model="progressValue"
-            :indeterminate="progressIndeterminate"
-            :query="true"
-            height="25"
-          >
-            <strong>{{ Math.ceil(progressValue) }}%</strong>
-          </v-progress-linear>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
   </v-hover>
+
+  <v-dialog v-model="dialog" hide-overlay persistent width="300">
+    <v-card>
+      <v-toolbar dense flat>
+        <v-toolbar-title>{{ standby }}</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-btn @click="abort" icon> <v-icon>mdi-close</v-icon> </v-btn>
+      </v-toolbar>
+      <v-card-text>
+        <v-progress-linear
+          v-model="progressValue"
+          :indeterminate="progressIndeterminate"
+          :query="true"
+          height="25"
+        >
+          <strong>{{ Math.ceil(progressValue) }}%</strong>
+        </v-progress-linear>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script lang="ts">
