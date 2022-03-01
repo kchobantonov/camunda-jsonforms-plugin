@@ -37,9 +37,8 @@ import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
 import { defineComponent, inject } from '@vue/composition-api';
 import { VBtn } from 'vuetify/lib';
 import { CamundaFormApi } from '../core/api';
-import { RestClient } from '../core/rest';
+import { RestClient, SubmitEmitter, ResponseOkInterceptor } from '../core/rest';
 import { CamundaFormContext, Action, Emitter } from '../core/types';
-import { SubmitEmitter, ResponseOkInterceptor } from '../core/rest';
 
 interface ButtonElement extends UISchemaElement {
   type: 'Button';

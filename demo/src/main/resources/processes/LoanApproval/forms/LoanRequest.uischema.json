@@ -27,7 +27,14 @@
             },
             {
               "type": "Control",
-              "scope": "#/properties/nationality"
+              "scope": "#/properties/nationality",
+              "options": {
+                "vuetify": {
+                  "v-autocomplete": {
+                    "attach": true
+                  }
+                }
+              }
             }
           ]
         },

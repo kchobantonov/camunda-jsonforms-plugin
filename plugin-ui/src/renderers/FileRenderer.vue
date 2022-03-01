@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-hover v-slot="{ hover }">
     <v-file-input
       v-disabled-icon-focus
       :id="control.id + '-input'"
@@ -40,7 +40,7 @@
         </v-card-text>
       </v-card>
     </v-dialog>
-  </div>
+  </v-hover>
 </template>
 
 <script lang="ts">
@@ -69,6 +69,7 @@ import {
 } from '@jsonforms/vue2-vuetify';
 import { defineComponent, unref } from '@vue/composition-api';
 import {
+  VHover,
   VFileInput,
   VDialog,
   VCard,
@@ -171,6 +172,7 @@ const toBase64 = (
 const fileRenderer = defineComponent({
   name: 'file-renderer',
   components: {
+    VHover,
     DispatchRenderer,
     VFileInput,
     VDialog,
@@ -266,6 +268,7 @@ const fileRenderer = defineComponent({
             const key = getI18nKey(
               this.control.schema,
               this.control.uischema,
+              this.control.path,
               'error.contentSchema.maxItems'
             );
 
@@ -283,6 +286,7 @@ const fileRenderer = defineComponent({
             const key = getI18nKey(
               this.control.schema,
               this.control.uischema,
+              this.control.path,
               'error.contentSchema.minItems'
             );
             this.currentFileValidationErrors = this.t(

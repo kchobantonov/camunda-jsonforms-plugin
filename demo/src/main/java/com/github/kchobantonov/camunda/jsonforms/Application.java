@@ -1,8 +1,5 @@
 package com.github.kchobantonov.camunda.jsonforms;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

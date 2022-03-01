@@ -137,20 +137,14 @@ const templateLayoutRenderer = defineComponent({
   },
   computed: {
     dataProvider(): any {
-      //const scopeData: any = this.$parent.$parent.scopeData;
       const scopeData: any = this.scopeData;
       return scopeData;
     },
     data(): any {
-      //const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
       const jsonforms: JsonFormsSubStates = this.jsonforms;
       return jsonforms.core?.data;
     },
     config(): CamundaFormConfig {
-      // let form: {
-      //   config: CamundaFormConfig;
-      //   context: CamundaFormContext;
-      // } = this.$parent.$parent.camundaForm;
       let form: {
         config: CamundaFormConfig;
         context: CamundaFormContext;
@@ -159,10 +153,6 @@ const templateLayoutRenderer = defineComponent({
       return form?.config;
     },
     context(): CamundaFormContext {
-      // let form: {
-      //   config: CamundaFormConfig;
-      //   context: CamundaFormContext;
-      // } = this.$parent.$parent.camundaForm;
       let form: {
         config: CamundaFormConfig;
         context: CamundaFormContext;
@@ -171,7 +161,6 @@ const templateLayoutRenderer = defineComponent({
       return unref(form?.context);
     },
     errors(): ErrorObject[] | undefined {
-      //const jsonforms: JsonFormsSubStates = this.$parent.$parent.jsonforms;
       const jsonforms: JsonFormsSubStates = this.jsonforms;
       return jsonforms.core?.errors;
     },
@@ -210,7 +199,6 @@ const templateLayoutRenderer = defineComponent({
       key: string,
       defaultMessage: string | undefined
     ): string | undefined {
-      //return this.$parent.$parent.t(key, defaultMessage ?? '');
       return this.t(key, defaultMessage ?? '');
     },
   },

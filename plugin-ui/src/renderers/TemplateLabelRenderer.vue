@@ -22,7 +22,6 @@ import {
 } from '@jsonforms/core';
 import { defineComponent, inject } from '@vue/composition-api';
 import {
-  DispatchRenderer,
   rendererProps,
   useJsonFormsLayout,
   RendererProps,
@@ -36,7 +35,6 @@ import { template as templateFn } from '../core/template';
 const templateLabelRenderer = defineComponent({
   name: 'template-label-renderer',
   components: {
-    DispatchRenderer,
     VLabel,
   },
   props: {

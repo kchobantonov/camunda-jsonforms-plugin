@@ -15,7 +15,14 @@
         },
         {
           "type": "Control",
-          "scope": "#/properties/loanRequest/properties/currency"
+          "scope": "#/properties/loanRequest/properties/currency",
+          "options": {
+            "vuetify": {
+              "v-autocomplete": {
+                "attach": true
+              }              
+            }
+          }
         },
         {
           "type": "Control",
@@ -24,6 +31,32 @@
         {
           "type": "Control",
           "scope": "#/properties/loanRequest/properties/loanEndDate"
+        },
+        {
+          "type": "Control",
+          "scope": "#/properties/loanRequest/properties/gender",
+          "options": {
+            "format": "radio",
+            "vuetify": {
+              "v-radio-group": {
+                "row": true
+              },
+              "v-radio": {
+                "Male": {
+                  "on-icon": "mdi-gender-male",
+                  "off-icon": "mdi-gender-male"
+                },
+                "Female": {
+                  "on-icon": "mdi-gender-female",
+                  "off-icon": "mdi-gender-female"
+                },
+                "Unspecified": {
+                  "on-icon": "mdi-gender-male-female",
+                  "off-icon": "mdi-gender-male-female"
+                }
+              }
+            }
+          }
         },
         {
           "type": "TemplateLayout",

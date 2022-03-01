@@ -19,7 +19,8 @@
       "options": {
         "vuetify": {
           "v-autocomplete": {
-            "prepend-icon": "mdi-shape"
+            "prepend-icon": "mdi-shape",
+            "attach": true
           }
         }
       }
