@@ -1,46 +1,48 @@
 <template>
-  <v-hover v-slot="{ hover }">
-    <v-file-input
-      v-disabled-icon-focus
-      :id="control.id + '-input'"
-      :class="styles.control.input"
-      :disabled="!control.enabled"
-      :autofocus="appliedOptions.focus"
-      :placeholder="appliedOptions.placeholder"
-      :label="computedLabel"
-      :hint="control.description"
-      :persistent-hint="persistentHint()"
-      :required="control.required"
-      :error-messages="errorMessages"
-      :clearable="hover"
-      :accept="accept"
-      v-model="currentFile"
-      v-bind="vuetifyProps('v-file-input')"
-      @change="selectFile"
-      @focus="isFocused = true"
-      @blur="isFocused = false"
-    ></v-file-input>
-  </v-hover>
+  <div>
+    <v-hover v-slot="{ hover }">
+      <v-file-input
+        v-disabled-icon-focus
+        :id="control.id + '-input'"
+        :class="styles.control.input"
+        :disabled="!control.enabled"
+        :autofocus="appliedOptions.focus"
+        :placeholder="appliedOptions.placeholder"
+        :label="computedLabel"
+        :hint="control.description"
+        :persistent-hint="persistentHint()"
+        :required="control.required"
+        :error-messages="errorMessages"
+        :clearable="hover"
+        :accept="accept"
+        v-model="currentFile"
+        v-bind="vuetifyProps('v-file-input')"
+        @change="selectFile"
+        @focus="isFocused = true"
+        @blur="isFocused = false"
+      ></v-file-input>
+    </v-hover>
 
-  <v-dialog v-model="dialog" hide-overlay persistent width="300">
-    <v-card>
-      <v-toolbar dense flat>
-        <v-toolbar-title>{{ standby }}</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-btn @click="abort" icon> <v-icon>mdi-close</v-icon> </v-btn>
-      </v-toolbar>
-      <v-card-text>
-        <v-progress-linear
-          v-model="progressValue"
-          :indeterminate="progressIndeterminate"
-          :query="true"
-          height="25"
-        >
-          <strong>{{ Math.ceil(progressValue) }}%</strong>
-        </v-progress-linear>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+    <v-dialog v-model="dialog" hide-overlay persistent width="300">
+      <v-card>
+        <v-toolbar dense flat>
+          <v-toolbar-title>{{ standby }}</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn @click="abort" icon> <v-icon>mdi-close</v-icon> </v-btn>
+        </v-toolbar>
+        <v-card-text>
+          <v-progress-linear
+            v-model="progressValue"
+            :indeterminate="progressIndeterminate"
+            :query="true"
+            height="25"
+          >
+            <strong>{{ Math.ceil(progressValue) }}%</strong>
+          </v-progress-linear>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
 <script lang="ts">
