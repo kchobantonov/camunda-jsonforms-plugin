@@ -64,6 +64,7 @@ import {
   inject,
   MethodOptions,
   ref,
+  unref,
 } from '@vue/composition-api';
 import { ErrorObject } from 'ajv';
 import Vue from 'vue';
@@ -171,7 +172,7 @@ const templateLayoutRenderer = defineComponent({
       return this.formConfig;
     },
     context(): FormContext {
-      return this.formContext;
+      return unref(this.formContext);
     },
     errors(): ErrorObject[] | undefined {
       const jsonforms: JsonFormsSubStates = this.jsonforms;
@@ -189,7 +190,7 @@ const templateLayoutRenderer = defineComponent({
       const defaultComputed = {} as ComputedOptions;
       const parentComponent = this as any;
 
-      for (const key of ['data', 'errors']) {
+      for (const key of ['data', 'errors', 'config', 'context', 'dataProvider']) {
         defaultComputed[key] = function () {
           return parentComponent?.[key];
         };

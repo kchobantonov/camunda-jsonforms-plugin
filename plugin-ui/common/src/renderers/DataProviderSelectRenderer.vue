@@ -7,7 +7,7 @@
   >
     <v-hover v-slot="{ hover }">
       <v-select
-        v-disabled-icon-focus
+        disabled-icon-focus
         :id="control.id + '-input'"
         :class="styles.control.input"
         :disabled="!control.enabled"
@@ -20,12 +20,11 @@
         :error-messages="control.errors"
         :clearable="hover"
         :value="control.data"
-        :error="provider.error !== undefined"
-        :loading="provider.loading"
-        :items="provider.data"
+        :error="dataProvider.error !== undefined"
+        :loading="dataProvider.loading"
+        :items="dataProvider.data"
         :item-text="getItemText"
         :item-value="getItemValue"
-        attach
         v-bind="vuetifyProps('v-select')"
         @change="onChange"
         @focus="isFocused = true"
@@ -74,7 +73,7 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const provider = inject<any>('scopeData');
+    const scopeData = inject<any>('scopeData');
 
     return {
       ...useVuetifyControl(
@@ -82,8 +81,15 @@ const controlRenderer = defineComponent({
         (value) => value || undefined,
         300
       ),
-      provider,
+      scopeData,
     };
+  },
+  computed: {
+    dataProvider(): any {
+      const scopeData: any = this.scopeData;
+
+      return scopeData;
+    },
   },
   methods: {
     getItemValue(item: any) {
@@ -105,6 +111,6 @@ export default controlRenderer;
 
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
-  tester: rankWith(11, and(isStringControl, optionIs('variant', 'v-select'))),
+  tester: rankWith(11, and(isStringControl, optionIs('variant', 'data-provider-select'))),
 };
 </script>

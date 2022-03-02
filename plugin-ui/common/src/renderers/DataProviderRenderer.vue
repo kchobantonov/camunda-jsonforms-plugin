@@ -1,5 +1,5 @@
 <template>
-  <data-provider :url="url" v-if="url">
+  <data-provider :url="expandedUrl" v-if="expandedUrl">
     <div slot-scope="{ fetch }">
       <template v-for="(element, index) in elements">
         <data-dispatch-renderer
@@ -26,7 +26,7 @@ import {
   JsonFormsSubStates,
   UISchemaElement,
 } from '@jsonforms/core';
-import { defineComponent, inject } from '@vue/composition-api';
+import { defineComponent, inject, unref } from '@vue/composition-api';
 import {
   rendererProps,
   useJsonFormsLayout,
@@ -102,16 +102,20 @@ const dataProviderRenderer = defineComponent({
       return this.formConfig;
     },
     context(): FormContext {
-      return this.formContext;
+      return unref(this.formContext);
     },
-    url(): string | undefined {
-      return templateFn((this.layout.uischema as DataProviderElement).url, {
-        imports: {
-          data: this.data,
-          context: this.context,
-          config: this.config,
-        },
-      })();
+    expandedUrl(): string | undefined {
+      const url = (this.layout.uischema as DataProviderElement).url;
+      if (url) {
+        return templateFn(url, {
+          imports: {
+            data: this.data,
+            context: this.context,
+            config: this.config,
+          },
+        })();
+      }
+      return url;
     },
     elements(): UISchemaElement[] {
       return (this.layout.uischema as DataProviderElement).elements;

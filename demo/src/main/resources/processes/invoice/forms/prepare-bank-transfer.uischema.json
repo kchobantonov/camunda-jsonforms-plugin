@@ -14,7 +14,7 @@
         },
         {
           "type": "TemplateLayout",
-          "template": "<div><a v-if=\"context.variables?.invoiceDocument?.type === 'File'\" :href=\"config.camundaUrl + '/task/' + config.taskId + '/variables/invoiceDocument/data'\">{{ context?.variables?.invoiceDocument?.valueInfo?.filename }}</a><span v-else> No invoice provided </span></div> "
+          "template": "<div><a v-if=\"context.variables?.invoiceDocument?.type === 'File'\" :href=\"config.url + '/task/' + config.taskId + '/variables/invoiceDocument/data'\">{{ context?.variables?.invoiceDocument?.valueInfo?.filename }}</a><span v-else> No invoice provided </span></div> "
         }
       ]
     },

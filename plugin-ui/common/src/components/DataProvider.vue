@@ -16,7 +16,7 @@ const dataProvider = defineComponent({
   }),
   async created() {
     try {
-      const response = await fetch(`${this.$attrs.url}`);
+      const response = await fetch(`${this.url}`);
       this.data = await response.json();
     } catch (e) {
       this.error = e;
@@ -34,7 +34,6 @@ const dataProvider = defineComponent({
     });
 
     return Array.isArray(slot) ? slot[0] : slot;
-
   },
 });
 

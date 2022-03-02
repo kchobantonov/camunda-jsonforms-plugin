@@ -15,13 +15,13 @@
     },
     {
       "type": "DataProvider",
-      "url": "{{ config.camundaUrl }}/user",
+      "url": "{{ config.url }}/user",
       "elements": [
         {
           "type": "Control",
           "scope": "#/properties/reviewer",
           "options": {
-            "variant": "v-select",
+            "variant": "data-provider-select",
             "item-text": "{{ firstName }} {{ lastName }}",
             "item-value": "{{ id }}"
           }

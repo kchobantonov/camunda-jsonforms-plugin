@@ -20,7 +20,7 @@ import {
   and,
   optionIs,
 } from '@jsonforms/core';
-import { defineComponent, inject } from '@vue/composition-api';
+import { defineComponent, inject, unref } from '@vue/composition-api';
 import {
   rendererProps,
   useJsonFormsLayout,
@@ -90,7 +90,7 @@ const templateLabelRenderer = defineComponent({
       return this.formConfig;
     },
     context(): FormContext {
-      return this.formContext;
+      return unref(this.formContext);
     },
     errors(): ErrorObject[] | undefined {
       return this.jsonforms.core?.errors;
