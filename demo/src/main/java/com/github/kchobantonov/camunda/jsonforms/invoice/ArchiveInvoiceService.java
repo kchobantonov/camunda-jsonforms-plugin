@@ -9,7 +9,7 @@ import org.camunda.bpm.engine.variable.value.FileValue;
 
 public class ArchiveInvoiceService implements JavaDelegate {
 
-  private final Logger LOGGER = Logger.getLogger(ArchiveInvoiceService.class.getName());
+  private static final Logger LOGGER = Logger.getLogger(ArchiveInvoiceService.class.getName());
 
   public void execute(DelegateExecution execution) throws Exception {
 

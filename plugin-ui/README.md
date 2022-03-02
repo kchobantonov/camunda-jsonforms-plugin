@@ -1,5 +1,16 @@
-# Camunda JsonForms UI
+# Camunda Forms UI
 
-## Scripts
+## Developer documentation
 
-- `npm run build` to build the application
+Use Node 12+
+
+### Initial setup
+
+- Install monorepo dependencies: `npm ci`
+- Hook up dependencies between packages: `npm run init`
+
+### Scripts
+
+- Build: `npm run build`
+- Build and watch: `npm run watch`
+- Remove build artifacts: `npm run clean`

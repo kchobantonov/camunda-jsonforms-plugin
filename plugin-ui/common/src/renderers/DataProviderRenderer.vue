@@ -1,0 +1,128 @@
+<template>
+  <data-provider :url="url" v-if="url">
+    <div slot-scope="{ fetch }">
+      <template v-for="(element, index) in elements">
+        <data-dispatch-renderer
+          :key="`${layout.path}-${index}`"
+          :schema="layout.schema"
+          :uischema="element"
+          :path="layout.path"
+          :enabled="layout.enabled"
+          :renderers="layout.renderers"
+          :cells="layout.cells"
+          :data="fetch"
+        />
+      </template>
+    </div>
+  </data-provider>
+</template>
+
+<script lang="ts">
+import {
+  JsonFormsRendererRegistryEntry,
+  Layout,
+  rankWith,
+  uiTypeIs,
+  JsonFormsSubStates,
+  UISchemaElement,
+} from '@jsonforms/core';
+import { defineComponent, inject } from '@vue/composition-api';
+import {
+  rendererProps,
+  useJsonFormsLayout,
+  RendererProps,
+} from '@jsonforms/vue2';
+import { useVuetifyLayout, useTranslator } from '@jsonforms/vue2-vuetify';
+import { FormConfig, FormContext } from '../core/types';
+import DataProvider from '../components/DataProvider.vue';
+import DataDispatchRenderer from './DataDispatchRenderer.vue';
+import { template as templateFn } from '../core/template';
+
+interface DataProviderElement extends Layout {
+  type: 'DataProvider';
+  /**
+   * The remote url to fetch data.
+   */
+  url: string;
+}
+
+const dataProviderRenderer = defineComponent({
+  name: 'data-provider-renderer',
+  components: {
+    DataDispatchRenderer,
+    DataProvider,
+  },
+  props: {
+    ...rendererProps<Layout>(),
+  },
+  setup(props: RendererProps<Layout>) {
+    const t = useTranslator();
+    const layout = useVuetifyLayout(useJsonFormsLayout(props));
+
+    const jsonforms = inject<JsonFormsSubStates>('jsonforms');
+    if (!jsonforms) {
+      throw new Error(
+        "'jsonforms' couldn't be injected. Are you within JsonForms?"
+      );
+    }
+
+    const formConfig = inject<FormConfig>('formConfig');
+
+    if (!formConfig) {
+      throw new Error(
+        "'formConfig' couldn't be injected. Are you within JsonForms?"
+      );
+    }
+
+    const formContext = inject<FormContext>('formContext');
+
+    if (!formContext) {
+      throw new Error(
+        "'formContext' couldn't be injected. Are you within JsonForms?"
+      );
+    }
+
+    let templateError: string | null = null;
+
+    return {
+      ...layout,
+      t,
+      jsonforms,
+      parentComponent: this,
+      templateError,
+      formConfig,
+      formContext,
+    };
+  },
+  computed: {
+    data(): any {
+      return this.jsonforms.core?.data;
+    },
+    config(): FormConfig {
+      return this.formConfig;
+    },
+    context(): FormContext {
+      return this.formContext;
+    },
+    url(): string | undefined {
+      return templateFn((this.layout.uischema as DataProviderElement).url, {
+        imports: {
+          data: this.data,
+          context: this.context,
+          config: this.config,
+        },
+      })();
+    },
+    elements(): UISchemaElement[] {
+      return (this.layout.uischema as DataProviderElement).elements;
+    },
+  },
+});
+
+export default dataProviderRenderer;
+
+export const entry: JsonFormsRendererRegistryEntry = {
+  renderer: dataProviderRenderer,
+  tester: rankWith(1, uiTypeIs('DataProvider')),
+};
+</script>

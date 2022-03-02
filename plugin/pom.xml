@@ -64,6 +64,15 @@
             </goals>
           </execution>
           <execution>
+            <id>npm init</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>run init</arguments>
+            </configuration>
+          </execution>
+          <execution>
             <id>Build frontend</id>
             <goals>
               <goal>npm</goal>
@@ -88,7 +97,7 @@
               <outputDirectory>${basedir}/target/classes/${frontend.target.path}/scripts/jsonforms</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${basedir}/${frontend.build.path}/js</directory>
+                  <directory>${basedir}/${frontend.camunda.build.path}/js</directory>
                   <filtering>false</filtering>
                 </resource>
               </resources>
@@ -104,7 +113,7 @@
               <outputDirectory>${basedir}/target/classes/${frontend.target.path}/styles</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${basedir}/${frontend.build.path}/css</directory>
+                  <directory>${basedir}/${frontend.camunda.build.path}/css</directory>
                   <filtering>false</filtering>
                 </resource>
               </resources>
