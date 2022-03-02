@@ -1,5 +1,5 @@
 <template>
- <div v-if="layout.visible">
+  <div v-if="layout.visible">
     <div v-if="templateError !== null" class="error">
       Template Error: {{ templateError }}
     </div>
@@ -45,24 +45,49 @@
 <script lang="ts">
 import {
   JsonFormsRendererRegistryEntry,
+  JsonFormsSubStates,
   Layout,
   rankWith,
-  JsonFormsSubStates,
   UISchemaElement,
   uiTypeIs,
 } from '@jsonforms/core';
-import { defineComponent, inject, ref } from '@vue/composition-api';
 import {
   DispatchRenderer,
   rendererProps,
-  useJsonFormsLayout,
   RendererProps,
+  useJsonFormsLayout,
 } from '@jsonforms/vue2';
-import { useVuetifyLayout, useTranslator } from '@jsonforms/vue2-vuetify';
-import { VLabel, VBtn, VSpacer } from 'vuetify/lib';
-import TemplateCompiler from '../components/TemplateCompiler.vue';
-import Vue from 'vue';
+import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
+import {
+  ComputedOptions,
+  defineComponent,
+  inject,
+  MethodOptions,
+  ref,
+} from '@vue/composition-api';
 import { ErrorObject } from 'ajv';
+import Vue from 'vue';
+import {
+  VAvatar,
+  VBadge,
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardSubtitle,
+  VCardText,
+  VCardTitle,
+  VCol,
+  VContainer,
+  VDivider,
+  VIcon,
+  VImg,
+  VLabel,
+  VRow,
+  VSpacer,
+  VTooltip,
+} from 'vuetify/lib';
+import TemplateCompiler from '../components/TemplateCompiler.vue';
+import { Components } from '../config/config';
 import { FormConfig, FormContext } from '../core/types';
 
 interface TemplateElement extends Layout {
@@ -97,7 +122,7 @@ const templateLayoutRenderer = defineComponent({
       );
     }
 
-    const formConfig = inject<FormConfig>('camundaFormConfig');
+    const formConfig = inject<FormConfig>('formConfig');
 
     if (!formConfig) {
       throw new Error(
@@ -105,7 +130,7 @@ const templateLayoutRenderer = defineComponent({
       );
     }
 
-    const formContext = inject<FormContext>('camundaFormContext');
+    const formContext = inject<FormContext>('formContext');
 
     if (!formContext) {
       throw new Error(
@@ -160,34 +185,83 @@ const templateLayoutRenderer = defineComponent({
     },
   },
   methods: {
-    componentComputed() {
-      const proxy = {} as any;
+    componentComputed(): ComputedOptions {
+      const defaultComputed = {} as ComputedOptions;
       const parentComponent = this as any;
 
-      for (const key of [
-        'dataProvider',
-        'data',
-        'config',
-        'context',
-        'errors',
-      ]) {
-        proxy[key] = function () {
+      for (const key of ['data', 'errors']) {
+        defaultComputed[key] = function () {
           return parentComponent?.[key];
         };
       }
 
-      return proxy;
+      return inject<ComputedOptions>(
+        'templateLayoutRendererComponentComputed',
+        defaultComputed,
+        false
+      );
     },
     componentMethods() {
-      return {
+      const defaultMethods = {
         translate: this.translate.bind(this.parentComponent),
-      };
+      } as MethodOptions;
+
+      return inject<MethodOptions>(
+        'templateLayoutRendererComponentMethods',
+        defaultMethods,
+        false
+      );
+    },
+    componentFilters() {
+      const defaultFilters = {
+        translate: this.translate.bind(this.parentComponent),
+      } as MethodOptions;
+
+      return inject<MethodOptions>(
+        'templateLayoutRendererComponentFilters',
+        defaultFilters,
+        false
+      );
+    },
+    componentComponents() {
+      const defaultComponents = {
+        VLabel,
+        VBtn,
+        VSpacer,
+        VContainer,
+        VRow,
+        VCol,
+        VIcon,
+        VImg,
+        VTooltip,
+        VDivider,
+        VCard,
+        VCardText,
+        VCardTitle,
+        VCardSubtitle,
+        VCardActions,
+        VAvatar,
+        VBadge,
+      } as Components;
+
+      return inject<Components>(
+        'templateLayoutRendererComponentComponents',
+        defaultComponents,
+        false
+      );
     },
     translate(
       key: string,
       defaultMessage: string | undefined
     ): string | undefined {
       return this.t(key, defaultMessage ?? '');
+    },
+  },
+  filters: {
+    translate: function (value: any) {
+      if (!value) return '';
+      value = value.toString();
+      return this.t(value, '');
     },
   },
 });

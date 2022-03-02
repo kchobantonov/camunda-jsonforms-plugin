@@ -84,10 +84,10 @@ const buttonRenderer = defineComponent({
       );
     }
 
-    const camundaFormContext = inject<CamundaFormContext>('camundaFormContext');
+    const camundaFormContext = inject<CamundaFormContext>('formContext');
     if (!camundaFormContext) {
       throw new Error(
-        "'camundaFormContext' couldn't be injected. Are you within CamundaJsonForms?"
+        "'formContext' couldn't be injected. Are you within CamundaJsonForms?"
       );
     }
 

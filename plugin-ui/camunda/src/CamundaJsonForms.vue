@@ -152,8 +152,8 @@ const camundaForm = defineComponent({
     const { context, api } = toRefs(this);
 
     return {
-      camundaFormConfig: this.config,
-      camundaFormContext: context,
+      formConfig: this.config,
+      formContext: context,
       camundaFormApi: api,
       camundaFormEmitter: this.$emit.bind(this),
     };
