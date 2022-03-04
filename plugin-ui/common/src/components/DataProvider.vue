@@ -34,6 +34,7 @@ const dataProvider = defineComponent({
     });
 
     return Array.isArray(slot) ? slot[0] : slot;
+
   },
 });
 

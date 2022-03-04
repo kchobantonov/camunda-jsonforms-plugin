@@ -1,5 +1,5 @@
 {
-    "name": "@kchobantonov/camunda-jsonforms-plugin-ui",
+    "name": "@kchobantonov/camunda-jsonforms-plugin",
     "private": true,
     "scripts": {
         "init": "lerna bootstrap --hoist",
@@ -7,8 +7,11 @@
         "common:build": "lerna run --scope \"**/*common\" build",
         "common:watch": "cd common && npm run watch",
         "common:test": "lerna run --scope \"**/*common\" test",
+        "camunda:build": "lerna run --scope \"**/*camunda\" build",
+        "camunda:watch": "cd camunda && npm run watch",
+        "camunda:test": "lerna run --scope \"**/*camunda\" test",
         "clean": "lerna run clean",
-        "camunda:build": "cd camunda && npm run build"
+        "camunda-webcomponent:build": "cd camunda-webcomponent && npm run build"
     },
     "devDependencies": {
         "lerna": "^4.0.0"

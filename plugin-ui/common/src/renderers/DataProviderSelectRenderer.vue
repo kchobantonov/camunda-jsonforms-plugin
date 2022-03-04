@@ -1,5 +1,6 @@
 <template>
   <control-wrapper
+    v-if="dataProvider"
     v-bind="controlWrapper"
     :styles="styles"
     :isFocused="isFocused"
@@ -49,10 +50,7 @@ import {
   useJsonFormsOneOfEnumControl,
   RendererProps,
 } from '@jsonforms/vue2';
-import {
-  useVuetifyControl,
-  ControlWrapper,
-} from '@jsonforms/vue2-vuetify';
+import { useVuetifyControl, ControlWrapper } from '@jsonforms/vue2-vuetify';
 import { DisabledIconFocus } from './directives/DisabledIconFocus';
 
 import { template as templateFn } from '../core/template';
@@ -73,7 +71,7 @@ const controlRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    const scopeData = inject<any>('scopeData');
+    const scopeData = inject<any>('scopeData', null);
 
     return {
       ...useVuetifyControl(
@@ -87,7 +85,6 @@ const controlRenderer = defineComponent({
   computed: {
     dataProvider(): any {
       const scopeData: any = this.scopeData;
-
       return scopeData;
     },
   },
@@ -111,6 +108,9 @@ export default controlRenderer;
 
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: controlRenderer,
-  tester: rankWith(11, and(isStringControl, optionIs('variant', 'data-provider-select'))),
+  tester: rankWith(
+    11,
+    and(isStringControl, optionIs('variant', 'data-provider-select'))
+  ),
 };
 </script>

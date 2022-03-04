@@ -141,7 +141,7 @@ const templateLayoutRenderer = defineComponent({
 
     let templateError = ref<string | null>(null);
 
-    const scopeData = inject<any>('scopeData');
+    const scopeData = inject<any>('scopeData', null);
 
     return {
       ...layout,

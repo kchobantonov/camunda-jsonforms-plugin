@@ -23,7 +23,7 @@ export class RestClient {
   }
 
   async fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
-    let args: RequestInput = [input, init];
+    let args: RequestInput = [input, init ?? {}];
 
     this.requestInterceptors.forEach((interceptor) => {
       args = interceptor.request(...args);

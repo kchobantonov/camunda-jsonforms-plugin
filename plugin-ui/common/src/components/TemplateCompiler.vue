@@ -7,7 +7,7 @@
       <slot></slot>
     </template>
 
-    <template v-for="(element, index) in elements" v-slot:[`${index}`]>
+    <template v-for="(_element, index) in elements" v-slot:[`${index}`]>
       <div :key="`${index}`">
         <slot :name="`${index}`"></slot>
       </div>
@@ -21,7 +21,8 @@ import {
   compileToFunctions,
 } from 'vue-template-compiler';
 import Vue from 'vue';
-import { CompType, Components } from '../config/config';
+import { Components } from '../config/config';
+import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import { UISchemaElement } from '@jsonforms/core';
 import merge from 'lodash/merge';
 import {
@@ -37,7 +38,7 @@ const templateCompiler = defineComponent({
 
   props: {
     parent: {
-      type: Object as CompType<Vue, ObjectConstructor>,
+      type: [Object] as CompType<Vue, [ObjectConstructor]>,
       default: undefined,
     },
 
@@ -47,27 +48,27 @@ const templateCompiler = defineComponent({
     },
 
     componentComputed: {
-      type: Object as CompType<ComputedOptions, ObjectConstructor>,
+      type: [Object] as CompType<ComputedOptions, [ObjectConstructor]>,
       default: undefined,
     },
 
     componentMethods: {
-      type: Object as CompType<MethodOptions, ObjectConstructor>,
+      type: [Object] as CompType<MethodOptions, [ObjectConstructor]>,
       default: undefined,
     },
 
     componentFilters: {
-      type: Object as CompType<MethodOptions, ObjectConstructor>,
+      type: [Object] as CompType<MethodOptions, [ObjectConstructor]>,
       default: undefined,
     },
 
     componentComponents: {
-      type: Object as CompType<Components, ObjectConstructor>,
+      type: [Object] as CompType<Components, [ObjectConstructor]>,
       default: undefined,
     },
 
     elements: {
-      type: Array as CompType<UISchemaElement[], ArrayConstructor>,
+      type: [Array] as CompType<UISchemaElement[], [ArrayConstructor]>,
       default: undefined,
     },
   },

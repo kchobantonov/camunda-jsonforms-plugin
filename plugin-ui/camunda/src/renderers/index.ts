@@ -4,7 +4,7 @@ import { entry as buttonRendererEntry } from './ButtonRenderer.vue';
 
 import { commonRenderers } from '@kchobantonov/common-jsonforms';
 
-export const allRenderers = [
+export const camundaRenderers = [
   buttonRendererEntry,
   ...commonRenderers,
 ];

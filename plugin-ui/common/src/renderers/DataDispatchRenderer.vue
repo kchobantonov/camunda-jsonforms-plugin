@@ -13,7 +13,7 @@ import {
   RendererProps,
   UISchemaElement,
 } from '@jsonforms/core';
-import { CompType } from '../config/config';
+import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 
 export const rendererDataProps = <U = UISchemaElement>() => ({
   schema: {
@@ -25,7 +25,7 @@ export const rendererDataProps = <U = UISchemaElement>() => ({
   },
   uischema: {
     required: true as true,
-    type: Object as CompType<U, ObjectConstructor>,
+    type: [Object] as CompType<U, [ObjectConstructor]>,
   },
   path: {
     required: true as true,
@@ -38,14 +38,17 @@ export const rendererDataProps = <U = UISchemaElement>() => ({
   },
   renderers: {
     required: false,
-    type: Array as CompType<JsonFormsRendererRegistryEntry[], ArrayConstructor>,
+    type: [Array] as CompType<
+      JsonFormsRendererRegistryEntry[],
+      [ArrayConstructor]
+    >,
     default: undefined,
   },
   cells: {
     required: false,
-    type: Array as CompType<
+    type: [Array] as CompType<
       JsonFormsCellRendererRegistryEntry[],
-      ArrayConstructor
+      [ArrayConstructor]
     >,
     default: undefined,
   },
@@ -80,8 +83,8 @@ export default defineComponent({
   },
   computed: {
     determinedRenderer(): any {
-      const renderer = maxBy(
-        this.renderer.renderers as JsonFormsRendererRegistryEntry[],
+      const renderer = maxBy<JsonFormsRendererRegistryEntry>(
+        this.renderer.renderers,
         (r) => r.tester(this.renderer.uischema, this.renderer.schema)
       );
       if (

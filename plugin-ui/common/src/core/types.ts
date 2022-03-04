@@ -3,6 +3,7 @@ import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 
 export type JsonFormInput = {
   schema: JsonSchema;
+  schemaUrl?: string;
   uischema?: UISchemaElement;
   data: Record<string, any>;
 };

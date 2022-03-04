@@ -27,7 +27,7 @@
       :cells="cells"
       :config="jsonformsConfig"
       :validationMode="validationMode"
-      :ajv="$ajv"
+      :ajv="ajv"
       :locale="locale"
       :translations="context.translations"
       :readonly="readonly"
@@ -37,19 +37,25 @@
 </template>
 
 <script lang="ts">
-import { allRenderers } from './renderers';
-import { CamundaFormApi } from './core/api';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { CamundaFormConfig, CamundaFormContext } from './core/types';
-import vuetify, { preset as defaultPreset } from './plugins/vuetify';
+import {
+  createAjv,
+  LoadEmitter,
+  ResolvedJsonForms,
+  ResponseOkInterceptor,
+  RestClient,
+} from '@kchobantonov/common-jsonforms';
 import { defineComponent, ref, toRefs } from '@vue/composition-api';
-import { VApp, VContainer, VRow, VCol, VProgressLinear } from 'vuetify/lib';
 import get from 'lodash/get';
 import isPlainObject from 'lodash/isPlainObject';
 import merge from 'lodash/merge';
+import { VApp, VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
-import { validateCamundaFormConfig } from './core/validate';
-import { ResolvedJsonForms, createAjv, RestClient, LoadEmitter, ResponseOkInterceptor } from '@kchobantonov/common-jsonforms';
+import { CamundaFormApi } from '../core/api';
+import { CamundaFormConfig, CamundaFormContext } from '../core/types';
+import { validateCamundaFormConfig } from '../core/validate';
+import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
+import { camundaRenderers } from '../renderers';
 
 const camundaForm = defineComponent({
   name: 'camunda-json-forms',
@@ -94,18 +100,16 @@ const camundaForm = defineComponent({
       default: 'en',
     },
   },
-  beforeCreate() {
-    // create AJV inside the component but before any watchers and listeners, otherwise there will be endless loop in certain scenarios
-    (this as any).$ajv = createAjv();
-  },
   setup(props: CamundaFormConfig) {
     const context = ref<CamundaFormContext | null>(null);
     const api = ref<CamundaFormApi | null>(null);
+    const ajv = createAjv();
 
     return {
       loading: false,
       context: context,
       api: api,
+      ajv: ajv,
       props: props,
 
       readonly: false,
@@ -116,8 +120,8 @@ const camundaForm = defineComponent({
         showUnfocusedDescription: false,
         hideRequiredAsterisk: true,
       },
-      renderers: allRenderers,
-      cells: allRenderers,
+      renderers: camundaRenderers,
+      cells: camundaRenderers,
     };
   },
   async mounted() {

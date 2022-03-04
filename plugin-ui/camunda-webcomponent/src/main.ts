@@ -1,16 +1,17 @@
 import VueCompositionAPI from '@vue/composition-api';
 import wrap from '@vue/web-component-wrapper';
 import Vue from 'vue';
-import CamundaJsonForms from './CamundaJsonForms.vue';
 import {
+  CamundaJsonForms,
   CamundaFormConfig,
   isTaskIdConfig,
   isProcessDefinitionIdConfig,
   isProcessDefinitionKeyConfig,
-} from './core/types';
+} from '@kchobantonov/camunda-jsonforms';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { FormCallback } from '@kchobantonov/common-jsonforms';
 import isFunction from 'lodash/isFunction';
+import 'vuetify/dist/vuetify.min.css';
 
 Vue.use(VueCompositionAPI);
 

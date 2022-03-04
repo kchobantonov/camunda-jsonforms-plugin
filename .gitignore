@@ -29,6 +29,9 @@ plugin-ui/package-lock.json
 plugin-ui/node_modules
 plugin-ui/common/lib
 plugin-ui/common/node_modules
-plugin-ui/camunda/node_modules
-
 plugin-ui/common/stats.html
+plugin-ui/camunda/lib
+plugin-ui/camunda/node_modules
+plugin-ui/camunda/stats.html
+plugin-ui/camunda-webcomponent/node_modules
+plugin-ui/camunda-webcomponent/dist

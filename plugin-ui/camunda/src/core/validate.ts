@@ -72,7 +72,7 @@ export const CamundaFormConfigSchema: SchemaObject = {
           type: 'string',
         },
       },
-      required: ['url', 'processDefinitionKey'],
+      required: ['url', 'taskId'],
     },
   },
 };

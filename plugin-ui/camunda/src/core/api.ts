@@ -158,7 +158,7 @@ export class CamundaFormApi {
     if (includeDataVariables) {
       const dataVariables = {};
       if (schema && schema.properties) {
-        forOwn(schema.properties, function (value: any, key: string) {
+        forOwn(schema.properties, function (_value: any, key: string) {
           if (Object.prototype.hasOwnProperty.call(data, key)) {
             attachCamundaVariable(
               dataVariables,
@@ -259,7 +259,7 @@ export class CamundaFormApi {
       });
     }
 
-    const { schema, uischema, i18n } = deploymentLocation ? await this.loadResourcesFromDeployment(client, deploymentLocation, result.processDefinition.deploymentId!) : await this.loadResourcesFromPath(client, pathLocation!);
+    const { schema, schemaUrl, uischema, i18n } = deploymentLocation ? await this.loadResourcesFromDeployment(client, deploymentLocation, result.processDefinition.deploymentId!) : await this.loadResourcesFromPath(client, pathLocation!);
     if (i18n) {
       result.translations = i18n;
     }
@@ -270,7 +270,7 @@ export class CamundaFormApi {
       const variableNames: string[] = [];
 
       if (schema && schema.properties) {
-        forOwn(schema.properties, function (value: any, key: string) {
+        forOwn(schema.properties, function (_value: any, key: string) {
           if ((schema.properties![key] as JsonSchema7).writeOnly !== true) {
             variableNames.push(key);
           }
@@ -300,6 +300,7 @@ export class CamundaFormApi {
 
     result.input = {
       schema: schema,
+      schemaUrl: schemaUrl,
       uischema: uischema ?? undefined,
       data: data,
     };
@@ -319,9 +320,10 @@ export class CamundaFormApi {
   }
 
   private async loadResourcesFromPath(client: RestClient, pathLocation: string) {
+    const schemaUrl = `${pathLocation}${RESOURCE_SCHEMA_SUFFIX}`;
     const schemaResponse = await client
       .fetch(
-        `${pathLocation}${RESOURCE_SCHEMA_SUFFIX}`
+        schemaUrl
       )
       .catch((e) => {
         throw new AppException(AppErrorCode.RETRIEVE_JSONFORMS_SCHEMA, e);
@@ -354,7 +356,7 @@ export class CamundaFormApi {
       });
     }
 
-    return { schema, uischema, i18n };
+    return { schema, schemaUrl, uischema, i18n };
   }
 
   private async loadResourcesFromDeployment(client: RestClient, deploymentLocation: string, deploymentId: string) {
@@ -391,6 +393,7 @@ export class CamundaFormApi {
       AppErrorCode.INVALID_JSONFORMS_SCHEMA
     ) as JsonSchema;
 
+    const schemaUrl = `${this.config.url}/deployment/${deploymentId}/resources/${formSchemaResource.id}/data`;
 
     const uischema = await getDeploymentResourceJsonData(
       client,
@@ -416,6 +419,6 @@ export class CamundaFormApi {
 
     }
 
-    return { schema, uischema, i18n };
+    return { schema, schemaUrl, uischema, i18n };
   }
 }

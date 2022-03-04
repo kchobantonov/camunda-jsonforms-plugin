@@ -1,4 +1,4 @@
-import { FormConfig, FormContext, JsonFormInput } from '@kchobantonov/common-jsonforms';
+import { FormConfig, FormContext } from '@kchobantonov/common-jsonforms';
 
 export interface CamundaFormTaskIdConfig extends FormConfig {
   taskId: string;

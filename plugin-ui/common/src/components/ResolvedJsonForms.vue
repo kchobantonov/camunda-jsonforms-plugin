@@ -2,9 +2,9 @@
   <div>
     <json-forms
       v-if="resolved && error === undefined"
-      :data="input.data"
+      :data="data"
       :schema="schema"
-      :uischema="input.uischema"
+      :uischema="uischema"
       :renderers="renderers"
       :cells="cells"
       :config="config"
@@ -40,7 +40,9 @@
         justify="center"
       >
         <v-col class="text-subtitle-1 text-center" cols="12">
-          <v-alert color="red" dark>{{ error }}</v-alert>
+          <v-alert color="red" dark
+            >Error resolving schema: {{ error }}</v-alert
+          >
         </v-col>
       </v-row>
     </v-container>
@@ -48,22 +50,24 @@
 </template>
 
 <script lang="ts">
-import { JsonFormInput } from '../core/types';
-import Ajv from 'ajv';
 import {
-  JsonFormsUISchemaRegistryEntry,
-  JsonFormsRendererRegistryEntry,
   JsonFormsCellRendererRegistryEntry,
-  JsonSchema,
   JsonFormsI18nState,
-  ValidationMode,
+  JsonFormsRendererRegistryEntry,
+  JsonFormsUISchemaRegistryEntry,
+  JsonSchema,
   Translator,
+  ValidationMode,
 } from '@jsonforms/core';
 import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue2';
-import JsonRefs from 'json-refs';
-import { createTranslator } from '../i18n';
+import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import { defineComponent } from '@vue/composition-api';
-import { CompType } from '../config/config';
+import Ajv from 'ajv';
+import { commonRenderers } from '../renderers/index';
+import { resolveRefs } from '../core/json-refs';
+import { JsonFormInput } from '../core/types';
+import { createAjv } from '../core/validate';
+import { createTranslator } from '../i18n';
 
 export const resolvedJsonFormsProps = () => ({
   input: {
@@ -71,16 +75,20 @@ export const resolvedJsonFormsProps = () => ({
     type: [Object] as CompType<JsonFormInput, [ObjectConstructor]>,
   },
   renderers: {
-    required: true,
-    type: Array as CompType<JsonFormsRendererRegistryEntry, ArrayConstructor>,
+    required: false,
+    type: [Array] as CompType<
+      JsonFormsRendererRegistryEntry,
+      [ArrayConstructor]
+    >,
+    default: commonRenderers,
   },
   cells: {
     required: false,
-    type: Array as CompType<
+    type: [Array] as CompType<
       JsonFormsCellRendererRegistryEntry[],
-      ArrayConstructor
+      [ArrayConstructor]
     >,
-    default: undefined,
+    default: commonRenderers,
   },
   config: {
     required: false,
@@ -93,17 +101,21 @@ export const resolvedJsonFormsProps = () => ({
   },
   uischemas: {
     required: false,
-    type: Array as CompType<JsonFormsUISchemaRegistryEntry, ArrayConstructor>,
+    type: [Array] as CompType<
+      JsonFormsUISchemaRegistryEntry,
+      [ArrayConstructor]
+    >,
     default: () => [],
   },
   validationMode: {
     required: false,
-    type: String as CompType<ValidationMode, StringConstructor>,
+    type: [String] as CompType<ValidationMode, [StringConstructor]>,
     default: 'ValidateAndShow',
   },
   ajv: {
-    required: true,
+    required: false,
     type: [Object] as CompType<Ajv, [ObjectConstructor]>,
+    default: createAjv(),
   },
   locale: {
     required: false,
@@ -120,13 +132,13 @@ interface ResolvedJsonFormsProps {
   input: JsonFormInput;
   renderers: JsonFormsRendererRegistryEntry[];
   cells: JsonFormsCellRendererRegistryEntry[];
-  config: Record<string, any>;
+  config?: Record<string, any>;
   readonly?: boolean;
   uischemas?: JsonFormsUISchemaRegistryEntry[];
   validationMode?: ValidationMode;
   ajv: Ajv;
   locale: string;
-  translations: Record<string, any>;
+  translations?: Record<string, any>;
 }
 
 const resolvedJsonForms = defineComponent({
@@ -143,6 +155,8 @@ const resolvedJsonForms = defineComponent({
       resolved: false,
       error: undefined as any,
       schema: undefined as JsonSchema | undefined,
+      uischema: props.input.uischema,
+      data: props.input.data,
       i18n: {
         locale: props.locale,
         translations: props.translations,
@@ -156,11 +170,11 @@ const resolvedJsonForms = defineComponent({
   watch: {
     input: {
       deep: true,
-      handler(
-        newInput: JsonFormInput,
-        _oldInput: JsonFormInput
-      ): void {
-        this.resolveSchema(newInput.schema);
+      handler(newInput: JsonFormInput, _oldInput: JsonFormInput): void {
+        this.resolved = false;
+        this.uischema = newInput.uischema;
+        this.data = newInput.data;
+        this.resolveSchema(newInput.schema, newInput.schemaUrl);
       },
     },
     locale(newLocale: string): void {
@@ -179,18 +193,25 @@ const resolvedJsonForms = defineComponent({
     },
   },
   mounted() {
-    this.resolveSchema(this.input.schema);
+    this.resolveSchema(this.input.schema, this.input.schemaUrl);
   },
   methods: {
     onChange(event: JsonFormsChangeEvent): void {
       this.$emit('change', event);
     },
-    async resolveSchema(schema?: JsonSchema): Promise<void> {
+    async resolveSchema(
+      schema?: JsonSchema,
+      schemaUrl?: string
+    ): Promise<void> {
       this.resolved = false;
 
       try {
         if (schema) {
-          this.schema = (await JsonRefs.resolveRefs(schema)).resolved;
+          this.schema = (
+            await resolveRefs(schema, {
+              location: schemaUrl,
+            })
+          ).resolved;
         }
       } catch (err) {
         this.error = (err as Error).message;

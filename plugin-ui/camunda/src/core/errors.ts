@@ -30,42 +30,42 @@ const codeErrors: Record<
   AppErrorCode,
   (params?: Record<string, any>) => string
 > = {
-  INVALID_CAMUNDA_FORM_CONFIG: (params) => `Invalid configuration`,
+  INVALID_CAMUNDA_FORM_CONFIG: (_params) => `Invalid configuration`,
   INVALID_CAMUNDA_FORM_KEY: (params) =>
     `Unsupported form key ${params?.formKey}`,
-  MISSING_JSONFORMS_SCHEMA: (params) => `Unable to find form schema`,
-  MISSING_JSONFORMS_UISCHEMA: (params) => `Unable to find form UI`,
+  MISSING_JSONFORMS_SCHEMA: (_params) => `Unable to find form schema`,
+  MISSING_JSONFORMS_UISCHEMA: (_params) => `Unable to find form UI`,
 
-  RETRIEVE_JSONFORMS_SCHEMA: (params) =>
+  RETRIEVE_JSONFORMS_SCHEMA: (_params) =>
     'Unable to retrieve form schema resource',
-  INVALID_JSONFORMS_SCHEMA: (params) => 'Invalid form schema resource',
-  RETRIEVE_JSONFORMS_UISCHEMA: (params) =>
+  INVALID_JSONFORMS_SCHEMA: (_params) => 'Invalid form schema resource',
+  RETRIEVE_JSONFORMS_UISCHEMA: (_params) =>
     'Unable to retrieve form UI resource',
-  INVALID_JSONFORMS_UISCHEMA: (params) => 'Invalid form UI resource',
-  RETRIEVE_JSONFORMS_I18N: (params) =>
+  INVALID_JSONFORMS_UISCHEMA: (_params) => 'Invalid form UI resource',
+  RETRIEVE_JSONFORMS_I18N: (_params) =>
     'Unable to retrieve form internationalization resource',
-  INVALID_JSONFORMS_I18N: (params) =>
+  INVALID_JSONFORMS_I18N: (_params) =>
     'Invalid form internationalization resource',
 
-  RETRIEVE_FORM_VARIABLES: (params) => 'Unable to retrieve form variables',
-  INVALID_FORM_VARIABLES_RESPONSE: (params) =>
+  RETRIEVE_FORM_VARIABLES: (_params) => 'Unable to retrieve form variables',
+  INVALID_FORM_VARIABLES_RESPONSE: (_params) =>
     'Invalid form variables response',
 
-  RETRIEVE_DEPLOYMENT_RESOURCES: (params) =>
+  RETRIEVE_DEPLOYMENT_RESOURCES: (_params) =>
     'Unable to retrieve deployment resources',
-  INVALID_DEPLOYMENT_RESOURCES_RESPONSE: (params) =>
+  INVALID_DEPLOYMENT_RESOURCES_RESPONSE: (_params) =>
     'Invalid deployment resources response',
 
-  RETRIEVE_TASK: (params) => 'Unable to retrieve task',
-  INVALID_TASK_RESPONSE: (params) => 'Invalid task response',
+  RETRIEVE_TASK: (_params) => 'Unable to retrieve task',
+  INVALID_TASK_RESPONSE: (_params) => 'Invalid task response',
 
-  RETRIEVE_PROCESS_DEFINITION: (params) =>
+  RETRIEVE_PROCESS_DEFINITION: (_params) =>
     'Unable to retrieve process definition',
-  INVALID_PROCESS_DEFINITION_RESPONSE: (params) =>
+  INVALID_PROCESS_DEFINITION_RESPONSE: (_params) =>
     'Invalid process definition response',
-  RETRIEVE_PROCESS_DEFINITION_START_FORM: (params) =>
+  RETRIEVE_PROCESS_DEFINITION_START_FORM: (_params) =>
     'Unable to retrieve process definition start form',
-  INVALID_PROCESS_DEFINITION_START_FORM_RESPONSE: (params) =>
+  INVALID_PROCESS_DEFINITION_START_FORM_RESPONSE: (_params) =>
     'Invalid process definition start form response',
 };
 export class AppException extends Error {
