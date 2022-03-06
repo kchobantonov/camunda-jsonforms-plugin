@@ -12,5 +12,4 @@ Use Node 12+
 ### Scripts
 
 - Build: `npm run build`
-- Build and watch: `npm run watch`
 - Remove build artifacts: `npm run clean`

@@ -1,8 +1,6 @@
 {
   "packages": [
-    "common",
-    "camunda",
-    "camunda-webcomponent"
+    "packages/*"
   ],
-  "version": "0.1.0"
+  "version": "0.0.1-SNAPSHOT"
 }

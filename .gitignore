@@ -23,15 +23,9 @@
 hs_err_pid*
 
 target
-plugin-ui/node
-plugin-ui/dist
 plugin-ui/package-lock.json
+plugin-ui/node
 plugin-ui/node_modules
-plugin-ui/common/lib
-plugin-ui/common/node_modules
-plugin-ui/common/stats.html
-plugin-ui/camunda/lib
-plugin-ui/camunda/node_modules
-plugin-ui/camunda/stats.html
-plugin-ui/camunda-webcomponent/node_modules
-plugin-ui/camunda-webcomponent/dist
+plugin-ui/packages/*/lib
+plugin-ui/packages/*/node_modules
+plugin-ui/packages/*/stats.html

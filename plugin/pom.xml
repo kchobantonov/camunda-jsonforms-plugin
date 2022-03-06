@@ -37,52 +37,18 @@
       <artifactId>camunda-spin-dataformat-all</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.github.kchobantonov</groupId>
+      <artifactId>plugin-ui</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <type>pom</type>
+    </dependency>
+
   </dependencies>
 
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>com.github.eirslett</groupId>
-        <artifactId>frontend-maven-plugin</artifactId>
-        <version>${frontend-maven-plugin.version}</version>
-        <configuration>
-          <nodeVersion>${node.version}</nodeVersion>
-          <workingDirectory>${frontend.working.directory}</workingDirectory>
-        </configuration>
-        <executions>
-          <execution>
-            <id>Install node and npm locally to the project</id>
-            <goals>
-              <goal>install-node-and-npm</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>npm install</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>npm init</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>run init</arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>Build frontend</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>run build</arguments>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>

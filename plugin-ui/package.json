@@ -3,15 +3,18 @@
     "private": true,
     "scripts": {
         "init": "lerna bootstrap --hoist",
-        "build": "lerna run build",
-        "common:build": "lerna run --scope \"**/*common\" build",
-        "common:watch": "cd common && npm run watch",
-        "common:test": "lerna run --scope \"**/*common\" test",
-        "camunda:build": "lerna run --scope \"**/*camunda\" build",
-        "camunda:watch": "cd camunda && npm run watch",
-        "camunda:test": "lerna run --scope \"**/*camunda\" test",
         "clean": "lerna run clean",
-        "camunda-webcomponent:build": "cd camunda-webcomponent && npm run build"
+        "lint": "lerna run lint",
+        "lint:fix": "lerna run lint:fix",
+        "test": "lerna run test",
+        "build": "lerna run build",
+        "snapshot-version": "lerna version --no-git-tag-version --no-push --yes",
+        "common:build": "lerna run --scope=@kchobantonov/common build",
+        "common:test": "lerna run --scope=@kchobantonov/common test",
+        "camunda:build": "lerna run --scope=@kchobantonov/camunda build",
+        "camunda:test": "lerna run --scope=@kchobantonov/camunda test",
+        "camunda-webcomponent:build": "lerna run --scope=@kchobantonov/camunda-webcomponent build",
+        "camunda-webcomponent:test": "lerna run --scope=@kchobantonov/camunda-webcomponent test"
     },
     "devDependencies": {
         "lerna": "^4.0.0"
