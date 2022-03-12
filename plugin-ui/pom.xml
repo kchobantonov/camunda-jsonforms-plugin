@@ -62,6 +62,24 @@
           </execution>
 
           <execution>
+            <id>install node and npm - clean</id>
+            <goals>
+              <goal>install-node-and-npm</goal>
+            </goals>
+            <phase>clean</phase>
+          </execution>
+          <execution>
+            <id>npm install - clean</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <!-- Optional configuration which provides for running any npm command -->
+            <configuration>
+              <arguments>install</arguments>
+            </configuration>
+            <phase>clean</phase>
+          </execution>
+          <execution>
             <id>npm clean</id>
             <goals>
               <goal>npm</goal>
