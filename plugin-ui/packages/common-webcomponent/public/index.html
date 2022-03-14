@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Vuetify JsonForms WebComponent</title>
+    <% for (var css in htmlWebpackPlugin.files.css) { %>
+    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet" />
+    <% } %>
+    <style>
+      .box {
+        padding: 16px;
+        width: 700px;
+        margin: auto;
+      }
+      .box > h3 {
+        background: white;
+        padding: 10px 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      let schema = {
+        type: 'object',
+        required: ['age'],
+        properties: {
+          firstName: {
+            type: 'string',
+            minLength: 2,
+            maxLength: 20,
+          },
+          lastName: {
+            type: 'string',
+            minLength: 5,
+            maxLength: 15,
+          },
+          age: {
+            type: 'integer',
+            minimum: 18,
+            maximum: 100,
+          },
+          gender: {
+            type: 'string',
+            enum: ['Male', 'Female', 'Undisclosed'],
+          },
+          height: {
+            type: 'number',
+          },
+          dateOfBirth: {
+            type: 'string',
+            format: 'date',
+          },
+          rating: {
+            type: 'integer',
+          },
+          committer: {
+            type: 'boolean',
+          },
+          address: {
+            type: 'object',
+            properties: {
+              street: {
+                type: 'string',
+              },
+              streetnumber: {
+                type: 'string',
+              },
+              postalCode: {
+                type: 'string',
+              },
+              city: {
+                type: 'string',
+              },
+            },
+          },
+        },
+      };
+
+      let uischema = {
+        type: 'VerticalLayout',
+        elements: [
+          {
+            type: 'HorizontalLayout',
+            elements: [
+              {
+                type: 'Control',
+                scope: '#/properties/firstName',
+              },
+              {
+                type: 'Control',
+                scope: '#/properties/lastName',
+              },
+            ],
+          },
+          {
+            type: 'HorizontalLayout',
+            elements: [
+              {
+                type: 'Control',
+                scope: '#/properties/age',
+              },
+              {
+                type: 'Control',
+                scope: '#/properties/dateOfBirth',
+              },
+            ],
+          },
+          {
+            type: 'HorizontalLayout',
+            elements: [
+              {
+                type: 'Control',
+                scope: '#/properties/height',
+              },
+              {
+                type: 'Control',
+                scope: '#/properties/gender',
+              },
+              {
+                type: 'Control',
+                scope: '#/properties/committer',
+              },
+            ],
+          },
+          {
+            type: 'Group',
+            label: 'Address for Shipping T-Shirt',
+            elements: [
+              {
+                type: 'HorizontalLayout',
+                elements: [
+                  {
+                    type: 'Control',
+                    scope: '#/properties/address/properties/street',
+                  },
+                  {
+                    type: 'Control',
+                    scope: '#/properties/address/properties/streetnumber',
+                  },
+                ],
+              },
+              {
+                type: 'HorizontalLayout',
+                elements: [
+                  {
+                    type: 'Control',
+                    scope: '#/properties/address/properties/postalCode',
+                  },
+                  {
+                    type: 'Control',
+                    scope: '#/properties/address/properties/city',
+                  },
+                ],
+              },
+            ],
+            rule: {
+              effect: 'ENABLE',
+              condition: {
+                scope: '#/properties/committer',
+                schema: {
+                  const: true,
+                },
+              },
+            },
+          },
+        ],
+      };
+
+      let data = {
+        firstName: 'Max',
+        lastName: 'Power',
+      };
+    </script>
+    <% for (var js in htmlWebpackPlugin.files.js) { %>
+    <script src="<%= htmlWebpackPlugin.files.js[js] %>"></script>
+    <% } %>
+
+    <!-- Using custom element directly -->
+    <div class="box">
+      <h3>JsonForms using vuetify-json-forms webcomponent directly</h3>
+      <vuetify-json-forms
+        schema='
+      {
+        "type": "object",
+        "required": ["firstName"],
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 20
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 15
+          }
+        }
+      }'
+        uischema='
+      {
+        "type": "VerticalLayout",
+        "elements": [
+          {
+            "type": "HorizontalLayout",
+            "elements": [
+              {
+                "type": "Control",
+                "scope": "#/properties/firstName"
+              },
+              {
+                "type": "Control",
+                "scope": "#/properties/lastName"
+              }
+            ]
+          }
+        ]
+      }'
+        data='
+      {
+        "firstName": "Test"
+      }
+      '
+        change="onChange"
+      >
+        <link
+          slot="link"
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+        />
+        <link
+          slot="link"
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css"
+          integrity="sha512-Zw6ER2h5+Zjtrej6afEKgS8G5kehmDAHYp9M2xf38MPmpUWX39VrYmdGtCrDQbdLQrTnBVT8/gcNhgS4XPgvEg=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer"
+        />
+        <link
+          slot="link"
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.3/vuetify.min.css"
+          integrity="sha512-yqxpsXY362HEPwSAOWC2FOd8ZCCuJVrTgZSd/0hPmuGUqG19+J2ULPQnc7p795j5mNYZMNHuq5CHPPHnOqapdw=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer"
+        />
+        <style
+          slot="style"
+          type="text/css"
+          id="vuetify-theme-stylesheet"
+        ></style>
+        <style slot="style" type="text/css">
+          .v-application--wrap {
+            min-height: 0px;
+          }
+        </style>
+      </vuetify-json-forms>
+
+      <script type="text/javascript">
+        let onChange = function (customEvent) {
+          const event = customEvent.detail[0];
+          console.log('vuetify-json-forms: ' + JSON.stringify(event));
+        };
+        const form = document.querySelector('#vuetify');
+        form.addEventListener('change', onChange);
+      </script>
+    </div>
+
+    <hr style="border-top: 3px solid black" />
+
+    <!-- Using createVuetifyJsonFormsElement function -->
+    <div class="box">
+      <h3>JsonForms using createVuetifyJsonFormsElement function</h3>
+      <div id="json-forms-root"></div>
+    </div>
+    <script type="text/javascript">
+      let root = document.querySelector('#json-forms-root');
+
+      let node = VuetifyJsonFormsUtil.createVuetifyJsonFormsElement({
+        schema: schema,
+        uischema: uischema,
+        data: data,
+        config: {
+          restrict: true,
+          trim: false,
+          showUnfocusedDescription: false,
+          hideRequiredAsterisk: true,
+        },
+        readonly: false,
+        validationMode: 'ValidateAndShow',
+        locale: 'en',
+        translations: {
+          en: {},
+        },
+        style: '.v-application--wrap { min-height: 0px; }',
+        defaultPreset: {
+          icons: {
+            iconfont: 'mdi',
+            values: {},
+          },
+          theme: {
+            dark: false,
+            default: 'light',
+            disable: false,
+            options: {
+              cspNonce: undefined,
+              customProperties: undefined,
+              minifyTheme: undefined,
+              themeCache: undefined,
+            },
+            themes: {
+              light: {
+                primary: '#1976D2',
+                secondary: '#424242',
+                accent: '#82B1FF',
+                error: '#FF5252',
+                info: '#2196F3',
+                success: '#4CAF50',
+                warning: '#FB8C00',
+              },
+              dark: {
+                primary: '#2196F3',
+                secondary: '#424242',
+                accent: '#FF4081',
+                error: '#FF5252',
+                info: '#2196F3',
+                success: '#4CAF50',
+                warning: '#FB8C00',
+              },
+            },
+          },
+        },
+        onChange: function (event) {
+          console.log(
+            'createVuetifyJsonFormsElement: ' + JSON.stringify(event)
+          );
+        },
+      });
+
+      root.appendChild(node);
+    </script>
+  </body>
+</html>

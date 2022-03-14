@@ -1,8 +1,7 @@
 import { FormConfig, FormContext } from '@kchobantonov/common-jsonforms';
-import { VuetifyPreset } from 'vuetify/types/services/presets';
 
 export interface BaseCamundaFormConfig extends FormConfig {
-  defaultPreset: Partial<VuetifyPreset>;
+  url: string;
 }
 export interface CamundaFormTaskIdConfig extends BaseCamundaFormConfig {
   taskId: string;

@@ -65,7 +65,7 @@ import { defineComponent } from '@vue/composition-api';
 import Ajv from 'ajv';
 import { commonRenderers } from '../renderers/index';
 import { resolveRefs } from '../core/json-refs';
-import { JsonFormInput } from '../core/types';
+import { JsonFormInput, FormConfig } from '../core/types';
 import { createAjv } from '../core/validate';
 import { createTranslator } from '../i18n';
 
@@ -128,19 +128,6 @@ export const resolvedJsonFormsProps = () => ({
   },
 });
 
-interface ResolvedJsonFormsProps {
-  input: JsonFormInput;
-  renderers: JsonFormsRendererRegistryEntry[];
-  cells: JsonFormsCellRendererRegistryEntry[];
-  config?: Record<string, any>;
-  readonly?: boolean;
-  uischemas?: JsonFormsUISchemaRegistryEntry[];
-  validationMode?: ValidationMode;
-  ajv: Ajv;
-  locale: string;
-  translations?: Record<string, any>;
-}
-
 const resolvedJsonForms = defineComponent({
   name: 'resolved-json-forms',
   components: {
@@ -150,7 +137,7 @@ const resolvedJsonForms = defineComponent({
   props: {
     ...resolvedJsonFormsProps(),
   },
-  setup(props: ResolvedJsonFormsProps) {
+  setup(props: FormConfig) {
     return {
       resolved: false,
       error: undefined as any,
