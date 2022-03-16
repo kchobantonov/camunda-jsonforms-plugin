@@ -1,9 +1,9 @@
-package com.github.kchobantonov.camunda.jsonforms.config;
+package com.github.kchobantonov.camunda.jsonforms.demo.config;
 
 import java.io.File;
 import java.net.MalformedURLException;
 
-import com.github.kchobantonov.camunda.jsonforms.Utils;
+import com.github.kchobantonov.camunda.jsonforms.plugin.Utils;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;

@@ -10,7 +10,7 @@
       :config="config"
       :uischemas="uischemas"
       :validationMode="validationMode"
-      :ajv="ajv"
+      :ajv="ajvProvider()"
       :readonly="readonly"
       :i18n="i18n"
       @change="onChange"
@@ -115,7 +115,6 @@ export const resolvedJsonFormsProps = () => ({
   ajv: {
     required: false,
     type: [Object] as CompType<Ajv, [ObjectConstructor]>,
-    default: createAjv(),
   },
   locale: {
     required: false,
@@ -138,7 +137,17 @@ const resolvedJsonForms = defineComponent({
     ...resolvedJsonFormsProps(),
   },
   setup(props: FormConfig) {
+    let ajv = props.ajv;
+    
+    const ajvProvider = () => {
+      if (!ajv) {
+        ajv = createAjv();
+      }
+      return ajv;
+    };
+
     return {
+      ajvProvider: ajvProvider,
       resolved: false,
       error: undefined as any,
       schema: undefined as JsonSchema | undefined,

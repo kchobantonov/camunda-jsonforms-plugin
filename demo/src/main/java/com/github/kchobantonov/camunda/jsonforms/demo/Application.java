@@ -1,4 +1,4 @@
-package com.github.kchobantonov.camunda.jsonforms;
+package com.github.kchobantonov.camunda.jsonforms.demo;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

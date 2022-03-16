@@ -1,4 +1,4 @@
-package com.github.kchobantonov.camunda.jsonforms;
+package com.github.kchobantonov.camunda.jsonforms.plugin;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

@@ -1,8 +1,8 @@
-package com.github.kchobantonov.camunda.jsonforms.config;
+package com.github.kchobantonov.camunda.jsonforms.demo.config;
 
-import com.github.kchobantonov.camunda.jsonforms.JsonFormsFormFieldValidatorProcessEnginePlugin;
-import com.github.kchobantonov.camunda.jsonforms.JsonFormsFormServicePlugin;
-import com.github.kchobantonov.camunda.jsonforms.JsonFormsParseListenerProcessEnginePlugin;
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormFieldValidatorProcessEnginePlugin;
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormServicePlugin;
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsParseListenerProcessEnginePlugin;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

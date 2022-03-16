@@ -62,6 +62,10 @@
 
     function onLoadResponse(response) {
         if (response.status >= 300) {
+            if (response.status == 404 && response.request.url.endsWith('.i18n.json')) {
+                // ignore missing internationalization resources
+                return;
+            }
             showNotification('error', null, "Load Error", response.statusText);
         }
     }

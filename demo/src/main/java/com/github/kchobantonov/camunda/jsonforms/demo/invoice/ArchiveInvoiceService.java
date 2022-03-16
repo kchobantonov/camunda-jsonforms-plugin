@@ -1,4 +1,4 @@
-package com.github.kchobantonov.camunda.jsonforms.invoice;
+package com.github.kchobantonov.camunda.jsonforms.demo.invoice;
 
 import java.util.logging.Logger;
 

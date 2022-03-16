@@ -24,7 +24,6 @@
       :cells="cells"
       :config="jsonformsConfig"
       :validationMode="validationMode"
-      :ajv="$ajv"
       :locale="locale"
       :translations="context.translations"
       :readonly="readonly"
@@ -37,7 +36,6 @@
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import {
-  createAjv,
   LoadEmitter,
   ResolvedJsonForms,
   ResponseOkInterceptor,
@@ -157,9 +155,6 @@ const camundaForm = defineComponent({
       renderers: camundaRenderers,
       cells: camundaRenderers,
     };
-  },
-  created() {
-    this.$ajv = createAjv();
   },
   async mounted() {
     await this.loadContext();

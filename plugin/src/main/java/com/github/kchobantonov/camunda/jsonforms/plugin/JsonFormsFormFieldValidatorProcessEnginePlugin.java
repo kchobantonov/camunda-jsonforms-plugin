@@ -1,12 +1,12 @@
-package com.github.kchobantonov.camunda.jsonforms;
+package com.github.kchobantonov.camunda.jsonforms.plugin;
 
 import java.util.HashMap;
 
-import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.impl.cfg.AbstractProcessEnginePlugin;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin;
 
-public class JsonFormsFormFieldValidatorProcessEnginePlugin implements ProcessEnginePlugin {
+public class JsonFormsFormFieldValidatorProcessEnginePlugin extends AbstractProcessEnginePlugin {
+
     @Override
     public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
         if (processEngineConfiguration.getCustomFormFieldValidators() == null) {
@@ -16,12 +16,4 @@ public class JsonFormsFormFieldValidatorProcessEnginePlugin implements ProcessEn
                 JsonFormsFormFieldValidator.class);
     }
 
-    @Override
-    public void postInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
-    }
-
-    @Override
-    public void postProcessEngineBuild(ProcessEngine processEngine) {
-
-    }
 }
