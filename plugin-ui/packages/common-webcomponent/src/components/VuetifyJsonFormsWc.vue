@@ -33,7 +33,6 @@ import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import {
   commonRenderers,
-  createAjv,
   ResolvedJsonForms,
 } from '@kchobantonov/common-jsonforms';
 import { defineComponent, ref } from '@vue/composition-api';
