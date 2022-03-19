@@ -1,0 +1,44 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Control",
+      "scope": "#/properties/creditor"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/amount"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/invoiceNumber"
+    },
+    {
+      "type": "DataProvider",
+      "url": "{{ config.url }}/user",
+      "elements": [
+        {
+          "type": "Control",
+          "scope": "#/properties/reviewer",
+          "options": {
+            "variant": "data-provider-select",
+            "item-text": "{{ firstName }} {{ lastName }}",
+            "item-value": "{{ id }}"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Button",
+      "text": "Submit",
+      "color": "primary",
+      "rule": {
+        "effect": "ENABLE",
+        "condition": {
+          "scope": "#/",
+          "schema": { "$ref": "/#" }
+        }
+      }
+    }
+  ]
+}

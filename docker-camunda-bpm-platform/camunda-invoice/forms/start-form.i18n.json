@@ -1,0 +1,22 @@
+{
+  "en": {
+    "invoiceDocument": {
+      "label": "Upload your Invoice Document",
+      "error": {
+        "contentSchema": {
+          "maxItems": "Invoice document file should be less than 10MB in size"
+        }
+      }
+    }
+  },
+  "bg": {
+    "invoiceDocument": {
+      "label": "Прикачете вашата фактура",
+      "error": {
+        "contentSchema": {
+          "maxItems": "Файла не трябва да е по-голям от 10MB"
+        }
+      }
+    }
+  }
+}

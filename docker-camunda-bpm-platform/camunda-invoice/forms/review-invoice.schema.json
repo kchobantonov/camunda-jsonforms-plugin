@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "invoiceDocument": {
+      "type": "string",
+      "readOnly": true
+    },
+    "creditor": {
+      "type": "string",
+      "title": "Creditor"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Amount"
+    },
+    "invoiceCategory": {
+      "type": "string",
+      "enum": ["Travel Expenses", "Misc", "Software License Costs"],
+      "title": "Invoice Category"
+    },
+    "invoiceNumber": {
+      "type": "string",
+      "title": "Invoice Number"
+    },
+    "clarified": {
+      "type": "boolean",
+      "title": "Could you clarify the invoice?"
+    }
+  },
+  "required": ["clarified"],
+  "additionalProperties": false
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "invoiceDocument": {
+      "type": "string",
+      "title": "Upload your Invoice Document",
+      "description": "This field is required",
+      "format": "binary",
+      "formatMaximum": "10000000",
+      "i18n": "invoiceDocument"
+    },
+    "creditor": {
+      "type": "string",
+      "title": "Creditor",
+      "description": "(e.g. \"Great Pizza for Everyone Inc.\")"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Amount",
+      "description": "(e.g. \"30.00\")"
+    },
+    "invoiceCategory": {
+      "type": "string",
+      "enum": ["Travel Expenses", "Misc", "Software License Costs"],
+      "title": "Invoice Category"
+    },
+    "invoiceNumber": {
+      "type": "string",
+      "title": "Invoice Number",
+      "description": "(e.g. \"I-12345\")"
+    }
+  },
+  "required": ["invoiceDocument", "creditor", "amount", "invoiceCategory", "invoiceNumber"],
+  "additionalProperties": false
+}
