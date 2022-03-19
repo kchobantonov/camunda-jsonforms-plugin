@@ -2,6 +2,7 @@
 
 Provides client-side and server-side integration for using Camunda Embedded Forms with JSONForms.
 
-### Docker
+## Docker
 
-Before building the docker image for camunda-bpm-platform make sure that you have ran build the project with ```mvn clean install```. Note that the docker image will be based on camumda-bpm-platform and will not include the demo project.
+Before building the docker image for camunda-bpm-platform make sure that you have built the project with ```mvn clean install```.
+Note that the docker image will be based on camumda-bpm-platform and will not include the demo project.
