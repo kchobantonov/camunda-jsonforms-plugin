@@ -3,6 +3,10 @@ module.exports = {
   env: {
     browser: true,
   },
+  globals: {
+    "RequestInfo": "readonly",
+    "RequestInit": "readonly",
+  },
   extends: [
     "plugin:vue/essential",
     "eslint:recommended",
