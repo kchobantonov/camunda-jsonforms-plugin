@@ -80,7 +80,7 @@ export const resolvedJsonFormsProps = () => ({
       JsonFormsRendererRegistryEntry,
       [ArrayConstructor]
     >,
-    default: commonRenderers,
+    default: () => commonRenderers,
   },
   cells: {
     required: false,
@@ -88,7 +88,7 @@ export const resolvedJsonFormsProps = () => ({
       JsonFormsCellRendererRegistryEntry[],
       [ArrayConstructor]
     >,
-    default: commonRenderers,
+    default: () =>  commonRenderers,
   },
   config: {
     required: false,

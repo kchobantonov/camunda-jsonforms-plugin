@@ -69,7 +69,6 @@ const templateCompiler = defineComponent({
 
     elements: {
       type: [Array] as CompType<UISchemaElement[], [ArrayConstructor]>,
-      default: undefined,
     },
   },
 

@@ -42,7 +42,6 @@ export const rendererDataProps = <U = UISchemaElement>() => ({
       JsonFormsRendererRegistryEntry[],
       [ArrayConstructor]
     >,
-    default: undefined,
   },
   cells: {
     required: false,
@@ -50,7 +49,6 @@ export const rendererDataProps = <U = UISchemaElement>() => ({
       JsonFormsCellRendererRegistryEntry[],
       [ArrayConstructor]
     >,
-    default: undefined,
   },
   data: {
     required: true as true,
