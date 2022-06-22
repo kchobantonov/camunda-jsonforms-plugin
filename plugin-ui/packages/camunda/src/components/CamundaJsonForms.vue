@@ -215,7 +215,7 @@ const camundaForm = defineComponent({
     onChange(event: JsonFormsChangeEvent): void {
       this.$emit('change', event);
     },
-    async realod() {
+    async reload() {
       await this.loadContext();
 
       // apply any themes
