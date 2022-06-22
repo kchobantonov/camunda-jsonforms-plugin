@@ -69,7 +69,6 @@ const vuetifyFormWc = defineComponent({
     uischema: {
       required: false,
       type: [String, Object],
-      default: undefined,
       validator: function (value) {
         try {
           const uischema = typeof value == 'string' ? JSON.parse(value) : value;
@@ -83,7 +82,9 @@ const vuetifyFormWc = defineComponent({
     data: {
       required: false,
       type: [String, Object],
-      default: {},
+      default: () => {
+        return {};
+      },
       validator: function (value) {
         try {
           const data = typeof value == 'string' ? JSON.parse(value) : value;
@@ -97,11 +98,13 @@ const vuetifyFormWc = defineComponent({
     config: {
       required: false,
       type: [String, Object],
-      default: {
-        restrict: true,
-        trim: false,
-        showUnfocusedDescription: false,
-        hideRequiredAsterisk: true,
+      default: () => {
+        return {
+          restrict: true,
+          trim: false,
+          showUnfocusedDescription: false,
+          hideRequiredAsterisk: true,
+        };
       },
       validator: function (value) {
         try {
@@ -145,42 +148,44 @@ const vuetifyFormWc = defineComponent({
     defaultPreset: {
       required: false,
       type: [String, Object],
-      default: {
-        icons: {
-          iconfont: 'mdi',
-          values: {},
-        },
-        theme: {
-          dark: false,
-          default: 'light',
-          disable: false,
-          options: {
-            cspNonce: undefined,
-            customProperties: undefined,
-            minifyTheme: undefined,
-            themeCache: undefined,
+      default: () => {
+        return {
+          icons: {
+            iconfont: 'mdi',
+            values: {},
           },
-          themes: {
-            light: {
-              primary: '#1976D2',
-              secondary: '#424242',
-              accent: '#82B1FF',
-              error: '#FF5252',
-              info: '#2196F3',
-              success: '#4CAF50',
-              warning: '#FB8C00',
+          theme: {
+            dark: false,
+            default: 'light',
+            disable: false,
+            options: {
+              cspNonce: undefined,
+              customProperties: undefined,
+              minifyTheme: undefined,
+              themeCache: undefined,
             },
-            dark: {
-              primary: '#2196F3',
-              secondary: '#424242',
-              accent: '#FF4081',
-              error: '#FF5252',
-              info: '#2196F3',
-              success: '#4CAF50',
-              warning: '#FB8C00',
+            themes: {
+              light: {
+                primary: '#1976D2',
+                secondary: '#424242',
+                accent: '#82B1FF',
+                error: '#FF5252',
+                info: '#2196F3',
+                success: '#4CAF50',
+                warning: '#FB8C00',
+              },
+              dark: {
+                primary: '#2196F3',
+                secondary: '#424242',
+                accent: '#FF4081',
+                error: '#FF5252',
+                info: '#2196F3',
+                success: '#4CAF50',
+                warning: '#FB8C00',
+              },
             },
           },
-        },
+        };
       },
       validator: function (value) {
         try {

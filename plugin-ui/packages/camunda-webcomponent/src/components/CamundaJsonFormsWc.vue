@@ -71,7 +71,7 @@ const camundaFormWc = defineComponent({
     defaultPreset: {
       required: false,
       type: [Object] as CompType<Partial<VuetifyPreset>, [ObjectConstructor]>,
-      default: defaultPreset,
+      default: () => defaultPreset,
     },
   },
   methods: {

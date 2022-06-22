@@ -39,7 +39,6 @@ const templateCompiler = defineComponent({
   props: {
     parent: {
       type: [Object] as CompType<Vue, [ObjectConstructor]>,
-      default: undefined,
     },
 
     template: {
@@ -49,22 +48,18 @@ const templateCompiler = defineComponent({
 
     componentComputed: {
       type: [Object] as CompType<ComputedOptions, [ObjectConstructor]>,
-      default: undefined,
     },
 
     componentMethods: {
       type: [Object] as CompType<MethodOptions, [ObjectConstructor]>,
-      default: undefined,
     },
 
     componentFilters: {
       type: [Object] as CompType<MethodOptions, [ObjectConstructor]>,
-      default: undefined,
     },
 
     componentComponents: {
       type: [Object] as CompType<Components, [ObjectConstructor]>,
-      default: undefined,
     },
 
     elements: {
