@@ -51,23 +51,24 @@
 
 <script lang="ts">
 import {
-  JsonFormsCellRendererRegistryEntry,
-  JsonFormsI18nState,
-  JsonFormsRendererRegistryEntry,
-  JsonFormsUISchemaRegistryEntry,
-  JsonSchema,
-  Translator,
-  ValidationMode,
+JsonFormsCellRendererRegistryEntry,
+JsonFormsI18nState,
+JsonFormsRendererRegistryEntry,
+JsonFormsUISchemaRegistryEntry,
+JsonSchema,
+Translator,
+ValidationMode
 } from '@jsonforms/core';
 import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import { defineComponent } from '@vue/composition-api';
 import Ajv from 'ajv';
-import { commonRenderers } from '../renderers/index';
 import { resolveRefs } from '../core/json-refs';
-import { JsonFormInput, FormConfig } from '../core/types';
+import { FormConfig, JsonFormInput } from '../core/types';
 import { createAjv } from '../core/validate';
 import { createTranslator } from '../i18n';
+import { commonRenderers } from '../renderers/index';
+import { VAlert, VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
 
 export const resolvedJsonFormsProps = () => ({
   input: {
@@ -88,7 +89,7 @@ export const resolvedJsonFormsProps = () => ({
       JsonFormsCellRendererRegistryEntry[],
       [ArrayConstructor]
     >,
-    default: () =>  commonRenderers,
+    default: () => commonRenderers,
   },
   config: {
     required: false,
@@ -131,6 +132,11 @@ const resolvedJsonForms = defineComponent({
   name: 'resolved-json-forms',
   components: {
     JsonForms,
+    VContainer,
+    VRow,
+    VCol,
+    VProgressLinear,
+    VAlert,
   },
   emits: ['change'],
   props: {
@@ -138,7 +144,7 @@ const resolvedJsonForms = defineComponent({
   },
   setup(props: FormConfig) {
     let ajv = props.ajv;
-    
+
     const ajvProvider = () => {
       if (!ajv) {
         ajv = createAjv();
