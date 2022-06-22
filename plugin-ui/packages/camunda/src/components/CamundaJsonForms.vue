@@ -158,33 +158,42 @@ const camundaForm = defineComponent({
       cells: camundaRenderers,
     };
   },
+  watch: {
+    url: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.reload();
+        }
+      },
+      deep: true,
+    },
+    processDefinitionId: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.reload();
+        }
+      },
+      deep: true,
+    },
+    processDefinitionKey: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.reload();
+        }
+      },
+      deep: true,
+    },
+    taskId: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.reload();
+        }
+      },
+      deep: true,
+    },
+  },
   async mounted() {
-    await this.loadContext();
-
-    // apply any themes
-    if (this.context?.input?.uischema?.options) {
-      const preset = this.vuetifyProps(
-        this.context.input.uischema.options,
-        'preset'
-      ) as Partial<VuetifyPreset>;
-
-      if (preset.theme) {
-        this.$vuetify.theme = merge(this.$vuetify.theme, preset.theme);
-      }
-      if (preset.icons) {
-        this.$vuetify.icons = merge(this.$vuetify.icons, preset.icons);
-      }
-    } else {
-      // reset the theme if it was applied before in previous
-      this.$vuetify.theme = merge(
-        this.$vuetify.theme,
-        this.props.defaultPreset.theme
-      );
-      this.$vuetify.icons = merge(
-        this.$vuetify.icons,
-        this.props.defaultPreset.icons
-      );
-    }
+    await this.reload();
   },
   computed: {
     config(): CamundaFormConfig {
@@ -206,8 +215,37 @@ const camundaForm = defineComponent({
     onChange(event: JsonFormsChangeEvent): void {
       this.$emit('change', event);
     },
+    async realod() {
+      await this.loadContext();
+
+      // apply any themes
+      if (this.context?.input?.uischema?.options) {
+        const preset = this.vuetifyProps(
+          this.context.input.uischema.options,
+          'preset'
+        ) as Partial<VuetifyPreset>;
+
+        if (preset.theme) {
+          this.$vuetify.theme = merge(this.$vuetify.theme, preset.theme);
+        }
+        if (preset.icons) {
+          this.$vuetify.icons = merge(this.$vuetify.icons, preset.icons);
+        }
+      } else {
+        // reset the theme if it was applied before in previous
+        this.$vuetify.theme = merge(
+          this.$vuetify.theme,
+          this.props.defaultPreset.theme
+        );
+        this.$vuetify.icons = merge(
+          this.$vuetify.icons,
+          this.props.defaultPreset.icons
+        );
+      }
+    },
     async loadContext() {
       this.loading = true;
+      this.context = null;
 
       try {
         this.api = new CamundaFormApi(this.config);
