@@ -51,24 +51,24 @@
 
 <script lang="ts">
 import {
-JsonFormsCellRendererRegistryEntry,
-JsonFormsI18nState,
-JsonFormsRendererRegistryEntry,
-JsonFormsUISchemaRegistryEntry,
-JsonSchema,
-Translator,
-ValidationMode
+  JsonFormsCellRendererRegistryEntry,
+  JsonFormsI18nState,
+  JsonFormsRendererRegistryEntry,
+  JsonFormsUISchemaRegistryEntry,
+  JsonSchema,
+  Translator,
+  ValidationMode,
 } from '@jsonforms/core';
 import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import { defineComponent } from '@vue/composition-api';
 import Ajv from 'ajv';
+import { commonRenderers } from '../renderers/index';
 import { resolveRefs } from '../core/json-refs';
-import { FormConfig, JsonFormInput } from '../core/types';
+import { JsonFormInput, FormConfig } from '../core/types';
 import { createAjv } from '../core/validate';
 import { createTranslator } from '../i18n';
-import { commonRenderers } from '../renderers/index';
-import { VAlert, VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
+import { VContainer, VRow, VCol, VAlert, VProgressLinear } from 'vuetify/lib';
 
 export const resolvedJsonFormsProps = () => ({
   input: {
@@ -135,8 +135,8 @@ const resolvedJsonForms = defineComponent({
     VContainer,
     VRow,
     VCol,
-    VProgressLinear,
     VAlert,
+    VProgressLinear,
   },
   emits: ['change'],
   props: {

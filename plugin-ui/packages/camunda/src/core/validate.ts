@@ -52,6 +52,9 @@ export const CamundaFormConfigSchema: SchemaObject = {
         processDefinitionKey: {
           type: 'string',
         },
+        tenantId: {
+          type: 'string',
+        },
       },
       required: ['url', 'processDefinitionKey'],
     },

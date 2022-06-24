@@ -76,22 +76,6 @@ export class SubmitEmitter implements FetchInterceptor {
   };
 }
 
-export class ResponseOkInterceptor implements FetchInterceptor {
-  request = (input: RequestInfo, init?: RequestInit): RequestInput => {
-    return [input, init];
-  };
-
-  response = (response: Response): Response => {
-    if (!response.ok) {
-      //TODO: remove the throw since we want to show the error message comming from the JSON payload
-      //throw new Error(response.statusText);
-    }
-    return response;
-  };
-  responseError = (error: any): any => {
-    return error;
-  };
-}
 export class LoadEmitter implements FetchInterceptor {
   constructor(private emit: Emitter) {}
 

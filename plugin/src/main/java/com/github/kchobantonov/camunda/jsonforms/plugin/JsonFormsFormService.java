@@ -1,10 +1,22 @@
 package com.github.kchobantonov.camunda.jsonforms.plugin;
 
+import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotNull;
+
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import org.camunda.bpm.engine.BadUserRequestException;
+import org.camunda.bpm.engine.exception.DeploymentResourceNotFoundException;
+import org.camunda.bpm.engine.exception.NotFoundException;
+import org.camunda.bpm.engine.form.FormData;
+import org.camunda.bpm.engine.impl.GetDeployedTaskFormCmd;
+import org.camunda.bpm.engine.impl.cfg.CommandChecker;
+import org.camunda.bpm.engine.impl.cmd.GetDeployedStartFormCmd;
+import org.camunda.bpm.engine.impl.cmd.GetDeploymentResourceCmd;
 import org.camunda.bpm.engine.impl.cmd.GetTaskFormVariablesCmd;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.persistence.entity.DeploymentEntity;
@@ -12,14 +24,22 @@ import org.camunda.bpm.engine.impl.persistence.entity.ResourceEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskManager;
 import org.camunda.bpm.engine.variable.VariableMap;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.util.Assert;
 
 /**
  * JsonFormFormService restricts the access to process variables based on the
  * attached json forms schema.
  */
 public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServiceImpl {
+    private final JsonFormsPathResourceResolver resolver;
+
+    public JsonFormsFormService(JsonFormsPathResourceResolver resolver) {
+        Assert.notNull(resolver, "Path resolver shouldn't be null");
+        this.resolver = resolver;
+    }
 
     // TODO: other variable methods
     /*
@@ -42,7 +62,17 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
                 .execute(new JsonFormsGetTaskFormVariablesCmd(taskId, formVariables, deserializeObjectValues));
     }
 
-    private class JsonFormsGetTaskFormVariablesCmd extends GetTaskFormVariablesCmd {
+    @Override
+    public InputStream getDeployedStartForm(String processDefinitionId) {
+        return commandExecutor.execute(new JsonFormsGetDeployedStartFormCmd(processDefinitionId));
+    }
+
+    @Override
+    public InputStream getDeployedTaskForm(String taskId) {
+        return commandExecutor.execute(new JsonFromsGetDeployedTaskFormCmd(taskId));
+    }
+
+    protected class JsonFormsGetTaskFormVariablesCmd extends GetTaskFormVariablesCmd {
         public JsonFormsGetTaskFormVariablesCmd(String taskId, Collection<String> variableNames,
                 boolean deserializeObjectValues) {
             super(taskId, variableNames, deserializeObjectValues);
@@ -65,24 +95,25 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
                 DeploymentEntity deploymentEntity = commandContext.getDeploymentManager()
                         .findDeploymentById(task.getProcessDefinition().getDeploymentId());
                 if (deploymentEntity != null) {
-                    String formFile = Utils.getFormFile(task.getFormKey());
-
-                    ResourceEntity schema = deploymentEntity.getResource(formFile + Utils.RESOURCE_SCHEMA_SUFFIX);
+                    InputStream schema = getSchema(task, deploymentEntity);
                     if (schema != null) {
-                        JSONObject jsonSchema = new JSONObject(
-                                new JSONTokener(new ByteArrayInputStream(schema.getBytes())));
+                        try {
+                            JSONObject jsonSchema = new JSONObject(new JSONTokener(schema));
 
-                        JSONObject properties = jsonSchema.optJSONObject("properties");
-                        if (properties != null) {
-                            for (Iterator<Map.Entry<String, Object>> entryIterator = result.entrySet()
-                                    .iterator(); entryIterator.hasNext();) {
-                                Map.Entry<String, Object> entry = entryIterator.next();
-                                JSONObject property = properties.optJSONObject(entry.getKey());
+                            JSONObject properties = jsonSchema.optJSONObject("properties");
+                            if (properties != null) {
+                                for (Iterator<Map.Entry<String, Object>> entryIterator = result.entrySet()
+                                        .iterator(); entryIterator.hasNext();) {
+                                    Map.Entry<String, Object> entry = entryIterator.next();
+                                    JSONObject property = properties.optJSONObject(entry.getKey());
 
-                                if (property == null || property.optBoolean("writeOnly")) {
-                                    entryIterator.remove();
+                                    if (property == null || property.optBoolean("writeOnly")) {
+                                        entryIterator.remove();
+                                    }
                                 }
                             }
+                        } catch (JSONException e) {
+                            // ignore invalid JSON schema
                         }
                     }
                 }
@@ -90,5 +121,142 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
 
             return result;
         }
+    }
+
+    protected class JsonFormsGetDeployedStartFormCmd extends GetDeployedStartFormCmd {
+        public JsonFormsGetDeployedStartFormCmd(String processDefinitionId) {
+            super(processDefinitionId);
+        }
+
+        protected InputStream getJsonFormsDeploymentResource(String deploymentId, String resourceName) {
+            JsonFormsGetDeploymentResourceCmd getDeploymentResourceCmd = new JsonFormsGetDeploymentResourceCmd(
+                    deploymentId, resourceName);
+            try {
+                return commandContext.runWithoutAuthorization(getDeploymentResourceCmd);
+            } catch (DeploymentResourceNotFoundException e) {
+                throw new NotFoundException("The form with the resource name '" + resourceName
+                        + "' cannot be found in deployment with id " + deploymentId, e);
+            }
+        }
+
+        @Override
+        protected InputStream getResourceForFormKey(FormData formData, String formKey) {
+
+            if (formKey.startsWith(Utils.CAMUNDA_JSONFORMS_URL)) {
+                String location = Utils.getDeploymentLocation(formKey);
+                if (location == null) {
+                    throw new BadUserRequestException(
+                            "The form key '" + formKey + "' is missing deployment query parameter.");
+                }
+
+                return getJsonFormsDeploymentResource(formData.getDeploymentId(), location);
+            }
+            return super.getResourceForFormKey(formData, formKey);
+        }
+
+    }
+
+    protected class JsonFormsGetDeploymentResourceCmd extends GetDeploymentResourceCmd {
+        public JsonFormsGetDeploymentResourceCmd(String deploymentId, String resourceName) {
+            super(deploymentId, resourceName);
+        }
+
+        @Override
+        public InputStream execute(CommandContext commandContext) {
+            ensureNotNull("deploymentId", deploymentId);
+            ensureNotNull("resourceName", resourceName);
+
+            for (CommandChecker checker : commandContext.getProcessEngineConfiguration().getCommandCheckers()) {
+                checker.checkReadDeployment(deploymentId);
+            }
+
+            final String schemaResourcePath = resourceName + Utils.RESOURCE_SCHEMA_SUFFIX;
+            final String uischemaResourcePath = resourceName + Utils.RESOURCE_UISCHEMA_SUFFIX;
+            final String i18nResourcePath = resourceName + Utils.RESOURCE_I18N_SUFFIX;
+
+            List<ResourceEntity> resources = commandContext
+                    .getResourceManager()
+                    .findResourceByDeploymentIdAndResourceNames(deploymentId,
+                            schemaResourcePath, uischemaResourcePath, i18nResourcePath);
+
+            ResourceEntity schema = resources.stream().filter(entity -> entity.getName().equals(schemaResourcePath))
+                    .findFirst().orElse(null);
+            ResourceEntity uischema = resources.stream().filter(entity -> entity.getName().equals(uischemaResourcePath))
+                    .findFirst().orElse(null);
+            ResourceEntity i18n = resources.stream().filter(entity -> entity.getName().equals(i18nResourcePath))
+                    .findFirst().orElse(null);
+
+            ensureNotNull(DeploymentResourceNotFoundException.class,
+                    "no resource found with name '" + schemaResourcePath + "' in deployment '" + deploymentId + "'",
+                    "resource", schema);
+            ensureNotNull(DeploymentResourceNotFoundException.class,
+                    "no resource found with name '" + uischemaResourcePath + "' in deployment '"
+                            + deploymentId + "'",
+                    "resource", uischema);
+
+            JSONObject result = new JSONObject();
+            result.put(schemaResourcePath,
+                    new JSONObject(new JSONTokener(new ByteArrayInputStream(schema.getBytes()))));
+            result.put(uischemaResourcePath,
+                    new JSONObject(new JSONTokener(new ByteArrayInputStream(uischema.getBytes()))));
+            if (i18n != null) {
+                result.put(i18nResourcePath,
+                        new JSONObject(new JSONTokener(new ByteArrayInputStream(i18n.getBytes()))));
+            }
+
+            return new ByteArrayInputStream(result.toString().getBytes());
+        }
+
+    }
+
+    protected class JsonFromsGetDeployedTaskFormCmd extends GetDeployedTaskFormCmd {
+        public JsonFromsGetDeployedTaskFormCmd(String taskId) {
+            super(taskId);
+        }
+
+        protected InputStream getJsonFormsDeploymentResource(String deploymentId, String resourceName) {
+            JsonFormsGetDeploymentResourceCmd getDeploymentResourceCmd = new JsonFormsGetDeploymentResourceCmd(
+                    deploymentId, resourceName);
+            try {
+                return commandContext.runWithoutAuthorization(getDeploymentResourceCmd);
+            } catch (DeploymentResourceNotFoundException e) {
+                throw new NotFoundException("The form with the resource name '" + resourceName
+                        + "' cannot be found in deployment with id " + deploymentId, e);
+            }
+        }
+
+        @Override
+        protected InputStream getResourceForFormKey(FormData formData, String formKey) {
+            if (formKey.startsWith(Utils.CAMUNDA_JSONFORMS_URL)) {
+                String location = Utils.getDeploymentLocation(formKey);
+                if (location == null) {
+                    throw new BadUserRequestException(
+                            "The form key '" + formKey + "' is missing deployment query parameter.");
+                }
+
+                return getJsonFormsDeploymentResource(formData.getDeploymentId(), location);
+            }
+
+            return super.getResourceForFormKey(formData, formKey);
+
+        }
+
+    }
+
+    protected InputStream getSchema(TaskEntity task, DeploymentEntity deploymentEntity) {
+        String deploymentLocation = Utils.getDeploymentLocation(task.getFormKey());
+        if (deploymentLocation != null) {
+            ResourceEntity schema = deploymentEntity.getResource(deploymentLocation + Utils.RESOURCE_SCHEMA_SUFFIX);
+            if (schema != null) {
+                return new ByteArrayInputStream(schema.getBytes());
+            }
+        }
+
+        String pathLocation = Utils.getPathLocation(task.getFormKey());
+        if (pathLocation != null && pathLocation.startsWith("/")) {
+            return resolver.resolve(pathLocation);
+        }
+
+        return null;
     }
 }

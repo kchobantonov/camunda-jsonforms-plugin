@@ -59,18 +59,26 @@ public final class Utils {
         return ht;
     }
 
-    public static String getFormFile(String formKey) {
+    public static String getDeploymentLocation(String formKey) {
+        return getQueryParamValue(formKey, Utils.CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT);
+    }
+
+    public static String getPathLocation(String formKey) {
+        return getQueryParamValue(formKey, Utils.CAMUNDA_FORM_KEY_QUERY_PARAM_PATH);
+    }
+
+    public static String getQueryParamValue(String formKey, String queryParam) {
         int queryStart = formKey.indexOf("?");
         if (queryStart == -1 && queryStart < formKey.length() - 1) {
             return null;
         }
 
         Map<String, List<String>> parameters = Utils.parseQueryString(formKey.substring(queryStart + 1));
-        List<String> deployment = parameters.get(Utils.CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT);
-        if (deployment == null || deployment.isEmpty()) {
+        List<String> value = parameters.get(queryParam);
+        if (value == null || value.isEmpty()) {
             return null;
         }
 
-        return deployment.get(0);
+        return value.get(0);
     }
 }

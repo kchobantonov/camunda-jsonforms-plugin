@@ -1,11 +1,13 @@
 package com.github.kchobantonov.camunda.jsonforms.demo.config;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormFieldValidator;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormFieldValidatorProcessEnginePlugin;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormServicePlugin;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsParseListenerProcessEnginePlugin;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsPathResourceResolver;
 
 @Configuration
 class JsonFormsPluginConfig {
@@ -31,8 +33,9 @@ class JsonFormsPluginConfig {
 
     // do not return process variables that are not defined in the jsonform schema.
     @Bean
-    public JsonFormsFormServicePlugin jsonFormsFormServicePlugin() {
-        return new JsonFormsFormServicePlugin();
+    public JsonFormsFormServicePlugin jsonFormsFormServicePlugin(JsonFormsPathResourceResolver resolver) {
+        JsonFormsFormFieldValidator.setJsonFormsPathResourceResolver(resolver);
+        return new JsonFormsFormServicePlugin(resolver);
     }
 
 }

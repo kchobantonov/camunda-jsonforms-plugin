@@ -37,8 +37,8 @@ import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
 import { defineComponent, inject } from '@vue/composition-api';
 import { VBtn } from 'vuetify/lib';
 import { CamundaFormApi } from '../core/api';
-import { RestClient, SubmitEmitter, ResponseOkInterceptor, Emitter } from '@kchobantonov/common-jsonforms';
-import { CamundaFormContext, Action } from '../core/types';
+import { RestClient, SubmitEmitter, Emitter } from '@kchobantonov/common-jsonforms';
+import { CamundaFormContext, Action, isTaskIdConfig } from '../core/types';
 
 interface ButtonElement extends UISchemaElement {
   type: 'Button';
@@ -129,24 +129,24 @@ const buttonRenderer = defineComponent({
       return (
         (this.action === 'complete' ||
           this.action === 'complete-without-data') &&
-        this.camundaFormContext.task !== undefined
+        isTaskIdConfig(this.camundaFormContext.config)
       );
     },
     isResolveButton(): boolean {
       return (
         (this.action === 'resolve' || this.action === 'resolve-without-data') &&
-        this.camundaFormContext.task !== undefined
+        isTaskIdConfig(this.camundaFormContext.config)
       );
     },
     isErrorButton(): boolean {
       return (
-        this.action === 'error' && this.camundaFormContext.task !== undefined
+        this.action === 'error' && isTaskIdConfig(this.camundaFormContext.config)
       );
     },
     isEscalationButton(): boolean {
       return (
         this.action === 'escalation' &&
-        this.camundaFormContext.task !== undefined
+        isTaskIdConfig(this.camundaFormContext.config)
       );
     },
     translatedLabel(): string | undefined {
@@ -196,7 +196,6 @@ const buttonRenderer = defineComponent({
         }
         const restClient = new RestClient([
           new SubmitEmitter(this.camundaFormEmitter),
-          new ResponseOkInterceptor(),
         ]);
 
         const data = this.jsonforms.core!.data;

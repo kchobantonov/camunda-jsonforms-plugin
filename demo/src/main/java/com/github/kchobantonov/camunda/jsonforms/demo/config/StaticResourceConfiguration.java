@@ -1,16 +1,24 @@
 package com.github.kchobantonov.camunda.jsonforms.demo.config;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.nio.file.Paths;
 
-import com.github.kchobantonov.camunda.jsonforms.plugin.Utils;
-
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsPathResourceResolver;
+import com.github.kchobantonov.camunda.jsonforms.plugin.Utils;
+
 @Configuration
 public class StaticResourceConfiguration implements WebMvcConfigurer {
+    private String resourceRoot = null;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String sourceFolderPath = System.getProperty("CAMUNDA_JSONFORMS_RESOURCES_FOLDER");
@@ -22,13 +30,36 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
 
             if (sourceFolder.exists() && sourceFolder.isDirectory() && path != null) {
                 try {
+                    resourceRoot = sourceFolder.toURI().toURL().toExternalForm();
                     registry
                             .addResourceHandler(path + "/**")
-                            .addResourceLocations(sourceFolder.toURI().toURL().toExternalForm())
+                            .addResourceLocations(resourceRoot)
                             .setCachePeriod(0);
                 } catch (MalformedURLException e) {
+                    resourceRoot = null;
                 }
             }
+        }
+    }
+
+    @Bean
+    public JsonFormsPathResourceResolver jsonFormsPathResourceResolver() {
+        return new StaticResourceResolver();
+    }
+
+    private class StaticResourceResolver implements JsonFormsPathResourceResolver {
+
+        @Override
+        public InputStream resolve(String path) {
+            if (resourceRoot != null) {
+                try {
+                    return new FileInputStream(Paths.get(resourceRoot, path).toAbsolutePath().toFile());
+                } catch (FileNotFoundException e) {
+                    return null;
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -38,7 +38,6 @@ import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import {
   LoadEmitter,
   ResolvedJsonForms,
-  ResponseOkInterceptor,
   RestClient,
 } from '@kchobantonov/common-jsonforms';
 import { defineComponent, ref, toRefs } from '@vue/composition-api';
@@ -52,7 +51,74 @@ import { CamundaFormConfig, CamundaFormContext } from '../core/types';
 import { validateCamundaFormConfig } from '../core/validate';
 import { camundaRenderers } from '../renderers';
 
-const camundaForm = defineComponent({
+export const camundaJsonFormsProps = () => ({
+  url: {
+    required: true,
+    type: String,
+  },
+  processDefinitionId: {
+    required: false,
+    type: String,
+  },
+  processDefinitionKey: {
+    required: false,
+    type: String,
+  },
+  taskId: {
+    required: false,
+    type: String,
+  },
+  locale: {
+    required: false,
+    type: String,
+    default: 'en',
+  },
+  defaultPreset: {
+    required: false,
+    type: [Object] as CompType<Partial<VuetifyPreset>, [ObjectConstructor]>,
+    default: () => {
+      return {
+        icons: {
+          iconfont: 'mdi',
+          values: {},
+        },
+        theme: {
+          dark: false,
+          default: 'light',
+          disable: false,
+          options: {
+            cspNonce: undefined,
+            customProperties: undefined,
+            minifyTheme: undefined,
+            themeCache: undefined,
+          },
+          themes: {
+            light: {
+              primary: '#1976D2',
+              secondary: '#424242',
+              accent: '#82B1FF',
+              error: '#FF5252',
+              info: '#2196F3',
+              success: '#4CAF50',
+              warning: '#FB8C00',
+            },
+            dark: {
+              primary: '#2196F3',
+              secondary: '#424242',
+              accent: '#FF4081',
+              error: '#FF5252',
+              info: '#2196F3',
+              success: '#4CAF50',
+              warning: '#FB8C00',
+            },
+          },
+        },
+      };
+    },
+  },
+});
+
+const camundaJsonForms: any = defineComponent({
   name: 'camunda-json-forms',
   components: {
     ResolvedJsonForms,
@@ -71,70 +137,7 @@ const camundaForm = defineComponent({
     'submit-error',
   ],
   props: {
-    url: {
-      required: true,
-      type: String,
-    },
-    processDefinitionId: {
-      required: false,
-      type: String,
-    },
-    processDefinitionKey: {
-      required: false,
-      type: String,
-    },
-    taskId: {
-      required: false,
-      type: String,
-    },
-    locale: {
-      required: false,
-      type: String,
-      default: 'en',
-    },
-    defaultPreset: {
-      required: false,
-      type: [Object] as CompType<Partial<VuetifyPreset>, [ObjectConstructor]>,
-      default: () => {
-        return {
-          icons: {
-            iconfont: 'mdi',
-            values: {},
-          },
-          theme: {
-            dark: false,
-            default: 'light',
-            disable: false,
-            options: {
-              cspNonce: undefined,
-              customProperties: undefined,
-              minifyTheme: undefined,
-              themeCache: undefined,
-            },
-            themes: {
-              light: {
-                primary: '#1976D2',
-                secondary: '#424242',
-                accent: '#82B1FF',
-                error: '#FF5252',
-                info: '#2196F3',
-                success: '#4CAF50',
-                warning: '#FB8C00',
-              },
-              dark: {
-                primary: '#2196F3',
-                secondary: '#424242',
-                accent: '#FF4081',
-                error: '#FF5252',
-                info: '#2196F3',
-                success: '#4CAF50',
-                warning: '#FB8C00',
-              },
-            },
-          },
-        };
-      },
-    },
+    ...camundaJsonFormsProps(),
   },
   setup(props: CamundaFormConfig) {
     const context = ref<CamundaFormContext | null>(null);
@@ -195,17 +198,12 @@ const camundaForm = defineComponent({
   async mounted() {
     await this.reload();
   },
-  computed: {
-    config(): CamundaFormConfig {
-      return validateCamundaFormConfig(this.props);
-    },
-  },
   provide() {
     // provide as a reactive property
     const { context, api } = toRefs(this);
 
     return {
-      formConfig: this.config,
+      formConfig: validateCamundaFormConfig(this.props),
       formContext: context,
       camundaFormApi: api,
       camundaFormEmitter: this.$emit.bind(this),
@@ -248,11 +246,10 @@ const camundaForm = defineComponent({
       this.context = null;
 
       try {
-        this.api = new CamundaFormApi(this.config);
+        this.api = new CamundaFormApi(validateCamundaFormConfig(this.props));
 
         const restClient = new RestClient([
           new LoadEmitter(this.$emit.bind(this)),
-          new ResponseOkInterceptor(),
         ]);
         const context = await this.api.loadForm(restClient);
 
@@ -274,7 +271,7 @@ const camundaForm = defineComponent({
   },
 });
 
-export default camundaForm;
+export default camundaJsonForms;
 </script>
 
 <style></style>

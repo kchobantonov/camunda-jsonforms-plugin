@@ -25,8 +25,17 @@ import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.util.Assert;
 
 public class JsonFormsFormFieldValidator implements FormFieldValidator {
+    private static JsonFormsPathResourceResolver resolver;
+
+    // Camunda will expect always a default constructor and it will instantiate the
+    // validator without any parameters so provide a static method to pass the
+    // resolver
+    public static void setJsonFormsPathResourceResolver(JsonFormsPathResourceResolver r) {
+        resolver = r;
+    }
 
     @Override
     public boolean validate(Object submittedValue,
@@ -35,19 +44,12 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
         Map<String, Object> submittedValues = validatorContext.getSubmittedValues();
 
         String formKey = getFormKey(validatorContext.getVariableScope());
-        String deploymentId = getDeploymentId(validatorContext.getVariableScope());
-        String formFile = Utils.getFormFile(formKey);
+        if (formKey != null && formKey.startsWith(Utils.CAMUNDA_JSONFORMS_URL)) {
+            String deploymentId = getDeploymentId(validatorContext.getVariableScope());
 
-        if (formFile != null) {
-
-            ResourceEntity resource = Context.getCommandContext()
-                    .getDeploymentManager()
-                    .findDeploymentById(deploymentId)
-                    .getResource(formFile + Utils.RESOURCE_SCHEMA_SUFFIX);
-
+            InputStream resource = getSchema(formKey, deploymentId);
             if (resource != null) {
-                JSONObject jsonSchema = new JSONObject(
-                        new JSONTokener(new ByteArrayInputStream(resource.getBytes())));
+                JSONObject jsonSchema = new JSONObject(new JSONTokener(resource));
 
                 JSONObject object = new JSONObject();
                 for (Map.Entry<String, Object> entry : submittedValues.entrySet()) {
@@ -125,7 +127,7 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
         throw new FormFieldConfigurationException("Could not get deployment id");
     }
 
-    private String getFormKey(VariableScope variableScope) {
+    protected String getFormKey(VariableScope variableScope) {
         if (variableScope instanceof TaskEntity) {
             ((TaskEntity) variableScope).initializeFormKey();
             return ((TaskEntity) variableScope).getFormKey();
@@ -140,5 +142,27 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
 
         throw new IllegalStateException(
                 "Did not receive a expected variable scope.");
+    }
+
+    protected InputStream getSchema(String formKey, String deploymentId) {
+        String deploymentLocation = Utils.getDeploymentLocation(formKey);
+        if (deploymentLocation != null) {
+            ResourceEntity schema = Context.getCommandContext()
+                    .getDeploymentManager()
+                    .findDeploymentById(deploymentId)
+                    .getResource(deploymentLocation + Utils.RESOURCE_SCHEMA_SUFFIX);
+
+            if (schema != null) {
+                return new ByteArrayInputStream(schema.getBytes());
+            }
+        }
+
+        String pathLocation = Utils.getPathLocation(formKey);
+        if (pathLocation != null && pathLocation.startsWith("/")) {
+            Assert.notNull(resolver, "Resolver not setup correctly");
+            return resolver.resolve(pathLocation);
+        }
+
+        return null;
     }
 }

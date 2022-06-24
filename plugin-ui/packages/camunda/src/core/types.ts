@@ -15,6 +15,7 @@ export interface CamundaFormProcessDefinitionIdConfig
 export interface CamundaFormProcessDefinitionKeyConfig
   extends BaseCamundaFormConfig {
   processDefinitionKey: string;
+  tenantId?: string;
 }
 
 export type CamundaFormConfig =
@@ -22,10 +23,15 @@ export type CamundaFormConfig =
   | CamundaFormProcessDefinitionIdConfig
   | CamundaFormProcessDefinitionKeyConfig;
 
+export interface TaskForm {
+  key?: string;
+  contextPath?: string;
+}
 export interface Task {
   id: string;
   formKey?: string;
   processDefinitionId?: string;
+  tenantId?: string;
 }
 
 export interface ProcessDefinition {
@@ -34,8 +40,8 @@ export interface ProcessDefinition {
 }
 
 export interface CamundaFormContext extends FormContext {
-  task?: Task;
-  processDefinition: ProcessDefinition;
+  config: CamundaFormConfig;
+  taskForm?: TaskForm;
   variables: Record<string, VariableValue>;
 }
 

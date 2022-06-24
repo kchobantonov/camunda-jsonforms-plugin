@@ -60,3 +60,27 @@ export const RESOURCE_UISCHEMA_SUFFIX = '.uischema.json';
 export const RESOURCE_I18N_SUFFIX = '.i18n.json';
 
 export type Emitter = (event: string, ...args: any[]) => void;
+
+export class ResponseException extends Error {
+  response: Response;
+  code: number;
+
+  constructor(response: Response) {
+    super(response.statusText);
+    this.name = 'ResponseException';
+    this.code = response.status;
+    this.response = response;
+  }
+
+  toString() {
+    return this.message;
+  }
+
+  toJSON() {
+    return {
+      message: this.message,
+      name: this.name,
+      code: this.code,
+    };
+  }
+}
