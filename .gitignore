@@ -23,7 +23,6 @@
 hs_err_pid*
 
 target
-plugin-ui/package-lock.json
 plugin-ui/node
 plugin-ui/node_modules
 plugin-ui/packages/*/lib
