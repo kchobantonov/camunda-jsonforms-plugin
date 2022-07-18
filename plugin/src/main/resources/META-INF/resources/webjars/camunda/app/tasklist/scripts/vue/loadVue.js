@@ -16,7 +16,8 @@
  */
 
 const vue = document.createElement('script');
-vue.crossOrigin = true;
-vue.src = 'https://cdn.jsdelivr.net/npm/vue@2.6.14'
+vue.crossOrigin = 'anonymous';
+vue.src = 'https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js';
+vue.integrity = 'sha256-kXTEJcRFN330VirZFl6gj9+UM6gIKW195fYZeR3xDhc=';
 
 document.body.append(vue);
