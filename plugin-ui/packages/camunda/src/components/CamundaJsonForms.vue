@@ -18,7 +18,7 @@
     </div>
 
     <resolved-json-forms
-      v-if="context != null"
+      v-else-if="context != null"
       :input="context.input"
       :renderers="renderers"
       :cells="cells"
@@ -252,7 +252,7 @@ const camundaJsonForms: any = defineComponent({
           new LoadEmitter(this.$emit.bind(this)),
         ]);
         const context = await this.api.loadForm(restClient);
-
+        
         this.context = context;
       } catch (e) {
         this.$emit('load-error', e);
