@@ -13,8 +13,24 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "outDir": "./lib",
-    "types": ["node", "vue", "vuetify"],
-    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+    "jsx": "preserve",
+    "types": [
+      "node",
+      "vue",
+      "vuetify"
+    ],
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ]
   },
-  "exclude": ["node_modules", "lib"]
+  "exclude": [
+    "node_modules",
+    "lib"
+  ],
+  "vueCompilerOptions": {
+    "target": 2, // For Vue version <= 2.6.14
+  }
 }

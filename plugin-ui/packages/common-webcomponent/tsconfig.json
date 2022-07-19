@@ -35,5 +35,8 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "vueCompilerOptions": {
+    "target": 2, // For Vue version <= 2.6.14
+  }
 }
