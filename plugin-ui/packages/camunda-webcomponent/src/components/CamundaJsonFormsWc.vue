@@ -23,12 +23,11 @@
 
 <script lang="ts">
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { defineComponent } from '@vue/composition-api';
-import { VApp } from 'vuetify/lib';
 import { CamundaJsonForms } from '@kchobantonov/camunda-jsonforms';
+import { defineComponent, PropType } from 'vue';
+import { VApp } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
-import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 
 const camundaFormWc = defineComponent({
   name: 'camunda-json-forms-wc',
@@ -70,7 +69,7 @@ const camundaFormWc = defineComponent({
     },
     defaultPreset: {
       required: false,
-      type: [Object] as CompType<Partial<VuetifyPreset>, [ObjectConstructor]>,
+      type: [Object] as PropType<Partial<VuetifyPreset>>,
       default: () => defaultPreset,
     },
   },

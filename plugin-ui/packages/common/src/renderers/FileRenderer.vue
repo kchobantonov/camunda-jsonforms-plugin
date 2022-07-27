@@ -53,14 +53,13 @@
 import {
   and,
   ControlElement,
+  getI18nKey,
   isStringControl,
   JsonFormsRendererRegistryEntry,
   JsonSchema,
-  Layout,
   rankWith,
   schemaMatches,
   uiTypeIs,
-  getI18nKey,
 } from '@jsonforms/core';
 import {
   DispatchRenderer,
@@ -68,23 +67,27 @@ import {
   RendererProps,
   useJsonFormsControl,
 } from '@jsonforms/vue2';
-import { DisabledIconFocus } from './directives';
-import { useVuetifyControl, useTranslator, ControlWrapper } from '@jsonforms/vue2-vuetify';
-import { defineComponent, unref } from '@vue/composition-api';
 import {
-  VHover,
-  VFileInput,
-  VDialog,
+  ControlWrapper,
+  useTranslator,
+  useVuetifyControl,
+} from '@jsonforms/vue2-vuetify';
+import {
+  VBtn,
   VCard,
   VCardText,
+  VDialog,
+  VFileInput,
+  VHover,
   VProgressLinear,
   VSpacer,
   VToolbar,
   VToolbarTitle,
-  VBtn,
 } from 'vuetify/lib';
+import { DisabledIconFocus } from './directives';
 
 import toNumber from 'lodash/toNumber';
+import { defineComponent, unref } from 'vue';
 
 const formatBytes = (bytes: number, decimals = 2) => {
   if (bytes === 0) return '0 Bytes';
@@ -192,7 +195,7 @@ const fileRenderer = defineComponent({
     DisabledIconFocus,
   },
   props: {
-    ...rendererProps<Layout>(),
+    ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
     let currentFile: File | undefined = undefined;

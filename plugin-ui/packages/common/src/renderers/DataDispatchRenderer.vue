@@ -3,29 +3,24 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, toRefs, ref } from '@vue/composition-api';
-import { UnknownRenderer, useJsonFormsRenderer } from '@jsonforms/vue2';
-import maxBy from 'lodash/maxBy';
 import {
   JsonFormsCellRendererRegistryEntry,
   JsonFormsRendererRegistryEntry,
   JsonSchema,
-  RendererProps,
   UISchemaElement,
 } from '@jsonforms/core';
-import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
+import { UnknownRenderer, useJsonFormsRenderer } from '@jsonforms/vue2';
+import maxBy from 'lodash/maxBy';
+import { defineComponent, PropType, ref, toRefs } from 'vue';
 
 export const rendererDataProps = <U = UISchemaElement>() => ({
   schema: {
     required: true as true,
-    type: [Object, Boolean] as CompType<
-      JsonSchema,
-      [ObjectConstructor, BooleanConstructor]
-    >,
+    type: [Object, Boolean] as PropType<JsonSchema>,
   },
   uischema: {
     required: true as true,
-    type: [Object] as CompType<U, [ObjectConstructor]>,
+    type: Object as PropType<U>,
   },
   path: {
     required: true as true,
@@ -38,21 +33,22 @@ export const rendererDataProps = <U = UISchemaElement>() => ({
   },
   renderers: {
     required: false,
-    type: [Array] as CompType<
-      JsonFormsRendererRegistryEntry[],
-      [ArrayConstructor]
-    >,
+    type: Array as PropType<JsonFormsRendererRegistryEntry[]>,
+    default: undefined,
   },
   cells: {
     required: false,
-    type: [Array] as CompType<
-      JsonFormsCellRendererRegistryEntry[],
-      [ArrayConstructor]
-    >,
+    type: Array as PropType<JsonFormsCellRendererRegistryEntry[]>,
+    default: undefined,
+  },
+  config: {
+    required: false,
+    type: Object,
+    default: undefined,
   },
   data: {
     required: true as true,
-    type: [Object] as CompType<any, [ObjectConstructor]>,
+    type: [Object] as PropType<any>,
   },
 });
 
@@ -61,7 +57,7 @@ export default defineComponent({
   props: {
     ...rendererDataProps(),
   },
-  setup(props: RendererProps) {
+  setup(props) {
     return { ...useJsonFormsRenderer(props), scopeData: ref(props.data) };
   },
   provide() {
@@ -81,13 +77,23 @@ export default defineComponent({
   },
   computed: {
     determinedRenderer(): any {
+      const testerContext = {
+        rootSchema: this.rootSchema,
+        config: this.config,
+      };
+
       const renderer = maxBy<JsonFormsRendererRegistryEntry>(
         this.renderer.renderers,
-        (r) => r.tester(this.renderer.uischema, this.renderer.schema)
+        (r) =>
+          r.tester(this.renderer.uischema, this.renderer.schema, testerContext)
       );
       if (
         renderer === undefined ||
-        renderer.tester(this.renderer.uischema, this.renderer.schema) === -1
+        renderer.tester(
+          this.renderer.uischema,
+          this.renderer.schema,
+          testerContext
+        ) === -1
       ) {
         return UnknownRenderer;
       } else {

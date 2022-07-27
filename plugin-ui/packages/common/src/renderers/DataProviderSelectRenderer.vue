@@ -37,24 +37,24 @@
 
 <script lang="ts">
 import {
-  ControlElement,
-  JsonFormsRendererRegistryEntry,
-  rankWith,
-  isStringControl,
   and,
+  ControlElement,
+  isStringControl,
+  JsonFormsRendererRegistryEntry,
   optionIs,
+  rankWith,
 } from '@jsonforms/core';
-import { defineComponent, inject } from '@vue/composition-api';
 import {
   rendererProps,
-  useJsonFormsOneOfEnumControl,
   RendererProps,
+  useJsonFormsOneOfEnumControl,
 } from '@jsonforms/vue2';
-import { useVuetifyControl, ControlWrapper } from '@jsonforms/vue2-vuetify';
+import { ControlWrapper, useVuetifyControl } from '@jsonforms/vue2-vuetify';
 import { DisabledIconFocus } from './directives/DisabledIconFocus';
 
+import { defineComponent, inject } from 'vue';
+import { VAutocomplete, VHover, VSelect } from 'vuetify/lib';
 import { template as templateFn } from '../core/template';
-import { VSelect, VHover, VAutocomplete } from 'vuetify/lib';
 
 const controlRenderer = defineComponent({
   name: 'data-provider-select-renderer',

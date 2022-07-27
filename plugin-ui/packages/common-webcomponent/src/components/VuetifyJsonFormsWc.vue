@@ -30,19 +30,18 @@
 <script lang="ts">
 import { ValidationMode } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import {
   commonRenderers,
   ResolvedJsonForms,
 } from '@kchobantonov/common-jsonforms';
-import { defineComponent, ref } from '@vue/composition-api';
 import { merge } from 'lodash';
+import get from 'lodash/get';
+import isPlainObject from 'lodash/isPlainObject';
+import { defineComponent, PropType, ref } from 'vue';
 import { VApp } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import { VuetifyFormConfig } from '../core';
 import vuetify from '../plugins/vuetify';
-import isPlainObject from 'lodash/isPlainObject';
-import get from 'lodash/get';
 
 const vuetifyFormWc = defineComponent({
   name: 'vuetify-json-forms-wc',
@@ -123,7 +122,7 @@ const vuetifyFormWc = defineComponent({
     },
     validationMode: {
       required: false,
-      type: [String] as CompType<ValidationMode, [StringConstructor]>,
+      type: [String] as PropType<ValidationMode>,
       default: 'ValidateAndShow',
     },
     locale: {

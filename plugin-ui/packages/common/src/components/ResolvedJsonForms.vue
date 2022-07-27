@@ -60,40 +60,33 @@ import {
   ValidationMode,
 } from '@jsonforms/core';
 import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
-import { defineComponent } from '@vue/composition-api';
 import Ajv from 'ajv';
-import { commonRenderers } from '../renderers/index';
+import { defineComponent, PropType, reactive, ref } from 'vue';
+import { VAlert, VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
 import { resolveRefs } from '../core/json-refs';
-import { JsonFormInput, FormConfig } from '../core/types';
+import { JsonFormInput } from '../core/types';
 import { createAjv } from '../core/validate';
 import { createTranslator } from '../i18n';
-import { VContainer, VRow, VCol, VAlert, VProgressLinear } from 'vuetify/lib';
+import { commonRenderers } from '../renderers/index';
 
 export const resolvedJsonFormsProps = () => ({
   input: {
     required: true,
-    type: [Object] as CompType<JsonFormInput, [ObjectConstructor]>,
+    type: [Object] as PropType<JsonFormInput>,
   },
   renderers: {
     required: false,
-    type: [Array] as CompType<
-      JsonFormsRendererRegistryEntry,
-      [ArrayConstructor]
-    >,
+    type: [Array] as PropType<JsonFormsRendererRegistryEntry[]>,
     default: () => commonRenderers,
   },
   cells: {
     required: false,
-    type: [Array] as CompType<
-      JsonFormsCellRendererRegistryEntry[],
-      [ArrayConstructor]
-    >,
+    type: [Array] as PropType<JsonFormsCellRendererRegistryEntry[]>,
     default: () => commonRenderers,
   },
   config: {
     required: false,
-    type: [Object] as CompType<Record<string, any>, [ObjectConstructor]>,
+    type: [Object] as PropType<Record<string, any>>,
   },
   readonly: {
     required: false,
@@ -102,20 +95,17 @@ export const resolvedJsonFormsProps = () => ({
   },
   uischemas: {
     required: false,
-    type: [Array] as CompType<
-      JsonFormsUISchemaRegistryEntry,
-      [ArrayConstructor]
-    >,
+    type: [Array] as PropType<JsonFormsUISchemaRegistryEntry[]>,
     default: () => [],
   },
   validationMode: {
     required: false,
-    type: [String] as CompType<ValidationMode, [StringConstructor]>,
+    type: [String] as PropType<ValidationMode>,
     default: 'ValidateAndShow',
   },
   ajv: {
     required: false,
-    type: [Object] as CompType<Ajv, [ObjectConstructor]>,
+    type: [Object] as PropType<Ajv>,
   },
   locale: {
     required: false,
@@ -124,7 +114,7 @@ export const resolvedJsonFormsProps = () => ({
   },
   translations: {
     required: false,
-    type: [Object] as CompType<Record<string, any>, [ObjectConstructor]>,
+    type: [Object] as PropType<Record<string, any>>,
   },
 });
 
@@ -142,31 +132,38 @@ const resolvedJsonForms = defineComponent({
   props: {
     ...resolvedJsonFormsProps(),
   },
-  setup(props: FormConfig) {
-    let ajv = props.ajv;
+  setup(props) {
+    let ajv = ref(props.ajv);
 
     const ajvProvider = () => {
-      if (!ajv) {
-        ajv = createAjv();
+      if (!ajv.value) {
+        ajv.value = createAjv();
       }
       return ajv;
     };
 
+    const resolved = ref(false);
+    const error = ref<any>(undefined);
+    const schema = ref<JsonSchema | undefined>(undefined);
+    const uischema = ref(props.input?.uischema);
+    const data = ref(props.input?.data);
+    const i18n = reactive({
+      locale: props.locale,
+      translations: props.translations,
+      translate: createTranslator(props.locale, props.translations),
+    } as JsonFormsI18nState & {
+      translations: Record<string, any>;
+      locale: string;
+    });
+
     return {
-      ajvProvider: ajvProvider,
-      resolved: false,
-      error: undefined as any,
-      schema: undefined as JsonSchema | undefined,
-      uischema: props.input.uischema,
-      data: props.input.data,
-      i18n: {
-        locale: props.locale,
-        translations: props.translations,
-        translate: createTranslator(props.locale, props.translations),
-      } as JsonFormsI18nState & {
-        translations: Record<string, any>;
-        locale: string;
-      },
+      ajvProvider,
+      resolved,
+      error,
+      schema,
+      uischema,
+      data,
+      i18n,
     };
   },
   watch: {
@@ -195,7 +192,7 @@ const resolvedJsonForms = defineComponent({
     },
   },
   mounted() {
-    this.resolveSchema(this.input.schema, this.input.schemaUrl);
+    this.resolveSchema(this.input?.schema, this.input?.schemaUrl);
   },
   methods: {
     onChange(event: JsonFormsChangeEvent): void {
@@ -214,6 +211,8 @@ const resolvedJsonForms = defineComponent({
               location: schemaUrl,
             })
           ).resolved;
+        } else {
+          this.schema = schema;
         }
       } catch (err) {
         this.error = (err as Error).message;
@@ -224,5 +223,6 @@ const resolvedJsonForms = defineComponent({
   },
 });
 
-export default resolvedJsonForms;
+// cast to 'any' because of Typescript problems (ts(7056))
+export default resolvedJsonForms as any;
 </script>

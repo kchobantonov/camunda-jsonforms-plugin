@@ -58,16 +58,9 @@ import {
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import {
-  ComputedOptions,
-  defineComponent,
-  inject,
-  MethodOptions,
-  ref,
-  unref,
-} from '@vue/composition-api';
 import { ErrorObject } from 'ajv';
-import Vue from 'vue';
+import Vue, { defineComponent, inject, ref, unref } from 'vue';
+import { ComputedOptions, MethodOptions } from 'vue/types/v3-component-options';
 import {
   VAvatar,
   VBadge,
@@ -190,7 +183,13 @@ const templateLayoutRenderer = defineComponent({
       const defaultComputed = {} as ComputedOptions;
       const parentComponent = this as any;
 
-      for (const key of ['data', 'errors', 'config', 'context', 'dataProvider']) {
+      for (const key of [
+        'data',
+        'errors',
+        'config',
+        'context',
+        'dataProvider',
+      ]) {
         defaultComputed[key] = function () {
           return parentComponent?.[key];
         };

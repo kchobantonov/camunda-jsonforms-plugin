@@ -20,23 +20,23 @@
 <script lang="ts">
 import {
   JsonFormsRendererRegistryEntry,
+  JsonFormsSubStates,
   Layout,
   rankWith,
-  uiTypeIs,
-  JsonFormsSubStates,
   UISchemaElement,
+  uiTypeIs,
 } from '@jsonforms/core';
-import { defineComponent, inject, unref } from '@vue/composition-api';
 import {
   rendererProps,
-  useJsonFormsLayout,
   RendererProps,
+  useJsonFormsLayout,
 } from '@jsonforms/vue2';
-import { useVuetifyLayout, useTranslator } from '@jsonforms/vue2-vuetify';
-import { FormConfig, FormContext } from '../core/types';
+import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
+import { defineComponent, inject, unref } from 'vue';
 import DataProvider from '../components/DataProvider.vue';
-import DataDispatchRenderer from './DataDispatchRenderer.vue';
 import { template as templateFn } from '../core/template';
+import { FormConfig, FormContext } from '../core/types';
+import DataDispatchRenderer from './DataDispatchRenderer.vue';
 
 interface DataProviderElement extends Layout {
   type: 'DataProvider';

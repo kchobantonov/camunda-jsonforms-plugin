@@ -34,20 +34,20 @@
 
 <script lang="ts">
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
 import {
+  Emitter,
   LoadEmitter,
   ResolvedJsonForms,
   RestClient,
 } from '@kchobantonov/common-jsonforms';
-import { defineComponent, ref, toRefs } from '@vue/composition-api';
 import get from 'lodash/get';
 import isPlainObject from 'lodash/isPlainObject';
 import merge from 'lodash/merge';
+import { defineComponent, PropType, reactive, ref, toRefs } from 'vue';
 import { VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import { CamundaFormApi } from '../core/api';
-import { CamundaFormConfig, CamundaFormContext } from '../core/types';
+import { CamundaFormContext } from '../core/types';
 import { validateCamundaFormConfig } from '../core/validate';
 import { camundaRenderers } from '../renderers';
 
@@ -75,7 +75,7 @@ export const camundaJsonFormsProps = () => ({
   },
   defaultPreset: {
     required: false,
-    type: [Object] as CompType<Partial<VuetifyPreset>, [ObjectConstructor]>,
+    type: [Object] as PropType<Partial<VuetifyPreset>>,
     default: () => {
       return {
         icons: {
@@ -118,7 +118,7 @@ export const camundaJsonFormsProps = () => ({
   },
 });
 
-const camundaJsonForms: any = defineComponent({
+const camundaJsonForms = defineComponent({
   name: 'camunda-json-forms',
   components: {
     ResolvedJsonForms,
@@ -139,24 +139,28 @@ const camundaJsonForms: any = defineComponent({
   props: {
     ...camundaJsonFormsProps(),
   },
-  setup(props: CamundaFormConfig) {
+  setup(props) {
+    const loading = ref(false);
     const context = ref<CamundaFormContext | null>(null);
     const api = ref<CamundaFormApi | null>(null);
+    const readonly = ref(false);
+    const validationMode = ref('ValidateAndShow');
+    const jsonformsConfig = reactive({
+      restrict: true,
+      trim: false,
+      showUnfocusedDescription: false,
+      hideRequiredAsterisk: true,
+    });
 
     return {
-      loading: false,
-      context: context,
-      api: api,
-      props: props,
+      loading,
+      context,
+      api,
+      props,
 
-      readonly: false,
-      validationMode: 'ValidateAndShow',
-      jsonformsConfig: {
-        restrict: true,
-        trim: false,
-        showUnfocusedDescription: false,
-        hideRequiredAsterisk: true,
-      },
+      readonly,
+      validationMode,
+      jsonformsConfig,
       renderers: camundaRenderers,
       cells: camundaRenderers,
     };
@@ -249,10 +253,10 @@ const camundaJsonForms: any = defineComponent({
         this.api = new CamundaFormApi(validateCamundaFormConfig(this.props));
 
         const restClient = new RestClient([
-          new LoadEmitter(this.$emit.bind(this)),
+          new LoadEmitter(this.$emit.bind(this) as Emitter),
         ]);
         const context = await this.api.loadForm(restClient);
-        
+
         this.context = context;
       } catch (e) {
         this.$emit('load-error', e);
@@ -271,7 +275,6 @@ const camundaJsonForms: any = defineComponent({
   },
 });
 
-export default camundaJsonForms;
+// cast to 'any' because of Typescript problems (ts(7056))
+export default camundaJsonForms as any;
 </script>
-
-<style></style>

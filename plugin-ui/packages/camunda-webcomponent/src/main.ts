@@ -1,4 +1,3 @@
-import VueCompositionAPI from '@vue/composition-api';
 import wrap from '@vue/web-component-wrapper';
 import Vue from 'vue';
 import {
@@ -12,8 +11,6 @@ import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { FormCallback } from '@kchobantonov/common-jsonforms';
 import isFunction from 'lodash/isFunction';
 import 'vuetify/dist/vuetify.min.css';
-
-Vue.use(VueCompositionAPI);
 
 Vue.config.productionTip = false;
 

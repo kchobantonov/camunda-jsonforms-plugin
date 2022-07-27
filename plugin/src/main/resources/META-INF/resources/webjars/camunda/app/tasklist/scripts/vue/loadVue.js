@@ -17,7 +17,7 @@
 
 const vue = document.createElement('script');
 vue.crossOrigin = 'anonymous';
-vue.src = 'https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js';
-vue.integrity = 'sha256-kXTEJcRFN330VirZFl6gj9+UM6gIKW195fYZeR3xDhc=';
+vue.src = 'https://cdn.jsdelivr.net/npm/vue@2.7.8/dist/vue.min.js';
+vue.integrity = 'sha256-91WJJrSmOP0yC+qlUbiDYLtww//i0z+vuJEfTXydeLg=';
 
 document.body.append(vue);

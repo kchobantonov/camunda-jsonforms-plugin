@@ -1,6 +1,6 @@
 <template>
   <v-label
-    v-if="layout.visible"
+    v-if="label.visible"
     :class="styles.label.root"
     :v-once="once"
     v-bind="vuetifyProps('v-label')"
@@ -11,26 +11,25 @@
 
 <script lang="ts">
 import {
+  and,
   JsonFormsRendererRegistryEntry,
-  Layout,
+  JsonFormsSubStates,
+  LabelElement,
+  optionIs,
   rankWith,
   uiTypeIs,
-  LabelElement,
-  JsonFormsSubStates,
-  and,
-  optionIs,
 } from '@jsonforms/core';
-import { defineComponent, inject, unref } from '@vue/composition-api';
 import {
   rendererProps,
-  useJsonFormsLayout,
   RendererProps,
+  useJsonFormsLabel,
 } from '@jsonforms/vue2';
-import { useVuetifyLayout, useTranslator } from '@jsonforms/vue2-vuetify';
-import { VLabel } from 'vuetify/lib';
+import { useTranslator, useVuetifyLabel } from '@jsonforms/vue2-vuetify';
 import { ErrorObject } from 'ajv';
-import { FormConfig, FormContext } from '../core/types';
+import { defineComponent, inject, unref } from 'vue';
+import { VLabel } from 'vuetify/lib';
 import { template as templateFn } from '../core/template';
+import { FormConfig, FormContext } from '../core/types';
 
 const templateLabelRenderer = defineComponent({
   name: 'template-label-renderer',
@@ -38,11 +37,11 @@ const templateLabelRenderer = defineComponent({
     VLabel,
   },
   props: {
-    ...rendererProps<Layout>(),
+    ...rendererProps<LabelElement>(),
   },
-  setup(props: RendererProps<Layout>) {
+  setup(props: RendererProps<LabelElement>) {
     const t = useTranslator();
-    const layout = useVuetifyLayout(useJsonFormsLayout(props));
+    const label = useVuetifyLabel(useJsonFormsLabel(props));
 
     const jsonforms = inject<JsonFormsSubStates>('jsonforms');
     if (!jsonforms) {
@@ -68,7 +67,7 @@ const templateLabelRenderer = defineComponent({
     }
 
     return {
-      ...layout,
+      ...label,
       t,
       jsonforms,
       parentComponent: this,
@@ -79,8 +78,8 @@ const templateLabelRenderer = defineComponent({
   computed: {
     once(): boolean {
       return (
-        this.layout.uischema?.options?.['v-once'] === true ||
-        this.layout.uischema?.options?.['v-once'] === 'true'
+        this.uischema?.options?.['v-once'] === true ||
+        this.uischema?.options?.['v-once'] === 'true'
       );
     },
     data(): any {
@@ -96,14 +95,14 @@ const templateLabelRenderer = defineComponent({
       return this.jsonforms.core?.errors;
     },
     template(): string | undefined {
-      if (this.layout.uischema.options?.i18n) {
+      if (this.uischema.options?.i18n) {
         // try to use i18n template if the template changes based on the language
         return this.t(
-          this.layout.uischema.options.i18n,
-          (this.layout.uischema as LabelElement).text
+          this.uischema.options.i18n,
+          (this.uischema as LabelElement).text
         );
       }
-      return (this.layout.uischema as LabelElement).text;
+      return (this.uischema as LabelElement).text;
     },
     translatedLabel(): string | undefined {
       const compile = templateFn(this.template, {

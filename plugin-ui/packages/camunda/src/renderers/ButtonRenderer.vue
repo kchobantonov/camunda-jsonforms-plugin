@@ -34,11 +34,15 @@ import {
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import { defineComponent, inject } from '@vue/composition-api';
+import {
+  Emitter,
+  RestClient,
+  SubmitEmitter,
+} from '@kchobantonov/common-jsonforms';
+import { defineComponent, inject } from 'vue';
 import { VBtn } from 'vuetify/lib';
 import { CamundaFormApi } from '../core/api';
-import { RestClient, SubmitEmitter, Emitter } from '@kchobantonov/common-jsonforms';
-import { CamundaFormContext, Action, isTaskIdConfig } from '../core/types';
+import { Action, CamundaFormContext, isTaskIdConfig } from '../core/types';
 
 interface ButtonElement extends UISchemaElement {
   type: 'Button';
@@ -140,7 +144,8 @@ const buttonRenderer = defineComponent({
     },
     isErrorButton(): boolean {
       return (
-        this.action === 'error' && isTaskIdConfig(this.camundaFormContext.config)
+        this.action === 'error' &&
+        isTaskIdConfig(this.camundaFormContext.config)
       );
     },
     isEscalationButton(): boolean {

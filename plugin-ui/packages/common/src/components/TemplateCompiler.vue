@@ -16,20 +16,15 @@
 </template>
 
 <script lang="ts">
+import { UISchemaElement } from '@jsonforms/core';
+import merge from 'lodash/merge';
+import Vue, { defineComponent, PropType } from 'vue';
 import {
   CompiledResultFunctions,
   compileToFunctions,
 } from 'vue-template-compiler';
-import Vue from 'vue';
+import { ComputedOptions, MethodOptions } from 'vue/types/v3-component-options';
 import { Components } from '../config/config';
-import { CompType } from '@jsonforms/vue2-vuetify/lib/vue';
-import { UISchemaElement } from '@jsonforms/core';
-import merge from 'lodash/merge';
-import {
-  ComputedOptions,
-  MethodOptions,
-  defineComponent,
-} from '@vue/composition-api';
 
 const templateCompiler = defineComponent({
   name: 'template-compiler',
@@ -38,7 +33,7 @@ const templateCompiler = defineComponent({
 
   props: {
     parent: {
-      type: [Object] as CompType<Vue, [ObjectConstructor]>,
+      type: [Object] as PropType<Vue>,
     },
 
     template: {
@@ -47,23 +42,23 @@ const templateCompiler = defineComponent({
     },
 
     componentComputed: {
-      type: [Object] as CompType<ComputedOptions, [ObjectConstructor]>,
+      type: [Object] as PropType<ComputedOptions>,
     },
 
     componentMethods: {
-      type: [Object] as CompType<MethodOptions, [ObjectConstructor]>,
+      type: [Object] as PropType<MethodOptions>,
     },
 
     componentFilters: {
-      type: [Object] as CompType<MethodOptions, [ObjectConstructor]>,
+      type: [Object] as PropType<MethodOptions>,
     },
 
     componentComponents: {
-      type: [Object] as CompType<Components, [ObjectConstructor]>,
+      type: [Object] as PropType<Components>,
     },
 
     elements: {
-      type: [Array] as CompType<UISchemaElement[], [ArrayConstructor]>,
+      type: [Array] as PropType<UISchemaElement[]>,
     },
   },
 
