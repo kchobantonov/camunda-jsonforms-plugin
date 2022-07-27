@@ -166,6 +166,7 @@ const toBase64 = (
         resolve(dataurl.substring(dataurl.indexOf(',') + 1));
       }
     };
+    reader.onabort = (error) => reject(error);
     reader.onerror = (error) => reject(error);
     reader.onprogress = (progress) => {
       if (progress.lengthComputable) {
