@@ -32,7 +32,7 @@
         <v-toolbar dense flat>
           <v-toolbar-title>{{ standby }}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn @click="abort" icon> <v-icon>mdi-close</v-icon> </v-btn>
+          <v-btn @click="abort" icon> <v-icon>$close</v-icon> </v-btn>
         </v-toolbar>
         <v-card-text>
           <v-progress-linear
@@ -79,6 +79,7 @@ import {
   VDialog,
   VFileInput,
   VHover,
+  VIcon,
   VProgressLinear,
   VSpacer,
   VToolbar,
@@ -190,6 +191,7 @@ const fileRenderer = defineComponent({
     VToolbar,
     VToolbarTitle,
     VBtn,
+    VIcon,
   },
   directives: {
     DisabledIconFocus,
