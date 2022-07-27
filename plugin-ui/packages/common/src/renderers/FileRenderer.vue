@@ -87,7 +87,7 @@ import {
 import { DisabledIconFocus } from './directives';
 
 import toNumber from 'lodash/toNumber';
-import { defineComponent, unref } from 'vue';
+import { computed, defineComponent, ref, unref } from 'vue';
 
 const formatBytes = (bytes: number, decimals = 2) => {
   if (bytes === 0) return '0 Bytes';
@@ -198,27 +198,30 @@ const fileRenderer = defineComponent({
     ...rendererProps<ControlElement>(),
   },
   setup(props: RendererProps<ControlElement>) {
-    let currentFile: File | undefined = undefined;
-    let currentFileReader = new FileReader();
-    let currentFileValidationErrors = null as string | null;
+    const currentFile = ref<File | undefined>(undefined);
+    const currentFileReader = new FileReader();
+    const currentFileValidationErrors = ref<string | null>(null);
 
     const t = useTranslator();
     const input = useJsonFormsControl(props);
 
-    let dialog = false;
-    let progressIndeterminate = true;
-    let progressValue = 0;
-
-    let control = unref(input.control);
+    const dialog = ref(false);
+    const progressIndeterminate = ref(true);
+    const progressValue = ref(0);
 
     // implement the validation outside the Ajv since we do not want even to transform invalid files into string and then implement custom Avj validator
-    const [minFileSize, minFileSizeExclusive] = getFileSize(
-      control.schema as any,
-      'min'
+    const minFileSize = computed(
+      () => getFileSize(unref(input.control).schema as any, 'min')[0]
     );
-    const [maxFileSize, maxFileSizeExclusive] = getFileSize(
-      control.schema as any,
-      'max'
+    const minFileSizeExclusive = computed(
+      () => getFileSize(unref(input.control).schema as any, 'min')[1]
+    );
+
+    const maxFileSize = computed(
+      () => getFileSize(unref(input.control).schema as any, 'max')[0]
+    );
+    const maxFileSizeExclusive = computed(
+      () => getFileSize(unref(input.control).schema as any, 'max')[1]
     );
 
     return {

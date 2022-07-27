@@ -32,7 +32,7 @@ import {
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import { defineComponent, inject, unref } from 'vue';
+import { defineComponent, inject, ref, unref } from 'vue';
 import DataProvider from '../components/DataProvider.vue';
 import { template as templateFn } from '../core/template';
 import { FormConfig, FormContext } from '../core/types';
@@ -82,7 +82,7 @@ const dataProviderRenderer = defineComponent({
       );
     }
 
-    let templateError: string | null = null;
+    const templateError = ref<string | null>(null);
 
     return {
       ...layout,

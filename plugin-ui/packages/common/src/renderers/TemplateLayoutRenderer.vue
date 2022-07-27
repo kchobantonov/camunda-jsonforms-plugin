@@ -132,7 +132,7 @@ const templateLayoutRenderer = defineComponent({
       );
     }
 
-    let templateError = ref<string | null>(null);
+    const templateError = ref<string | null>(null);
 
     const scopeData = inject<any>('scopeData', null);
 

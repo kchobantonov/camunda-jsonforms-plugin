@@ -39,7 +39,7 @@ import {
   RestClient,
   SubmitEmitter,
 } from '@kchobantonov/common-jsonforms';
-import { defineComponent, inject } from 'vue';
+import { defineComponent, inject, ref } from 'vue';
 import { VBtn } from 'vuetify/lib';
 import { CamundaFormApi } from '../core/api';
 import { Action, CamundaFormContext, isTaskIdConfig } from '../core/types';
@@ -109,7 +109,7 @@ const buttonRenderer = defineComponent({
       );
     }
 
-    const loading = false;
+    const loading = ref(false);
 
     return {
       ...layout,
