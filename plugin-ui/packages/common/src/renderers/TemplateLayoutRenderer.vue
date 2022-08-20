@@ -174,7 +174,6 @@ const templateLayoutRenderer = defineComponent({
       for (const key of [
         'data',
         'errors',
-        'config',
         'context',
         'dataProvider',
       ]) {

@@ -97,7 +97,6 @@ const templateLabelRenderer = defineComponent({
         imports: {
           data: this.data,
           context: this.context,
-          config: this.config,
           errors: this.errors,
           translate: this.translate.bind(this),
         },
