@@ -9,7 +9,6 @@ import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.form.validator.FormFieldConfigurationException;
 import org.camunda.bpm.engine.impl.form.validator.FormFieldValidator;
 import org.camunda.bpm.engine.impl.form.validator.FormFieldValidatorContext;
-import org.camunda.bpm.engine.impl.form.validator.FormFieldValidatorException;
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ResourceEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
@@ -28,13 +27,10 @@ import org.json.JSONTokener;
 import org.springframework.util.Assert;
 
 public class JsonFormsFormFieldValidator implements FormFieldValidator {
-    private static JsonFormsPathResourceResolver resolver;
+    private JsonFormsPathResourceResolver resolver;
 
-    // Camunda will expect always a default constructor and it will instantiate the
-    // validator without any parameters so provide a static method to pass the
-    // resolver
-    public static void setJsonFormsPathResourceResolver(JsonFormsPathResourceResolver r) {
-        resolver = r;
+    public JsonFormsFormFieldValidator(JsonFormsPathResourceResolver resolver) {
+        this.resolver = resolver;
     }
 
     @Override
@@ -101,9 +97,9 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
 
                     return true;
                 } catch (ValidationException e) {
-                    throw new FormFieldValidatorException(
-                            Utils.CUSTOM_FORM_FIELD_VALIDATOR_NAME,
-                            Utils.CUSTOM_FORM_FIELD_VALIDATOR_NAME, null, submittedValue,
+                    throw new JsonFormsFormFieldValidatorException(
+                            e.getPointerToViolation(),
+                            getClass().getSimpleName(), submittedValues,
                             e.getErrorMessage(), e);
                 }
             }

@@ -20,25 +20,21 @@
 
 <script lang="ts">
 import {
-  JsonFormsRendererRegistryEntry,
-  JsonFormsSubStates,
-  Layout,
-  rankWith,
-  UISchemaElement,
-  uiTypeIs,
+JsonFormsRendererRegistryEntry,
+JsonFormsSubStates,
+Layout,
+rankWith,
+UISchemaElement,
+uiTypeIs
 } from '@jsonforms/core';
 import {
-  DispatchRenderer,
-  rendererProps,
-  RendererProps,
-  useJsonFormsLayout,
+DispatchRenderer,
+rendererProps,
+RendererProps,
+useJsonFormsLayout
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import {
-  Emitter,
-  RestClient,
-  SubmitEmitter,
-} from '@kchobantonov/common-jsonforms';
+import { Emitter, RestClient, SubmitEmitter } from '@kchobantonov/common-jsonforms';
 import { defineComponent, inject, ref } from 'vue';
 import { VBtn } from 'vuetify/lib';
 import { CamundaFormApi } from '../core/api';
@@ -215,6 +211,7 @@ const buttonRenderer = defineComponent({
           payload
         );
       } catch (e) {
+
         this.camundaFormEmitter('submit-error', e);
       } finally {
         this.loading = false;

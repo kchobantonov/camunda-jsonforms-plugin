@@ -113,17 +113,20 @@ const codeErrors: Record<
 export class AppException extends Error {
   code: string;
   cause?: Error;
+  data?: any;
 
   constructor(
     code: AppErrorCode,
     cause?: Error,
-    errorParams?: Record<string, string | undefined>
+    errorParams?: Record<string, string | undefined>,
+    data?: any
   ) {
     super(`${codeErrors[code](errorParams)}`);
 
     this.name = 'AppException';
     this.code = code;
     this.cause = cause;
+    this.data = data;
   }
 
   toString() {
@@ -141,6 +144,7 @@ export class AppException extends Error {
       name: this.name,
       code: this.code,
       cause: cause,
+      data: this.data,
     };
   }
 }

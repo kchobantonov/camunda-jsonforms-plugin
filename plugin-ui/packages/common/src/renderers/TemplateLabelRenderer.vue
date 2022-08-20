@@ -29,7 +29,7 @@ import { ErrorObject } from 'ajv';
 import { defineComponent, inject, unref } from 'vue';
 import { VLabel } from 'vuetify/lib';
 import { template as templateFn } from '../core/template';
-import { FormConfig, FormContext } from '../core/types';
+import { FormContext } from '../core/types';
 
 const templateLabelRenderer = defineComponent({
   name: 'template-label-renderer',
@@ -50,14 +50,6 @@ const templateLabelRenderer = defineComponent({
       );
     }
 
-    const formConfig = inject<FormConfig>('formConfig');
-
-    if (!formConfig) {
-      throw new Error(
-        "'formConfig' couldn't be injected. Are you within JsonForms?"
-      );
-    }
-
     const formContext = inject<FormContext>('formContext');
 
     if (!formContext) {
@@ -71,7 +63,6 @@ const templateLabelRenderer = defineComponent({
       t,
       jsonforms,
       parentComponent: this,
-      formConfig,
       formContext,
     };
   },
@@ -84,9 +75,6 @@ const templateLabelRenderer = defineComponent({
     },
     data(): any {
       return this.jsonforms.core?.data;
-    },
-    config(): FormConfig {
-      return this.formConfig;
     },
     context(): FormContext {
       return unref(this.formContext);

@@ -133,7 +133,6 @@
                   processDefinitionId: camForm.processDefinitionId,
                   taskId: camForm.taskId,
                   locale: locale,
-                  style: '.v-application--wrap { min-height: 0px; }',
                   onChange: onChange,                
                   onLoadRequest: onLoadRequest,                
                   onLoadResponse: onLoadResponse,                
@@ -141,7 +140,16 @@
                   onSubmitRequest: onSubmitRequest,                
                   onSubmitResponse: onSubmitResponse,                
                   onSubmitError: onSubmitError,                
-              });
+              },
+              `<camunda-json-forms>
+                <link slot="link" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+                <link slot="link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css" integrity="sha512-Zw6ER2h5+Zjtrej6afEKgS8G5kehmDAHYp9M2xf38MPmpUWX39VrYmdGtCrDQbdLQrTnBVT8/gcNhgS4XPgvEg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <link slot="link" rel="stylesheet" href="../styles/user-styles.css" />
+    
+                <!-- create vuetify theme style inside the webcomponent -->
+                <style slot="style" type="text/css" id="vuetify-theme-stylesheet"></style>
+                <style slot="style" type="text/css">.v-application--wrap { min-height: 0px; }</style>
+               </camunda-json-forms>`);
   
               root.appendChild(node);
           }]);

@@ -15,7 +15,7 @@
     },
     {
       "type": "DataProvider",
-      "url": "{{ config.url }}/user",
+      "url": "{{ context.config.url }}/user",
       "elements": [
         {
           "type": "Control",

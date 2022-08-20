@@ -1,13 +1,7 @@
 import {
-  UISchemaElement,
-  JsonSchema,
-  JsonFormsRendererRegistryEntry,
-  JsonFormsCellRendererRegistryEntry,
-  JsonFormsUISchemaRegistryEntry,
-  ValidationMode,
+  JsonSchema, UISchemaElement, ValidationMode
 } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import Ajv from 'ajv';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 
 export type JsonFormInput = {
@@ -24,21 +18,16 @@ export type ResolvedSchema = {
 };
 
 export interface FormConfig {
-  input: JsonFormInput;
-  renderers: JsonFormsRendererRegistryEntry[];
-  cells: JsonFormsCellRendererRegistryEntry[];
   config?: Record<string, any>;
   readonly?: boolean;
-  uischemas?: JsonFormsUISchemaRegistryEntry[];
   validationMode?: ValidationMode;
-  ajv: Ajv;
-  translations?: Record<string, any>;
   locale: string;
   style?: string;
-  defaultPreset: Partial<VuetifyPreset>;
+  defaultPreset?: Partial<VuetifyPreset>;
 }
 
 export interface FormContext {
+  config?: FormConfig,
   translations?: Record<string, any>;
   input: JsonFormInput;
 }

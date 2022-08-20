@@ -6,7 +6,7 @@
         <camunda:formData>
           <camunda:formField id="FormField_1iplp4n" type="string">
             <camunda:validation>
-              <camunda:constraint name="jsonforms" />
+              <camunda:constraint name="validator" config="${jsonFormsValidator}" />
             </camunda:validation>
           </camunda:formField>
         </camunda:formData>
@@ -19,7 +19,7 @@
         <camunda:formData>
           <camunda:formField id="FormField_0sqgkbb" type="string">
             <camunda:validation>
-              <camunda:constraint name="jsonforms" />
+              <camunda:constraint name="validator" config="${jsonFormsValidator}" />
             </camunda:validation>
           </camunda:formField>
         </camunda:formData>

@@ -82,7 +82,7 @@ import {
 } from 'vuetify/lib';
 import TemplateCompiler from '../components/TemplateCompiler.vue';
 import { Components } from '../config/config';
-import { FormConfig, FormContext } from '../core/types';
+import { FormContext } from '../core/types';
 
 interface TemplateElement extends Layout {
   type: 'TemplateLayout';
@@ -116,14 +116,6 @@ const templateLayoutRenderer = defineComponent({
       );
     }
 
-    const formConfig = inject<FormConfig>('formConfig');
-
-    if (!formConfig) {
-      throw new Error(
-        "'formConfig' couldn't be injected. Are you within JsonForms?"
-      );
-    }
-
     const formContext = inject<FormContext>('formContext');
 
     if (!formContext) {
@@ -142,7 +134,6 @@ const templateLayoutRenderer = defineComponent({
       jsonforms,
       parentComponent: this,
       templateError,
-      formConfig,
       formContext,
       scopeData,
     };
@@ -160,9 +151,6 @@ const templateLayoutRenderer = defineComponent({
     data(): any {
       const jsonforms: JsonFormsSubStates = this.jsonforms;
       return jsonforms.core?.data;
-    },
-    config(): FormConfig {
-      return this.formConfig;
     },
     context(): FormContext {
       return unref(this.formContext);

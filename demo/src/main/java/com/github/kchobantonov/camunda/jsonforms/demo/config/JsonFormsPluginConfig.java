@@ -1,10 +1,11 @@
 package com.github.kchobantonov.camunda.jsonforms.demo.config;
 
+import org.camunda.bpm.spring.boot.starter.rest.CamundaJerseyResourceConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFomsCamundaJerseyResourceConfig;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormFieldValidator;
-import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormFieldValidatorProcessEnginePlugin;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormServicePlugin;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsParseListenerProcessEnginePlugin;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsPathResourceResolver;
@@ -24,18 +25,20 @@ class JsonFormsPluginConfig {
         return new JsonFormsParseListenerProcessEnginePlugin();
     }
 
-    // enable server side validation when custom validator jsonforms is set for any
-    // form property - need to have at least one with that custom validator.
-    @Bean
-    public JsonFormsFormFieldValidatorProcessEnginePlugin jsonFormsFormFieldValidatorProcessEnginePlugin() {
-        return new JsonFormsFormFieldValidatorProcessEnginePlugin();
-    }
-
     // do not return process variables that are not defined in the jsonform schema.
     @Bean
     public JsonFormsFormServicePlugin jsonFormsFormServicePlugin(JsonFormsPathResourceResolver resolver) {
-        JsonFormsFormFieldValidator.setJsonFormsPathResourceResolver(resolver);
         return new JsonFormsFormServicePlugin(resolver);
+    }
+
+    @Bean
+    public JsonFormsFormFieldValidator jsonFormsValidator(JsonFormsPathResourceResolver resolver) {
+        return new JsonFormsFormFieldValidator(resolver);
+    }
+
+    @Bean
+    public CamundaJerseyResourceConfig createRestConfig() {
+        return new JsonFomsCamundaJerseyResourceConfig();
     }
 
 }

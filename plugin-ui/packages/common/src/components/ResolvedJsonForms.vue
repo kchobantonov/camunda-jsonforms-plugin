@@ -13,6 +13,7 @@
       :ajv="ajv"
       :readonly="readonly"
       :i18n="i18n"
+      :additionalErrors="additionalErrors"
       @change="onChange"
     />
     <v-container v-else style="height: 400px">
@@ -60,11 +61,19 @@ import {
   ValidationMode,
 } from '@jsonforms/core';
 import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue2';
-import Ajv from 'ajv';
-import { defineComponent, PropType, reactive, ref } from 'vue';
+import Ajv, { ErrorObject } from 'ajv';
+import {
+  defineComponent,
+  inject,
+  PropType,
+  reactive,
+  ref,
+  Ref,
+  toRefs,
+} from 'vue';
 import { VAlert, VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
 import { resolveRefs } from '../core/json-refs';
-import { JsonFormInput } from '../core/types';
+import { FormContext, JsonFormInput } from '../core/types';
 import { createAjv } from '../core/validate';
 import { createTranslator } from '../i18n';
 import { commonRenderers } from '../renderers/index';
@@ -106,7 +115,7 @@ export const resolvedJsonFormsProps = () => ({
   ajv: {
     required: false,
     type: [Object] as PropType<Ajv>,
-    default: () => createAjv()
+    default: () => createAjv(),
   },
   locale: {
     required: false,
@@ -116,6 +125,11 @@ export const resolvedJsonFormsProps = () => ({
   translations: {
     required: false,
     type: [Object] as PropType<Record<string, any>>,
+  },
+  additionalErrors: {
+    required: false,
+    type: Array as PropType<ErrorObject[]>,
+    default: () => [],
   },
 });
 
@@ -135,20 +149,33 @@ const resolvedJsonForms = defineComponent({
   },
   setup(props) {
     const resolved = ref(false);
+    let context = ref<FormContext | null>(null);
     const error = ref<any>(undefined);
     const schema = ref<JsonSchema | undefined>(undefined);
-    const uischema = ref(props.input?.uischema);
-    const data = ref(props.input?.data);
+    const uischema = ref((props.input as any)?.uischema);
+    const data = ref((props.input as any)?.data);
     const i18n = reactive({
       locale: props.locale,
       translations: props.translations,
-      translate: createTranslator(props.locale, props.translations),
+      translate: createTranslator(props.locale, props.translations as any),
     } as JsonFormsI18nState & {
       translations: Record<string, any>;
       locale: string;
     });
 
+    const parentContext = inject<Ref<FormContext>>('formContext');
+    if (parentContext) {
+      context = parentContext;
+    } else {
+      context.value = {
+        config: props,
+        input: props.input!,
+        translations: props.translations,
+      };
+    }
+
     return {
+      context,
       resolved,
       error,
       schema,
@@ -181,6 +208,13 @@ const resolvedJsonForms = defineComponent({
         this.i18n.translations
       ) as Translator;
     },
+  },
+  provide() {
+    const { context } = toRefs(this);
+
+    return {
+      formContext: context,
+    };
   },
   mounted() {
     this.resolveSchema(this.input?.schema, this.input?.schemaUrl);

@@ -32,10 +32,10 @@ import {
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import { defineComponent, inject, ref, unref } from 'vue';
+import { defineComponent, inject, unref, ref } from 'vue';
 import DataProvider from '../components/DataProvider.vue';
 import { template as templateFn } from '../core/template';
-import { FormConfig, FormContext } from '../core/types';
+import { FormContext } from '../core/types';
 import DataDispatchRenderer from './DataDispatchRenderer.vue';
 
 interface DataProviderElement extends Layout {
@@ -66,14 +66,6 @@ const dataProviderRenderer = defineComponent({
       );
     }
 
-    const formConfig = inject<FormConfig>('formConfig');
-
-    if (!formConfig) {
-      throw new Error(
-        "'formConfig' couldn't be injected. Are you within JsonForms?"
-      );
-    }
-
     const formContext = inject<FormContext>('formContext');
 
     if (!formContext) {
@@ -90,16 +82,12 @@ const dataProviderRenderer = defineComponent({
       jsonforms,
       parentComponent: this,
       templateError,
-      formConfig,
       formContext,
     };
   },
   computed: {
     data(): any {
       return this.jsonforms.core?.data;
-    },
-    config(): FormConfig {
-      return this.formConfig;
     },
     context(): FormContext {
       return unref(this.formContext);

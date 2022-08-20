@@ -20,25 +20,7 @@
     "reviewer": {
       "type": "string",
       "title": "Reviewer: ",
-      "description": "Who should review this invoice?",
-      "oneOf": [
-        {
-          "const": "demo",
-          "title": "Demo"
-        },
-        {
-          "const": "john",
-          "title": "John"
-        },
-        {
-          "const": "peter",
-          "title": "Peter"
-        },
-        {
-          "const": "mary",
-          "title": "Mary"
-        }
-      ]
+      "description": "Who should review this invoice?"
     }
   },
   "required": ["reviewer"],
