@@ -27,9 +27,9 @@
     "vue-template-compiler": "^2.7.0"
   },
   "peerDependencies": {
-    "@jsonforms/core": "3.0.0-rc.0",
-    "@jsonforms/vue2": "3.0.0-rc.0",
-    "@jsonforms/vue2-vuetify": "3.0.0-rc.0",
+    "@jsonforms/core": "3.0.0-rc.1",
+    "@jsonforms/vue2": "3.0.0-rc.1",
+    "@jsonforms/vue2-vuetify": "3.0.0-rc.1",
     "vue": "^2.7.0",
     "vuetify": "^2.4.0"
   },
