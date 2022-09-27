@@ -10,6 +10,10 @@
     "build": "vue-cli-service build",
     "lerna-publish": "npm publish"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "dependencies": {
     "@jsonforms/core": "3.0.0-rc.1",
     "@jsonforms/vue2": "3.0.0-rc.1",
