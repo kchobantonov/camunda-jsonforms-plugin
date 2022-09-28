@@ -20,7 +20,6 @@
 
 <script lang="ts">
 import {
-  CoreActions,
   JsonFormsRendererRegistryEntry,
   JsonFormsSubStates,
   Layout,
@@ -93,13 +92,6 @@ const buttonRenderer = defineComponent({
       );
     }
 
-    const dispatch = inject<(action: CoreActions) => void>('dispatch');
-    if (!dispatch) {
-      throw new Error(
-        "'dispatch' couldn't be injected. Are you within JSON Forms?"
-      );
-    }
-
     const additionalErrors = inject<Ref<ErrorObject[]>>('additionalErrors');
     if (!additionalErrors) {
       throw new Error(
@@ -134,8 +126,6 @@ const buttonRenderer = defineComponent({
       ...layout,
       t,
       jsonforms,
-      dispatch,
-      camundaFormContext,
       camundaFormApi,
       camundaFormEmitter,
       loading,
