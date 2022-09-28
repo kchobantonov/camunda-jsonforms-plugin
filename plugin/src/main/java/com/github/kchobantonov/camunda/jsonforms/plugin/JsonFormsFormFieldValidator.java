@@ -95,6 +95,7 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
                             .build();
                     validator.performValidation(schema, object);
 
+                    additionalValidations(validator, schema, object);
                     return true;
                 } catch (ValidationException e) {
                     throw new JsonFormsFormFieldValidatorException(
@@ -106,6 +107,11 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
         }
 
         return true;
+    }
+
+    protected void additionalValidations(Validator validator, Schema schema, JSONObject object)
+            throws JsonFormsFormFieldValidatorException {
+
     }
 
     private String getDeploymentId(VariableScope variableScope) {

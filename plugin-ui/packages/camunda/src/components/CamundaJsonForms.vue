@@ -27,6 +27,8 @@
       :locale="locale"
       :translations="context.translations"
       :readonly="readonly"
+      :additionalErrors="additionalErrors"
+      :ajv="ajv"
       @change="onChange"
     />
   </div>
@@ -39,9 +41,11 @@ import {
   LoadEmitter,
   ResolvedJsonForms,
   RestClient,
+  createAjv,
 } from '@kchobantonov/common-jsonforms';
 import { defineComponent, PropType, ref, toRefs } from 'vue';
-import get from 'lodash/get';
+import _get from 'lodash/get';
+import _remove from 'lodash/remove';
 import isPlainObject from 'lodash/isPlainObject';
 import merge from 'lodash/merge';
 import { VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
@@ -51,6 +55,7 @@ import { CamundaFormContext } from '../core/types';
 import { validateCamundaFormConfig } from '../core/validate';
 import { camundaRenderers } from '../renderers';
 import { ValidationMode } from '@jsonforms/core';
+import { ErrorObject } from 'ajv';
 
 export const camundaJsonFormsProps = () => ({
   url: {
@@ -158,6 +163,11 @@ const camundaJsonForms = defineComponent({
     const loading = ref(false);
     const context = ref<CamundaFormContext | null>(null);
     const api = ref<CamundaFormApi | null>(null);
+    const additionalErrors = ref<ErrorObject[]>([]);
+    const previousData = ref({});
+
+    const ajv = createAjv();
+
     return {
       loading,
       context,
@@ -165,6 +175,9 @@ const camundaJsonForms = defineComponent({
       props,
       renderers: camundaRenderers,
       cells: camundaRenderers,
+      additionalErrors,
+      previousData,
+      ajv,
     };
   },
   watch: {
@@ -200,15 +213,24 @@ const camundaJsonForms = defineComponent({
       },
       deep: true,
     },
+    additionalErrors: {
+      handler(_value?: ErrorObject[], _oldValue?: ErrorObject[]) {
+        // reset ajv - the schema will be registered again - otherwise an ajv error for the same schema id will be generated
+        this.ajv.removeSchema('/');
+        // set the last data
+        this.context!.input.data = this.previousData;
+      },
+    },
   },
   async mounted() {
     await this.reload();
   },
   provide() {
     // provide as a reactive property
-    const { context, api } = toRefs(this);
+    const { context, api, additionalErrors } = toRefs(this);
 
     return {
+      additionalErrors: additionalErrors,
       formContext: context,
       camundaFormApi: api,
       camundaFormEmitter: this.$emit.bind(this),
@@ -216,7 +238,36 @@ const camundaJsonForms = defineComponent({
   },
   methods: {
     onChange(event: JsonFormsChangeEvent): void {
-      this.$emit('change', event);
+      if (this.additionalErrors.length > 0) {
+        // remove the error when we detect a change on the data
+        _remove(this.additionalErrors, (error: ErrorObject) => {
+          if (error.instancePath) {
+            let controlPath: string = error.instancePath;
+
+            // change '/' chars to '.'
+            controlPath = controlPath.replace(/\//g, '.');
+
+            // remove '.' chars at the beginning of paths
+            controlPath = controlPath.replace(/^./, '');
+
+            if (
+              _get(event.data, controlPath) !==
+              _get(this.previousData, controlPath)
+            ) {
+              return true;
+            }
+
+            return false;
+          }
+          return true;
+        });
+      }
+      this.previousData = event.data;
+      // for now JsonFormsChangeEvent does not include the additionalErrors
+      this.$emit('change', {
+        ...event,
+        additionalErrors: this.additionalErrors,
+      });
     },
     async reload() {
       await this.loadContext();
@@ -258,8 +309,8 @@ const camundaJsonForms = defineComponent({
         ]);
         const config = validateCamundaFormConfig(this.props);
         const context = await this.api.loadForm(restClient, config);
-        context.config  = config;
-        
+        context.config = config;
+
         this.context = context;
       } catch (e) {
         this.$emit('load-error', e);
@@ -271,7 +322,7 @@ const camundaJsonForms = defineComponent({
       options: Record<string, any>,
       path: string
     ): Record<string, any> {
-      const props = get(options?.vuetify, path);
+      const props = _get(options?.vuetify, path);
 
       return props && isPlainObject(props) ? props : {};
     },

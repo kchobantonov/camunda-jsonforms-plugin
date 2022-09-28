@@ -1,6 +1,9 @@
 package com.github.kchobantonov.camunda.jsonforms.demo.quickstart;
 
 import org.camunda.bpm.engine.impl.form.validator.FormFieldValidatorContext;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.Validator;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,17 +20,15 @@ public class LoadRequestValidator extends JsonFormsFormFieldValidator {
   }
 
   @Override
-  public boolean validate(Object submittedValue,
-      FormFieldValidatorContext validatorContext) {
-    boolean result = super.validate(submittedValue, validatorContext);
-    if (result) {
-      if ("TestValidation".equals(validatorContext.getSubmittedValues().get("firstName"))) {
-        throw new JsonFormsFormFieldValidatorException(
-            "firstName",
-            getClass().getSimpleName(), validatorContext.getSubmittedValues().get("firstName"),
-            "Invalid First Name", null);
-      }
+  protected void additionalValidations(Validator validator, Schema schema, JSONObject object)
+      throws JsonFormsFormFieldValidatorException {
+
+    if (object.has("firstName") && "TestValidation".equals(object.getString("firstName"))) {
+      throw new JsonFormsFormFieldValidatorException(
+          "firstName",
+          getClass().getSimpleName(), object.getString("firstName"),
+          "Invalid First Name", null);
     }
-    return result;
   }
+
 }

@@ -20,24 +20,33 @@
 
 <script lang="ts">
 import {
-JsonFormsRendererRegistryEntry,
-JsonFormsSubStates,
-Layout,
-rankWith,
-UISchemaElement,
-uiTypeIs
+  CoreActions,
+  JsonFormsRendererRegistryEntry,
+  JsonFormsSubStates,
+  Layout,
+  rankWith,
+  UISchemaElement,
+  uiTypeIs,
 } from '@jsonforms/core';
 import {
-DispatchRenderer,
-rendererProps,
-RendererProps,
-useJsonFormsLayout
+  DispatchRenderer,
+  rendererProps,
+  RendererProps,
+  useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import { Emitter, RestClient, SubmitEmitter } from '@kchobantonov/common-jsonforms';
-import { defineComponent, inject, ref } from 'vue';
+import {
+  Emitter,
+  ResponseException,
+  RestClient,
+  SubmitEmitter,
+} from '@kchobantonov/common-jsonforms';
+import { ErrorObject } from 'ajv';
+import isArray from 'lodash/isArray';
+import { defineComponent, inject, ref, Ref } from 'vue';
 import { VBtn } from 'vuetify/lib';
 import { CamundaFormApi } from '../core/api';
+import { AppErrorCode, AppException } from '../core/errors';
 import { Action, CamundaFormContext, isTaskIdConfig } from '../core/types';
 
 interface ButtonElement extends UISchemaElement {
@@ -84,6 +93,20 @@ const buttonRenderer = defineComponent({
       );
     }
 
+    const dispatch = inject<(action: CoreActions) => void>('dispatch');
+    if (!dispatch) {
+      throw new Error(
+        "'dispatch' couldn't be injected. Are you within JSON Forms?"
+      );
+    }
+
+    const additionalErrors = inject<Ref<ErrorObject[]>>('additionalErrors');
+    if (!additionalErrors) {
+      throw new Error(
+        "'additionalErrors' couldn't be injected. Are you within CamundaJsonForms?"
+      );
+    }
+
     const camundaFormContext = inject<CamundaFormContext>('formContext');
     if (!camundaFormContext) {
       throw new Error(
@@ -111,10 +134,12 @@ const buttonRenderer = defineComponent({
       ...layout,
       t,
       jsonforms,
+      dispatch,
       camundaFormContext,
       camundaFormApi,
       camundaFormEmitter,
       loading,
+      additionalErrors,
     };
   },
   computed: {
@@ -211,7 +236,17 @@ const buttonRenderer = defineComponent({
           payload
         );
       } catch (e) {
-
+        if (
+          e instanceof AppException &&
+          e.code === AppErrorCode.SUBMIT_FORM &&
+          e.cause instanceof ResponseException &&
+          e.cause.code === 400 &&
+          e.data &&
+          isArray(e.data.validationErrors)
+        ) {
+          const additionalErrors: ErrorObject[] = e.data.validationErrors;
+          this.additionalErrors = additionalErrors;
+        }
         this.camundaFormEmitter('submit-error', e);
       } finally {
         this.loading = false;
