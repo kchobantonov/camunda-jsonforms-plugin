@@ -6,6 +6,9 @@ import { FormCallback } from '@kchobantonov/common-jsonforms';
 import { VuetifyFormConfig } from './core';
 import isFunction from 'lodash/isFunction';
 import 'vuetify/dist/vuetify.min.css';
+import LoadScript from 'vue-plugin-load-script';
+
+Vue.use(LoadScript);
 
 Vue.config.productionTip = false;
 
@@ -29,6 +32,7 @@ class VuetifyJsonFormsUtil {
     config: VuetifyFormConfig & FormCallback,
     template?: string
   ): Node {
+
     const element = htmlToElement(
       template ??
         `<vuetify-json-forms>
@@ -36,8 +40,6 @@ class VuetifyJsonFormsUtil {
             <link slot="link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css" integrity="sha512-Zw6ER2h5+Zjtrej6afEKgS8G5kehmDAHYp9M2xf38MPmpUWX39VrYmdGtCrDQbdLQrTnBVT8/gcNhgS4XPgvEg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
             <link slot="link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.3/vuetify.min.css" integrity="sha512-yqxpsXY362HEPwSAOWC2FOd8ZCCuJVrTgZSd/0hPmuGUqG19+J2ULPQnc7p795j5mNYZMNHuq5CHPPHnOqapdw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-            <!-- create vuetify theme style inside the webcomponent -->
-            <style slot="style" type="text/css" id="vuetify-theme-stylesheet"></style>
             <style slot="style" type="text/css">${config.style ?? ''}</style>
         </vuetify-json-forms>`
     );
@@ -64,7 +66,7 @@ class VuetifyJsonFormsUtil {
       );
     }
     if (config.validationMode !== undefined) {
-      form.setAttribute('validationMode', config.validationMode);
+      form.setAttribute('validation-mode', config.validationMode);
     }
     if (config.locale !== undefined) {
       form.setAttribute('locale', config.locale);
@@ -73,7 +75,7 @@ class VuetifyJsonFormsUtil {
       form.setAttribute('translations', JSON.stringify(config.translations));
     }
     if (config.defaultPreset !== undefined) {
-      form.setAttribute('defaultPreset', JSON.stringify(config.defaultPreset));
+      form.setAttribute('default-preset', JSON.stringify(config.defaultPreset));
     }
 
     //event listeners

@@ -272,30 +272,24 @@ const camundaJsonForms = defineComponent({
     async reload() {
       await this.loadContext();
 
-      // apply any themes
+      let preset: Partial<VuetifyPreset> | null = null;
+
       if (this.context?.input?.uischema?.options) {
-        const preset = this.vuetifyProps(
+        preset = this.vuetifyProps(
           this.context.input.uischema.options,
           'preset'
         ) as Partial<VuetifyPreset>;
-
-        if (preset.theme) {
-          this.$vuetify.theme = merge(this.$vuetify.theme, preset.theme);
-        }
-        if (preset.icons) {
-          this.$vuetify.icons = merge(this.$vuetify.icons, preset.icons);
-        }
-      } else {
-        // reset the theme if it was applied before in previous
-        this.$vuetify.theme = merge(
-          this.$vuetify.theme,
-          this.props.defaultPreset.theme
-        );
-        this.$vuetify.icons = merge(
-          this.$vuetify.icons,
-          this.props.defaultPreset.icons
-        );
       }
+
+      // apply any themes
+      this.$vuetify.theme = merge(
+        this.$vuetify.theme,
+        preset && preset.theme ? preset.theme : this.props.defaultPreset.theme
+      );
+      this.$vuetify.icons = merge(
+        this.$vuetify.icons,
+        preset && preset.icons ? preset.icons : this.props.defaultPreset.icons
+      );
     },
     async loadContext() {
       this.loading = true;

@@ -1,6 +1,9 @@
 <template>
-  <v-app>
+  <v-app ref="root">
     <slot name="link"></slot>
+
+    <custom-style type="text/css" ref="vuetify-theme-stylesheet">
+    </custom-style>
     <slot name="style"></slot>
 
     <div v-if="error !== undefined">
@@ -12,18 +15,19 @@
         </v-row>
       </v-container>
     </div>
-    <resolved-json-forms
-      v-else
-      :input="input"
-      :renderers="renderers"
-      :cells="cells"
-      :config="config"
-      :validationMode="validationMode"
-      :locale="locale"
-      :translations="translations"
-      :readonly="readonly"
-      @change="onChange"
-    />
+    <v-sheet v-else :dark="dark" tile>
+      <resolved-json-forms
+        :input="input"
+        :renderers="renderers"
+        :cells="cells"
+        :config="dataConfig"
+        :validationMode="dataValidationMode"
+        :locale="locale"
+        :translations="dataTranslations"
+        :readonly="dataReadonly"
+        @change="onChange"
+      />
+    </v-sheet>
   </v-app>
 </template>
 
@@ -31,14 +35,21 @@
 import { ValidationMode } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { commonRenderers, ResolvedJsonForms } from '@kchobantonov/common-jsonforms';
-import { defineComponent, PropType, ref } from 'vue';
 import { merge } from 'lodash';
-import { VApp } from 'vuetify/lib';
+import get from 'lodash/get';
+import isPlainObject from 'lodash/isPlainObject';
+import { defineComponent, PropType } from 'vue';
+import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import { VuetifyFormConfig } from '../core';
-import vuetify from '../plugins/vuetify';
-import isPlainObject from 'lodash/isPlainObject';
-import get from 'lodash/get';
+import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
+
+const CustomStyle = defineComponent({
+  name: 'custom-style',
+  render(createElement) {
+    return createElement('style', this.$slots.default);
+  },
+});
 
 const vuetifyFormWc = defineComponent({
   name: 'vuetify-json-forms-wc',
@@ -46,6 +57,8 @@ const vuetifyFormWc = defineComponent({
   components: {
     ResolvedJsonForms,
     VApp,
+    VSheet,
+    CustomStyle,
   },
   emits: ['change'],
   props: {
@@ -143,46 +156,7 @@ const vuetifyFormWc = defineComponent({
     },
     defaultPreset: {
       required: false,
-      type: [String, Object],
-      default: () => {
-        return {
-          icons: {
-            iconfont: 'mdi',
-            values: {},
-          },
-          theme: {
-            dark: false,
-            default: 'light',
-            disable: false,
-            options: {
-              cspNonce: undefined,
-              customProperties: undefined,
-              minifyTheme: undefined,
-              themeCache: undefined,
-            },
-            themes: {
-              light: {
-                primary: '#1976D2',
-                secondary: '#424242',
-                accent: '#82B1FF',
-                error: '#FF5252',
-                info: '#2196F3',
-                success: '#4CAF50',
-                warning: '#FB8C00',
-              },
-              dark: {
-                primary: '#2196F3',
-                secondary: '#424242',
-                accent: '#FF4081',
-                error: '#FF5252',
-                info: '#2196F3',
-                success: '#4CAF50',
-                warning: '#FB8C00',
-              },
-            },
-          },
-        };
-      },
+      type: [String],
       validator: function (value) {
         try {
           const preset = typeof value == 'string' ? JSON.parse(value) : value;
@@ -200,11 +174,11 @@ const vuetifyFormWc = defineComponent({
     let schema: any = undefined;
     let uischema: any = undefined;
     let data: any = undefined;
-    let config: any = undefined;
-    let readonly: any = undefined;
-    let validationMode: any = undefined;
-    let translations: any = undefined;
-    let defaultPreset: any = undefined;
+    let dataConfig: any = undefined;
+    let dataReadonly: any = undefined;
+    let dataValidationMode: any = undefined;
+    let dataTranslations: any = undefined;
+    let dataDefaultPreset: Partial<VuetifyPreset> | undefined = undefined;
 
     try {
       schema =
@@ -218,34 +192,34 @@ const vuetifyFormWc = defineComponent({
       data =
         typeof props.data == 'string' ? JSON.parse(props.data) : props.data;
 
-      config =
+      dataConfig =
         typeof props.config == 'string'
           ? JSON.parse(props.config)
           : props.config;
-      readonly =
+      dataReadonly =
         typeof props.readonly == 'string'
           ? props.readonly == 'true'
           : props.readonly;
-      validationMode =
+      dataValidationMode =
         props.validationMode == 'ValidateAndShow' ||
         props.validationMode == 'ValidateAndHide' ||
         props.validationMode == 'NoValidation'
           ? props.validationMode
           : 'ValidateAndShow';
-      translations =
+      dataTranslations =
         typeof props.translations == 'string'
           ? JSON.parse(props.translations)
           : props.translations;
-      defaultPreset =
+      dataDefaultPreset =
         typeof props.defaultPreset == 'string'
-          ? JSON.parse(props.defaultPreset)
-          : props.defaultPreset;
+          ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
+          : defaultPreset;
     } catch (e) {
-      error = e;
+      error = `Config error: ${e}`;
     }
 
     return {
-      error: error,
+      error,
       renderers: commonRenderers,
       cells: commonRenderers,
       input: {
@@ -253,40 +227,58 @@ const vuetifyFormWc = defineComponent({
         uischema: uischema,
         data: data,
       },
-      config: config,
-      readonly: readonly,
-      validationMode: validationMode,
-      locale: props.locale,
-      translations: translations,
-      style: props.style,
-      defaultPreset: defaultPreset,
+      dataConfig,
+      dataReadonly,
+      dataValidationMode,
+      dataTranslations,
+      dataDefaultPreset,
     };
   },
   async mounted() {
-    // apply any themes
+    let preset: Partial<VuetifyPreset> | null = null;
     if (this.input?.uischema?.options) {
-      const preset = this.vuetifyProps(
+      preset = this.vuetifyProps(
         this.input.uischema.options,
         'preset'
       ) as Partial<VuetifyPreset>;
-
-      if (preset.theme) {
-        this.$vuetify.theme = merge(this.$vuetify.theme, preset.theme);
-      }
-      if (preset.icons) {
-        this.$vuetify.icons = merge(this.$vuetify.icons, preset.icons);
-      }
-    } else {
-      // reset the theme if it was applied before in previous
-      this.$vuetify.theme = merge(
-        this.$vuetify.theme,
-        this.defaultPreset.theme
-      );
-      this.$vuetify.icons = merge(
-        this.$vuetify.icons,
-        this.defaultPreset.icons
-      );
     }
+
+    const style = (this.$refs['vuetify-theme-stylesheet'] as any)
+      .$el as HTMLStyleElement;
+    const shadowRoot = (this.$refs['root'] as any).$el as HTMLDivElement;
+
+    // @hack: Make sure we don't re-use the page's current style element
+    (vuetify.framework.theme as any).checkOrCreateStyleElement = function () {
+      this.styleEl = style;
+      return Boolean(this.styleEl);
+    };
+
+    // Monkey patch querySelector to properly find root element
+    const { querySelector } = document;
+    document.querySelector = function (selector: any) {
+      if (selector === '[data-app]') return shadowRoot;
+      return querySelector.call(this, selector);
+    };
+
+    // apply any themes
+    this.$vuetify.theme = merge(
+      this.$vuetify.theme,
+      preset && preset.theme
+        ? preset.theme
+        : this.dataDefaultPreset?.theme || {}
+    );
+
+    this.$vuetify.icons = merge(
+      this.$vuetify.icons,
+      preset && preset.icons
+        ? preset.icons
+        : this.dataDefaultPreset?.icons || {}
+    );
+  },
+  computed: {
+    dark() {
+      return this.dataDefaultPreset?.theme?.dark || false;
+    },
   },
   methods: {
     onChange(event: JsonFormsChangeEvent): void {
@@ -305,5 +297,3 @@ const vuetifyFormWc = defineComponent({
 
 export default vuetifyFormWc;
 </script>
-
-<style></style>

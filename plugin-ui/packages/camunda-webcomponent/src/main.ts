@@ -10,7 +10,11 @@ import { CamundaJsonFormsWc } from './components';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { FormCallback } from '@kchobantonov/common-jsonforms';
 import isFunction from 'lodash/isFunction';
+import LoadScript from "vue-plugin-load-script";
+
 import 'vuetify/dist/vuetify.min.css';
+
+Vue.use(LoadScript);
 
 Vue.config.productionTip = false;
 
@@ -39,8 +43,6 @@ class CamundaJsonFormsUtil {
             <link slot="link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css" integrity="sha512-Zw6ER2h5+Zjtrej6afEKgS8G5kehmDAHYp9M2xf38MPmpUWX39VrYmdGtCrDQbdLQrTnBVT8/gcNhgS4XPgvEg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
             <link slot="link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.3/vuetify.min.css" integrity="sha512-yqxpsXY362HEPwSAOWC2FOd8ZCCuJVrTgZSd/0hPmuGUqG19+J2ULPQnc7p795j5mNYZMNHuq5CHPPHnOqapdw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-            <!-- create vuetify theme style inside the webcomponent -->
-            <style slot="style" type="text/css" id="vuetify-theme-stylesheet"></style>
             <style slot="style" type="text/css">${config.style ?? ''}</style>
         </camunda-json-forms>`
     );
@@ -62,6 +64,9 @@ class CamundaJsonFormsUtil {
     }
     if (config.locale) {
       form.setAttribute('locale', config.locale);
+    }
+    if (config.config) {
+      form.setAttribute('config', JSON.stringify(config.config));
     }
 
     //event listeners

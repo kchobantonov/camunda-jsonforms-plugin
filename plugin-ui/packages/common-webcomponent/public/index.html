@@ -222,6 +222,21 @@
         "firstName": "Test"
       }
       '
+      config='
+      {
+        "restrict": true,
+        "trim": false,
+        "showUnfocusedDescription": false,
+        "hideRequiredAsterisk": true
+      }
+      '
+      default-preset='
+      {
+        "theme": {
+          "dark": true
+        }
+      }
+      '
         change="onChange"
       >
         <link
@@ -245,11 +260,6 @@
           crossorigin="anonymous"
           referrerpolicy="no-referrer"
         />
-        <style
-          slot="style"
-          type="text/css"
-          id="vuetify-theme-stylesheet"
-        ></style>
         <style slot="style" type="text/css">
           .v-application--wrap {
             min-height: 0px;
