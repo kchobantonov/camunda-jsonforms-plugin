@@ -2,7 +2,8 @@
   <v-app ref="root">
     <slot name="link"></slot>
 
-    <custom-style type="text/css" ref="vuetify-theme-stylesheet">
+    <custom-style type="text/css" id="vuetify-theme">
+      {{ vuetifyThemeCss }}
     </custom-style>
     <slot name="style"></slot>
 
@@ -38,7 +39,7 @@ import { commonRenderers, ResolvedJsonForms } from '@kchobantonov/common-jsonfor
 import { merge } from 'lodash';
 import get from 'lodash/get';
 import isPlainObject from 'lodash/isPlainObject';
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, ref } from 'vue';
 import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import { VuetifyFormConfig } from '../core';
@@ -232,6 +233,7 @@ const vuetifyFormWc = defineComponent({
       dataValidationMode,
       dataTranslations,
       dataDefaultPreset,
+      vuetifyTheme: ref<{ generatedStyles: string } | null>(null),
     };
   },
   async mounted() {
@@ -243,15 +245,12 @@ const vuetifyFormWc = defineComponent({
       ) as Partial<VuetifyPreset>;
     }
 
-    const style = (this.$refs['vuetify-theme-stylesheet'] as any)
-      .$el as HTMLStyleElement;
     const shadowRoot = (this.$refs['root'] as any).$el as HTMLDivElement;
 
-    // @hack: Make sure we don't re-use the page's current style element
-    (vuetify.framework.theme as any).checkOrCreateStyleElement = function () {
-      this.styleEl = style;
-      return Boolean(this.styleEl);
-    };
+    const theme = vuetify.framework.theme as any;
+    // force the vuetify to skip checkOrCreateStyleElement
+    theme.vueMeta = {};
+    this.vuetifyTheme = theme;
 
     // Monkey patch querySelector to properly find root element
     const { querySelector } = document;
@@ -278,6 +277,9 @@ const vuetifyFormWc = defineComponent({
   computed: {
     dark() {
       return this.dataDefaultPreset?.theme?.dark || false;
+    },
+    vuetifyThemeCss() {
+      return this.vuetifyTheme?.generatedStyles;
     },
   },
   methods: {
