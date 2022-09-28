@@ -126,6 +126,7 @@ const buttonRenderer = defineComponent({
       ...layout,
       t,
       jsonforms,
+      camundaFormContext,
       camundaFormApi,
       camundaFormEmitter,
       loading,
