@@ -52,6 +52,14 @@ const CustomStyle = defineComponent({
   },
 });
 
+const theme = vuetify.framework.theme as any;
+// force vuetify to use checkOrCreateStyleElement
+theme.vueMeta = null;
+theme.checkOrCreateStyleElement = function () {
+  // do not update any style elements
+  return false;
+};
+
 const vuetifyFormWc = defineComponent({
   name: 'vuetify-json-forms-wc',
   vuetify,
@@ -233,7 +241,7 @@ const vuetifyFormWc = defineComponent({
       dataValidationMode,
       dataTranslations,
       dataDefaultPreset,
-      vuetifyTheme: ref<{ generatedStyles: string } | null>(null),
+      vuetifyTheme: ref<{ generatedStyles: string }>(theme),
     };
   },
   async mounted() {
@@ -246,15 +254,6 @@ const vuetifyFormWc = defineComponent({
     }
 
     const shadowRoot = (this.$refs['root'] as any).$el as HTMLDivElement;
-
-    const theme = vuetify.framework.theme as any;
-    // force vutify to use checkOrCreateStyleElement
-    theme.vueMeta = null;
-    theme.checkOrCreateStyleElement = function () {
-      // do not update any style elements
-      return false;
-    };   
-    this.vuetifyTheme = theme;
 
     // Monkey patch querySelector to properly find root element
     const { querySelector } = document;

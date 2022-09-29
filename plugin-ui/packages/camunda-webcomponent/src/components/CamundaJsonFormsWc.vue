@@ -49,6 +49,14 @@ import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
 
+const theme = vuetify.framework.theme as any;
+// force vuetify to use checkOrCreateStyleElement
+theme.vueMeta = null;
+theme.checkOrCreateStyleElement = function () {
+  // do not update any style elements
+  return false;
+};
+
 const CustomStyle = defineComponent({
   name: 'custom-style',
   render(createElement) {
@@ -173,7 +181,7 @@ const camundaFormWc = defineComponent({
       dataConfig,
       dataValidationMode,
       dataDefaultPreset,
-      vuetifyTheme: ref<{ generatedStyles: string } | null>(null),
+      vuetifyTheme: ref<{ generatedStyles: string }>(theme),
     };
   },
   async mounted() {
@@ -186,15 +194,6 @@ const camundaFormWc = defineComponent({
     }
 
     const shadowRoot = (this.$refs['root'] as any).$el as HTMLDivElement;
-
-    const theme = vuetify.framework.theme as any;
-    // force vutify to use checkOrCreateStyleElement
-    theme.vueMeta = null;
-    theme.checkOrCreateStyleElement = function () {
-      // do not update any style elements
-      return false;
-    };   
-    this.vuetifyTheme = theme;
 
     // Monkey patch querySelector to properly find root element
     const { querySelector } = document;
@@ -224,7 +223,7 @@ const camundaFormWc = defineComponent({
     },
     vuetifyThemeCss() {
       return this.vuetifyTheme?.generatedStyles;
-    }
+    },
   },
   methods: {
     onChange(event: JsonFormsChangeEvent): void {
