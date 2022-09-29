@@ -188,8 +188,12 @@ const camundaFormWc = defineComponent({
     const shadowRoot = (this.$refs['root'] as any).$el as HTMLDivElement;
 
     const theme = vuetify.framework.theme as any;
-    // force the vuetify to skip checkOrCreateStyleElement
-    theme.vueMeta = {};
+    // force vutify to use checkOrCreateStyleElement
+    theme.vueMeta = null;
+    theme.checkOrCreateStyleElement = function () {
+      // do not update any style elements
+      return false;
+    };   
     this.vuetifyTheme = theme;
 
     // Monkey patch querySelector to properly find root element
