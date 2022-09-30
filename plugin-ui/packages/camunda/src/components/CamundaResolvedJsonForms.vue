@@ -215,8 +215,6 @@ const camundaResolvedJsonForms = defineComponent({
     },
     additionalErrors: {
       handler(_value?: ErrorObject[], _oldValue?: ErrorObject[]) {
-        // reset ajv - the schema will be registered again - otherwise an ajv error for the same schema id will be generated
-        this.ajv.removeSchema('/');
         // set the last data
         this.context!.input.data = this.previousData;
       },

@@ -23,15 +23,15 @@
     </div>
     <v-sheet v-else :dark="dark" tile>
       <camunda-resolved-json-forms
-        :url="url"
-        :processDefinitionId="processDefinitionId"
-        :processDefinitionKey="processDefinitionKey"
-        :taskId="taskId"
-        :locale="locale"
+        :url="dataUrl"
+        :processDefinitionId="dataProcessDefinitionId"
+        :processDefinitionKey="dataProcessDefinitionKey"
+        :taskId="dataTaskId"
+        :locale="dataLocale"
         :defaultPreset="dataDefaultPreset"
         :config="dataConfig"
         :validationMode="dataValidationMode"
-        :readonly="readonly"
+        :readonly="dataReadonly"
         @change="onChange"
         @load-request="onLoadRequest"
         @load-response="onLoadResponse"
@@ -45,16 +45,15 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
 import { ValidationMode } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { CamundaResolvedJsonForms } from '@kchobantonov/camunda-jsonforms';
 import { merge } from 'lodash';
-import { defineComponent, PropType, ref } from 'vue';
+import Vue, { defineComponent, PropType, ref } from 'vue';
+import LoadScript from 'vue-plugin-load-script';
 import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
-import LoadScript from 'vue-plugin-load-script';
 
 Vue.use(LoadScript);
 Vue.config.productionTip = false;
@@ -139,8 +138,12 @@ const camundaFormWc = defineComponent({
       type: [String] as PropType<ValidationMode>,
       default: 'ValidateAndShow',
       validator: function (value) {
-        return value === 'ValidateAndShow' || value === 'ValidateAndHide' || value == 'NoValidation'
-      }      
+        return (
+          value === 'ValidateAndShow' ||
+          value === 'ValidateAndHide' ||
+          value == 'NoValidation'
+        );
+      },
     },
     locale: {
       required: false,
@@ -163,8 +166,15 @@ const camundaFormWc = defineComponent({
   },
   setup(props) {
     let error: any = undefined;
-    let dataConfig: any = undefined;
-    let dataValidationMode: any = undefined;
+
+    let dataUrl: string | undefined = undefined;
+    let dataProcessDefinitionId: string | undefined = undefined;
+    let dataProcessDefinitionKey: string | undefined = undefined;
+    let dataTaskId: string | undefined = undefined;
+    let dataConfig: Record<string, any> | undefined = undefined;
+    let dataReadonly: boolean | undefined = undefined;
+    let dataLocale: string | undefined = undefined;
+    let dataValidationMode: ValidationMode | undefined = undefined;
     let dataDefaultPreset: Partial<VuetifyPreset> | undefined = undefined;
 
     try {
@@ -173,38 +183,151 @@ const camundaFormWc = defineComponent({
           ? JSON.parse(props.config)
           : props.config;
 
+      dataUrl = typeof props.url == 'string' ? props.url : undefined;
+      dataProcessDefinitionId =
+        typeof props.processDefinitionId == 'string'
+          ? props.processDefinitionId
+          : undefined;
+      dataProcessDefinitionKey =
+        typeof props.processDefinitionKey == 'string'
+          ? props.processDefinitionKey
+          : undefined;
+      dataTaskId = typeof props.taskId == 'string' ? props.taskId : undefined;
+
+      dataReadonly =
+        typeof props.readonly == 'string'
+          ? props.readonly == 'true'
+          : props.readonly;
       dataValidationMode =
         props.validationMode == 'ValidateAndShow' ||
         props.validationMode == 'ValidateAndHide' ||
         props.validationMode == 'NoValidation'
           ? props.validationMode
           : 'ValidateAndShow';
-
+      dataLocale = typeof props.locale == 'string' ? props.locale : 'en';
       dataDefaultPreset =
         typeof props.defaultPreset == 'string'
           ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
           : defaultPreset;
     } catch (e) {
-      error = e;
+      error = `Config error: ${e}`;
     }
 
     return {
       error,
       dataConfig,
+      dataUrl,
+      dataProcessDefinitionId,
+      dataProcessDefinitionKey,
+      dataTaskId,
+      dataReadonly,
       dataValidationMode,
+      dataLocale,
       dataDefaultPreset,
       vuetifyTheme: ref<{ generatedStyles: string }>(theme),
     };
   },
-  async mounted() {
-    let preset: Partial<VuetifyPreset> | null = null;
-    if (this.input?.uischema?.options) {
-      preset = this.vuetifyProps(
-        this.input.uischema.options,
-        'preset'
-      ) as Partial<VuetifyPreset>;
-    }
+  watch: {
+    url: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataUrl = typeof value == 'string' ? value : undefined;
+        }
+      },
+      deep: true,
+    },
+    processDefinitionId: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataProcessDefinitionId =
+            typeof value == 'string' ? value : undefined;
 
+          // reset other 2
+          this.dataProcessDefinitionKey = undefined;
+          this.dataTaskId = undefined;
+        }
+      },
+      deep: true,
+    },
+    processDefinitionKey: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataProcessDefinitionKey =
+            typeof value == 'string' ? value : undefined;
+
+          // reset other 2
+          this.dataProcessDefinitionId = undefined;
+          this.dataTaskId = undefined;
+        }
+      },
+      deep: true,
+    },
+    taskId: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataTaskId = typeof value == 'string' ? value : undefined;
+
+          // reset other 2
+          this.dataProcessDefinitionId = undefined;
+          this.dataProcessDefinitionKey = undefined;
+        }
+      },
+      deep: true,
+    },
+    config: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataConfig =
+            typeof value == 'string' ? JSON.parse(value) : undefined;
+        }
+      },
+      deep: true,
+    },
+    readonly: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataReadonly =
+            typeof value == 'string' ? value == 'true' : value === true;
+        }
+      },
+      deep: true,
+    },
+    validationMode: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataValidationMode =
+            value == 'ValidateAndShow' ||
+            value == 'ValidateAndHide' ||
+            value == 'NoValidation'
+              ? value
+              : 'ValidateAndShow';
+        }
+      },
+      deep: true,
+    },
+    locale: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataLocale = typeof value == 'string' ? value : 'en';
+        }
+      },
+      deep: true,
+    },
+    defaultPreset: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataDefaultPreset =
+            typeof value == 'string'
+              ? merge({}, defaultPreset, JSON.parse(value))
+              : undefined;
+
+          this.applyTheme();
+        }
+      },
+      deep: true,
+    },
+  },
+  async mounted() {
     const shadowRoot = (this.$refs['root'] as any).$el as HTMLDivElement;
 
     // Monkey patch querySelector to properly find root element
@@ -214,20 +337,7 @@ const camundaFormWc = defineComponent({
       return querySelector.call(this, selector);
     };
 
-    // apply any themes
-    this.$vuetify.theme = merge(
-      this.$vuetify.theme,
-      preset && preset.theme
-        ? preset.theme
-        : this.dataDefaultPreset?.theme || {}
-    );
-
-    this.$vuetify.icons = merge(
-      this.$vuetify.icons,
-      preset && preset.icons
-        ? preset.icons
-        : this.dataDefaultPreset?.icons || {}
-    );
+    this.applyTheme();
   },
   computed: {
     dark() {
@@ -238,6 +348,30 @@ const camundaFormWc = defineComponent({
     },
   },
   methods: {
+    applyTheme(): void {
+      let preset: Partial<VuetifyPreset> | null = null;
+      if (this.input?.uischema?.options) {
+        preset = this.vuetifyProps(
+          this.input.uischema.options,
+          'preset'
+        ) as Partial<VuetifyPreset>;
+      }
+
+      // apply any themes
+      this.$vuetify.theme = merge(
+        this.$vuetify.theme,
+        preset && preset.theme
+          ? preset.theme
+          : this.dataDefaultPreset?.theme || {}
+      );
+
+      this.$vuetify.icons = merge(
+        this.$vuetify.icons,
+        preset && preset.icons
+          ? preset.icons
+          : this.dataDefaultPreset?.icons || {}
+      );
+    },
     onChange(event: JsonFormsChangeEvent): void {
       this.$emit('change', event);
     },
