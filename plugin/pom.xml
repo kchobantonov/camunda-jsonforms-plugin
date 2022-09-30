@@ -24,10 +24,10 @@
     </dependency>
 
     <dependency>
-			<groupId>org.camunda.bpm.springboot</groupId>
-			<artifactId>camunda-bpm-spring-boot-starter-rest</artifactId>
+      <groupId>org.camunda.bpm.springboot</groupId>
+      <artifactId>camunda-bpm-spring-boot-starter-rest</artifactId>
       <scope>provided</scope>
-		</dependency>
+    </dependency>
 
     <dependency>
       <groupId>org.camunda.spin</groupId>
@@ -61,24 +61,11 @@
               <outputDirectory>${basedir}/target/classes/${frontend.target.path}/scripts/jsonforms</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${basedir}/${frontend.camunda.build.path}/js</directory>
+                  <directory>${basedir}/${frontend.camunda.build.path}/</directory>
                   <filtering>false</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-          <execution>
-            <id>Copy frontend CSS files to target</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${basedir}/target/classes/${frontend.target.path}/styles</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${basedir}/${frontend.camunda.build.path}/css</directory>
-                  <filtering>false</filtering>
+                  <excludes>
+                    <exclude>*.html</exclude>
+                  </excludes>
                 </resource>
               </resources>
             </configuration>

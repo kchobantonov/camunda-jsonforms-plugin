@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "$id": "http://example.com/example.json",
+  "required": ["firstName"],
+  "properties": {
+    "address": {
+      "type": "string"
+    },
+    "gender": {
+      "type": "string",
+      "enum": ["Male", "Female", "Undisclosed"]
+    },
+    "firstName": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 20
+    },
+    "lastName": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 15
+    }
+  }
+}

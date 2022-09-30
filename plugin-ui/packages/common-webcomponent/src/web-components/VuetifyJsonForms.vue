@@ -1,11 +1,16 @@
 <template>
   <v-app ref="root">
-    <slot name="link"></slot>
-
     <custom-style type="text/css" id="vuetify-theme">
       {{ vuetifyThemeCss }}
     </custom-style>
-    <slot name="style"></slot>
+
+    <slot
+      name="style"
+      v-if="!!$slots['style'] || !!$scopedSlots['style']"
+    ></slot>
+    <custom-style type="text/css" v-else>
+      .v-application--wrap { min-height: 0px; }
+    </custom-style>
 
     <div v-if="error !== undefined">
       <v-container style="height: 400px">
@@ -23,7 +28,7 @@
         :cells="cells"
         :config="dataConfig"
         :validationMode="dataValidationMode"
-        :locale="locale"
+        :locale="dataLocale"
         :translations="dataTranslations"
         :readonly="dataReadonly"
         @change="onChange"
@@ -33,6 +38,7 @@
 </template>
 
 <script lang="ts">
+import Vue from 'vue';
 import { ValidationMode } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { commonRenderers, ResolvedJsonForms } from '@kchobantonov/common-jsonforms';
@@ -44,6 +50,10 @@ import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import { VuetifyFormConfig } from '../core';
 import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
+import LoadScript from 'vue-plugin-load-script';
+
+Vue.use(LoadScript);
+Vue.config.productionTip = false;
 
 const CustomStyle = defineComponent({
   name: 'custom-style',
@@ -61,7 +71,6 @@ theme.checkOrCreateStyleElement = function () {
 };
 
 const vuetifyFormWc = defineComponent({
-  name: 'vuetify-json-forms-wc',
   vuetify,
   components: {
     ResolvedJsonForms,
@@ -143,6 +152,13 @@ const vuetifyFormWc = defineComponent({
       required: false,
       type: [String] as PropType<ValidationMode>,
       default: 'ValidateAndShow',
+      validator: function (value) {
+        return (
+          value === 'ValidateAndShow' ||
+          value === 'ValidateAndHide' ||
+          value == 'NoValidation'
+        );
+      },
     },
     locale: {
       required: false,
@@ -183,10 +199,11 @@ const vuetifyFormWc = defineComponent({
     let schema: any = undefined;
     let uischema: any = undefined;
     let data: any = undefined;
-    let dataConfig: any = undefined;
-    let dataReadonly: any = undefined;
-    let dataValidationMode: any = undefined;
-    let dataTranslations: any = undefined;
+    let dataConfig: Record<string, any> | undefined = undefined;
+    let dataReadonly: boolean | undefined = undefined;
+    let dataLocale: string | undefined = undefined;
+    let dataValidationMode: ValidationMode | undefined = undefined;
+    let dataTranslations: Record<string, any> | undefined = undefined;
     let dataDefaultPreset: Partial<VuetifyPreset> | undefined = undefined;
 
     try {
@@ -215,6 +232,7 @@ const vuetifyFormWc = defineComponent({
         props.validationMode == 'NoValidation'
           ? props.validationMode
           : 'ValidateAndShow';
+      dataLocale = typeof props.locale == 'string' ? props.locale : 'en';
       dataTranslations =
         typeof props.translations == 'string'
           ? JSON.parse(props.translations)
@@ -239,20 +257,119 @@ const vuetifyFormWc = defineComponent({
       dataConfig,
       dataReadonly,
       dataValidationMode,
+      dataLocale,
       dataTranslations,
       dataDefaultPreset,
       vuetifyTheme: ref<{ generatedStyles: string }>(theme),
     };
   },
-  async mounted() {
-    let preset: Partial<VuetifyPreset> | null = null;
-    if (this.input?.uischema?.options) {
-      preset = this.vuetifyProps(
-        this.input.uischema.options,
-        'preset'
-      ) as Partial<VuetifyPreset>;
-    }
+  watch: {
+    schema: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          const schema =
+            typeof value == 'string' ? JSON.parse(value) : undefined;
+          this.input = {
+            schema: schema,
+            uischema: this.input.uischema,
+            data: this.input.data,
+          };
+        }
+      },
+      deep: true,
+    },
+    uischema: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          const uischema =
+            typeof value == 'string' ? JSON.parse(value) : undefined;
 
+          this.input = {
+            schema: this.input.schema,
+            uischema: uischema,
+            data: this.input.data,
+          };
+        }
+      },
+      deep: true,
+    },
+    data: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          const data = typeof value == 'string' ? JSON.parse(value) : undefined;
+
+          this.input = {
+            schema: this.input.schema,
+            uischema: this.input.uischema,
+            data: data,
+          };
+        }
+      },
+      deep: true,
+    },
+    config: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataConfig =
+            typeof value == 'string' ? JSON.parse(value) : undefined;
+        }
+      },
+      deep: true,
+    },
+    readonly: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataReadonly =
+            typeof value == 'string' ? value == 'true' : value === true;
+        }
+      },
+      deep: true,
+    },
+    validationMode: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataValidationMode =
+            value == 'ValidateAndShow' ||
+            value == 'ValidateAndHide' ||
+            value == 'NoValidation'
+              ? value
+              : 'ValidateAndShow';
+        }
+      },
+      deep: true,
+    },
+    locale: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataLocale = typeof value == 'string' ? value : 'en';
+        }
+      },
+      deep: true,
+    },
+    translations: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataTranslations =
+            typeof value == 'string' ? JSON.parse(value) : undefined;
+        }
+      },
+      deep: true,
+    },
+    defaultPreset: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataDefaultPreset =
+            typeof value == 'string'
+              ? merge({}, defaultPreset, JSON.parse(value))
+              : undefined;
+
+          this.applyTheme();
+        }
+      },
+      deep: true,
+    },
+  },
+  async mounted() {
     const shadowRoot = (this.$refs['root'] as any).$el as HTMLDivElement;
 
     // Monkey patch querySelector to properly find root element
@@ -262,20 +379,7 @@ const vuetifyFormWc = defineComponent({
       return querySelector.call(this, selector);
     };
 
-    // apply any themes
-    this.$vuetify.theme = merge(
-      this.$vuetify.theme,
-      preset && preset.theme
-        ? preset.theme
-        : this.dataDefaultPreset?.theme || {}
-    );
-
-    this.$vuetify.icons = merge(
-      this.$vuetify.icons,
-      preset && preset.icons
-        ? preset.icons
-        : this.dataDefaultPreset?.icons || {}
-    );
+    this.applyTheme();
   },
   computed: {
     dark() {
@@ -286,6 +390,29 @@ const vuetifyFormWc = defineComponent({
     },
   },
   methods: {
+    applyTheme(): void {
+      let preset: Partial<VuetifyPreset> | null = null;
+      if (this.input?.uischema?.options) {
+        preset = this.vuetifyProps(
+          this.input.uischema.options,
+          'preset'
+        ) as Partial<VuetifyPreset>;
+      }
+      // apply any themes
+      this.$vuetify.theme = merge(
+        this.$vuetify.theme,
+        preset && preset.theme
+          ? preset.theme
+          : this.dataDefaultPreset?.theme || {}
+      );
+
+      this.$vuetify.icons = merge(
+        this.$vuetify.icons,
+        preset && preset.icons
+          ? preset.icons
+          : this.dataDefaultPreset?.icons || {}
+      );
+    },
     onChange(event: JsonFormsChangeEvent): void {
       this.$emit('change', event);
     },
@@ -302,3 +429,10 @@ const vuetifyFormWc = defineComponent({
 
 export default vuetifyFormWc;
 </script>
+
+<style scoped>
+@import url('//fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
+@import url('//cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css');
+
+@import '~vuetify/dist/vuetify.min.css';
+</style>

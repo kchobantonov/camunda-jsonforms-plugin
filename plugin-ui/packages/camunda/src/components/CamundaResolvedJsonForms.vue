@@ -57,7 +57,7 @@ import { camundaRenderers } from '../renderers';
 import { ValidationMode } from '@jsonforms/core';
 import { ErrorObject } from 'ajv';
 
-export const camundaJsonFormsProps = () => ({
+export const camundaResolvedJsonFormsProps = () => ({
   url: {
     required: true,
     type: String,
@@ -138,8 +138,8 @@ export const camundaJsonFormsProps = () => ({
   },
 });
 
-const camundaJsonForms = defineComponent({
-  name: 'camunda-json-forms',
+const camundaResolvedJsonForms = defineComponent({
+  name: 'camunda-resolved-json-forms',
   components: {
     ResolvedJsonForms,
     VContainer,
@@ -157,7 +157,7 @@ const camundaJsonForms = defineComponent({
     'submit-error',
   ],
   props: {
-    ...camundaJsonFormsProps(),
+    ...camundaResolvedJsonFormsProps(),
   },
   setup(props) {
     const loading = ref(false);
@@ -220,6 +220,7 @@ const camundaJsonForms = defineComponent({
         // set the last data
         this.context!.input.data = this.previousData;
       },
+      deep: true,
     },
   },
   async mounted() {
@@ -324,7 +325,7 @@ const camundaJsonForms = defineComponent({
 });
 
 // cast to 'any' because of Typescript problems (ts(7056))
-export default camundaJsonForms as any;
+export default camundaResolvedJsonForms as any;
 </script>
 
 <style></style>

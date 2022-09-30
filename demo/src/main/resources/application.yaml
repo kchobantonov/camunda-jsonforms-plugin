@@ -5,6 +5,8 @@ server:
   port: 8080    
 camunda:
   bpm:
+    authorization:
+      enabled: true     
     admin-user:
       id: demo
       password: demo

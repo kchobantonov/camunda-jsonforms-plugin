@@ -1,11 +1,16 @@
 <template>
   <v-app ref="root">
-    <slot name="link"></slot>
-
     <custom-style type="text/css" id="vuetify-theme">
       {{ vuetifyThemeCss }}
     </custom-style>
-    <slot name="style"></slot>
+
+    <slot
+      name="style"
+      v-if="!!$slots['style'] || !!$scopedSlots['style']"
+    ></slot>
+    <custom-style type="text/css" v-else>
+      .v-application--wrap { min-height: 0px; }
+    </custom-style>
 
     <div v-if="error !== undefined">
       <v-container style="height: 400px">
@@ -17,7 +22,7 @@
       </v-container>
     </div>
     <v-sheet v-else :dark="dark" tile>
-      <camunda-json-forms
+      <camunda-resolved-json-forms
         :url="url"
         :processDefinitionId="processDefinitionId"
         :processDefinitionKey="processDefinitionKey"
@@ -40,14 +45,26 @@
 </template>
 
 <script lang="ts">
+import Vue from 'vue';
 import { ValidationMode } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { CamundaJsonForms } from '@kchobantonov/camunda-jsonforms';
+import { CamundaResolvedJsonForms } from '@kchobantonov/camunda-jsonforms';
 import { merge } from 'lodash';
 import { defineComponent, PropType, ref } from 'vue';
 import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
+import LoadScript from 'vue-plugin-load-script';
+
+Vue.use(LoadScript);
+Vue.config.productionTip = false;
+
+const CustomStyle = defineComponent({
+  name: 'custom-style',
+  render(createElement) {
+    return createElement('style', this.$slots.default);
+  },
+});
 
 const theme = vuetify.framework.theme as any;
 // force vuetify to use checkOrCreateStyleElement
@@ -57,18 +74,10 @@ theme.checkOrCreateStyleElement = function () {
   return false;
 };
 
-const CustomStyle = defineComponent({
-  name: 'custom-style',
-  render(createElement) {
-    return createElement('style', this.$slots.default);
-  },
-});
-
 const camundaFormWc = defineComponent({
-  name: 'camunda-json-forms-wc',
   vuetify,
   components: {
-    CamundaJsonForms,
+    CamundaResolvedJsonForms,
     VApp,
     VSheet,
     CustomStyle,
@@ -129,6 +138,9 @@ const camundaFormWc = defineComponent({
       required: false,
       type: [String] as PropType<ValidationMode>,
       default: 'ValidateAndShow',
+      validator: function (value) {
+        return value === 'ValidateAndShow' || value === 'ValidateAndHide' || value == 'NoValidation'
+      }      
     },
     locale: {
       required: false,
@@ -253,4 +265,9 @@ const camundaFormWc = defineComponent({
 export default camundaFormWc;
 </script>
 
-<style></style>
+<style scoped>
+@import url('//fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
+@import url('//cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css');
+
+@import '~vuetify/dist/vuetify.min.css';
+</style>

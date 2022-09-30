@@ -18,7 +18,7 @@
 export default {
   // // custom libraries and scripts loading and initialization,
   // // see: https://docs.camunda.org/manual/latest/webapps/cockpit/extend/configuration/#custom-scripts
-  customScripts: ["scripts/vue/loadVue", "scripts/jsonforms/camunda-jsonforms-chunk", "scripts/jsonforms/camunda-jsonforms"],
+  customScripts: ["scripts/jsonforms/camunda-json-forms.min"],
   shortcuts: {
     claimTask: {
       key: 'ctrl+alt+c',

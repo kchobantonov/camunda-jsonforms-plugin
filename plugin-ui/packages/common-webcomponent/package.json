@@ -7,7 +7,8 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "prebuild": "rimraf dist",
-    "build": "vue-cli-service build",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build --target wc-async --inline-vue 'src/web-components/*.vue'",
     "lerna-publish": "npm publish"
   },
   "files": [

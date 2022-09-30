@@ -1,1 +1,1 @@
-export { default as CamundaJsonForms } from './CamundaJsonForms.vue';
+export { default as CamundaResolvedJsonForms } from './CamundaResolvedJsonForms.vue';

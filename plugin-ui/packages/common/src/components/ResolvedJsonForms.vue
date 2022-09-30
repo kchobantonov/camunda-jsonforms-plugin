@@ -62,6 +62,8 @@ import {
 } from '@jsonforms/core';
 import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue2';
 import Ajv, { ErrorObject } from 'ajv';
+import { normalizeId } from 'ajv/lib/compile/resolve';
+
 import {
   defineComponent,
   inject,
@@ -228,6 +230,7 @@ const resolvedJsonForms = defineComponent({
       schemaUrl?: string
     ): Promise<void> {
       this.resolved = false;
+      this.error = undefined;
 
       try {
         if (schema) {
@@ -236,10 +239,24 @@ const resolvedJsonForms = defineComponent({
               location: schemaUrl,
             })
           ).resolved;
+
+          // clear previous schemas in AVJ - schema with key or id "${id}" already exists
+          const { schemaId } = this.ajv.opts;
+          let id = (schema as any)[schemaId];
+          if (id) {
+            id = normalizeId(id);
+            if (id && !id.startsWith('#')) {
+              if (this.ajv.getSchema(id)) {
+                // schema exists and we are going to add it again so clear it before it throws schema already exists
+                this.ajv.removeSchema(id);
+              }
+            }
+          }
         } else {
           this.schema = schema;
         }
       } catch (err) {
+        console.log(err);
         this.error = (err as Error).message;
       } finally {
         this.resolved = true;

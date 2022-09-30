@@ -1,158 +1,213 @@
 <form role="form" id="task-form-camunda-json-forms">
-  
-    <!-- data-app required by vuetify -->
-    <div id="json-forms-root" data-app></div>
-  
-    <script cam-script type="text/form-script">
-  
-      function getParameterByName(name, url)  {
-          if (!url) return null;
-  
-          let parts = url.split('?');
-          if (parts.length > 1) {
-              const params = new URLSearchParams('?' + parts[1]);
-  
-              return params.get(name);
+  <!-- include the fonts outside the webcomponent for now - https://github.com/google/material-design-icons/issues/1165 -->
+  <style type="text/css">
+    @import url("//cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css");
+  </style>
+
+  <camunda-json-forms id="camunda-json-forms">
+    <style slot="style" type="text/css">
+      .v-application--wrap {
+        min-height: 0px;
+      }
+    </style>
+  </camunda-json-forms>
+
+  <script cam-script type="text/form-script">
+
+    function getParameterByName(name, url) {
+      if (!url) return null;
+
+      let parts = url.split("?");
+      if (parts.length > 1) {
+        const params = new URLSearchParams("?" + parts[1]);
+
+        return params.get(name);
+      }
+
+      return null;
+    }
+
+    function isStartForm(camForm) {
+      return camForm.taskId == null;
+    }
+
+    function hideStartFormStartButton() {
+      let element = document.querySelector(
+        "button[ng-click='startProcessInstance()']"
+      );
+      if (element) {
+        element.classList.add("ng-hide");
+      }
+    }
+
+    function hideUserTaskFormCompleteButton() {
+      let elements = document.getElementsByClassName("form-actions");
+      if (elements) {
+        _.forEach(elements, (element) => {
+          element.classList.add("ng-hide");
+        });
+      }
+    }
+
+    function showNotification(type, duration, status, message) {
+      inject([
+        "Notifications",
+        function (Notifications) {
+          Notifications.addMessage({
+            type: type,
+            duration: duration,
+            status: status,
+            message: message,
+          });
+        },
+      ]);
+    }
+
+    const config = {
+      restrict: true,
+      trim: false,
+      showUnfocusedDescription: false,
+      hideRequiredAsterisk: true,
+    };
+    const preset = { theme: { dark: false } };
+
+    const onChange = (event) => {
+      let [data] = event.detail;
+      let debug =
+        getParameterByName("debug", camForm.options.formUrl) === "true";
+      if (debug) {
+        console.log("Form state changed:" + JSON.stringify(data));
+      }
+    };
+
+    const onLoadRequest = (event) => {
+      let [requestInfo, requestInit] = event.detail;
+      // no need to setup xsrf for loading
+    };
+    const onLoadResponse = (event) => {
+      let [response] = event.detail;
+    };
+    const onLoadError = (event) => {
+      let [error] = event.detail;
+
+      if (
+        error.name === "AppException" &&
+        (error.code === "RETRIEVE_TASK_DEPLOYED_FORM" ||
+          error.code === "INVALID_TASK_DEPLOYED_FORM_RESPONSE" ||
+          error.code === "RETRIEVE_PROCESS_DEFINITION_DEPLOYED_START_FORM" ||
+          error.code ===
+            "INVALID_PROCESS_DEFINITION_DEPLOYED_START_FORM_RESPONSE")
+      ) {
+        // ignore loading from deployed forms - most likely JsonFormsFormServicePlugin was not installed - just log the error in the console
+        return;
+      }
+      if (
+        error.name === "ResponseException" &&
+        (error.response.request.url.endsWith("/deployed-start-form") ||
+          error.response.request.url.endsWith("/deployed-form"))
+      ) {
+        // ignore loading from deployed forms - most likely JsonFormsFormServicePlugin was not installed - just log the error in the console
+        return;
+      }
+      showNotification("error", null, "Load Error", `${error}`);
+    };
+
+    const onSubmitRequest = (event) => {
+      let [requestInfo, requestInit] = event.detail;
+
+      inject([
+        "$http",
+        function ($http) {
+          const xsrfHeaderName = $http.defaults.xsrfHeaderName;
+          const xsrfCookieName = $http.defaults.xsrfCookieName;
+          let cookieValue = undefined;
+          if (xsrfCookieName) {
+            cookieValue = document.cookie
+              .split("; ")
+              .find((row) => row.startsWith(xsrfCookieName + "="))
+              .split("=")[1];
           }
-  
-          return null;
-      }
-  
-      function isStartForm(camForm){
-          return camForm.taskId == null;
-      }
-  
-      function hideStartFormStartButton(){
-          let element = document.querySelector("button[ng-click='startProcessInstance()']");
-          if (element) {
-              element.classList.add("ng-hide");
+
+          if (cookieValue && xsrfHeaderName) {
+            requestInit.headers[xsrfHeaderName] = cookieValue;
           }
+        },
+      ]);
+    };
+    const onSubmitResponse = (event) => {
+      let [response] = event.detail;
+      if (response.status >= 200 && response.status < 300) {
+        if (camForm.taskId) {
+          angular.element(".task-card").scope().dismissTask();
+        } else {
+          angular.element(".modal-dialog").scope().$parent.$dismiss();
+        }
       }
-  
-      function hideUserTaskFormCompleteButton(){
-          let elements = document.getElementsByClassName("form-actions");
-          if (elements) {
-            _.forEach(elements, element => {
-              element.classList.add("ng-hide");
-            })
+    };
+    const onSubmitError = (event) => {
+      let [error] = event.detail;
+      if (error.name === "AppException" && error.response) {
+        let response = error.response;
+        if (response.status == 401) {
+          showNotification(
+            "error",
+            null,
+            "Submit Error",
+            `You are not authenticated`
+          );
+          return;
+        } else if (response.status == 403) {
+          showNotification(
+            "error",
+            null,
+            "Submit Error",
+            `You are not authorized`
+          );
+          return;
+        }
+      }
+      showNotification("error", null, "Submit Error", `${error}`);
+    };
+
+    camForm.on("form-loaded", function () {
+      $scope.options.hideCompleteButton = true;
+
+      isStartForm(camForm)
+        ? hideStartFormStartButton()
+        : hideUserTaskFormCompleteButton();
+
+      inject([
+        "Uri",
+        function (Uri) {
+          let camundaUrl = Uri.appUri("engine://engine/:engine");
+
+          let locale = navigator.language || "en";
+          let form = document.getElementById("camunda-json-forms");
+
+          form.setAttribute("url", camundaUrl);
+          if (camForm.processDefinitionId) {
+            form.setAttribute(
+              "process-definition-id",
+              camForm.processDefinitionId
+            );
           }
-      }
-  
-      function showNotification(type, duration, status, message){
-          inject(['Notifications', function(Notifications) {
-              Notifications.addMessage({
-                  type: type,
-                  duration: duration,
-                  status: status,
-                  message: message
-              });
-          }]);
-      }
-  
-      function onChange(jsonFormsChangeEvent) {
-          let debug = getParameterByName('debug', camForm.options.formUrl) === 'true';
-          if (debug) {
-              console.log("Form state changed:" + JSON.stringify(jsonFormsChangeEvent));
+          if (camForm.taskId) {
+            form.setAttribute("task-id", camForm.taskId);
           }
-      }
-  
-      function onLoadRequest(requestInfo, requestInit) {
-          // no need to setup xsrf for loading
-      }
-  
-      function onLoadResponse(response) {
-      }
-      
-      function onLoadError(error) {
-          if (error.name === 'AppException' && (error.code === 'RETRIEVE_TASK_DEPLOYED_FORM' || error.code === 'INVALID_TASK_DEPLOYED_FORM_RESPONSE' || error.code === 'RETRIEVE_PROCESS_DEFINITION_DEPLOYED_START_FORM' || error.code === 'INVALID_PROCESS_DEFINITION_DEPLOYED_START_FORM_RESPONSE')) {
-              // ignore loading from deployed forms - most likely JsonFormsFormServicePlugin was not installed - just log the error in the console
-              return;
-          }
-          if (error.name === 'ResponseException' && (error.response.request.url.endsWith('/deployed-start-form') || error.response.request.url.endsWith('/deployed-form'))) {
-              // ignore loading from deployed forms - most likely JsonFormsFormServicePlugin was not installed - just log the error in the console
-              return;
-          }
-          showNotification('error', null, "Load Error", `${error}`);
-      }
-  
-      function onSubmitRequest(requestInfo, requestInit) {
-          inject(['$http', function($http) {
-  
-              const xsrfHeaderName = $http.defaults.xsrfHeaderName;
-              const xsrfCookieName = $http.defaults.xsrfCookieName;
-              let cookieValue = undefined;
-              if (xsrfCookieName) {
-                  cookieValue = document.cookie.split('; ').find(row => row.startsWith(xsrfCookieName + '=')).split('=')[1];
-              }
-  
-              if (cookieValue && xsrfHeaderName) {
-                  requestInit.headers[xsrfHeaderName] = cookieValue;
-              }
-  
-          }]);
-      }
-  
-      function onSubmitResponse(response) {
-          if (response.status >= 200 && response.status < 300) {
-              if (camForm.taskId) {
-                  angular.element('.task-card').scope().dismissTask();
-               } else {
-                   angular.element('.modal-dialog').scope().$parent.$dismiss();
-               }
-          }
-      }
-  
-      function onSubmitError(error) {
-          if (error.name === 'AppException' && error.response) {
-              let response = error.response;
-              if (response.status == 401) {
-                  showNotification('error', null, "Submit Error", `You are not authenticated`);
-                  return;
-              } else if (response.status == 403) {
-                  showNotification('error', null, "Submit Error", `You are not authorized`);
-                  return;
-              }
-          }
-          showNotification('error', null, "Submit Error", `${error}`);
-      }
-  
-      camForm.on('form-loaded', function () {
-          $scope.options.hideCompleteButton = true
-  
-          isStartForm(camForm) ? hideStartFormStartButton() : hideUserTaskFormCompleteButton();
-  
-          inject(['Uri', function(Uri) {
-              let camundaUrl = Uri.appUri('engine://engine/:engine');
-  
-              let locale = (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.userLanguage || navigator.language || navigator.browserLanguage || 'en';
-  
-              let root = document.querySelector('#json-forms-root');
-  
-              let node = CamundaJsonFormsUtil.createCamundaJsonFormsElement({
-                  url: camundaUrl,
-                  processDefinitionId: camForm.processDefinitionId,
-                  taskId: camForm.taskId,
-                  locale: locale,
-                  onChange: onChange,                
-                  onLoadRequest: onLoadRequest,                
-                  onLoadResponse: onLoadResponse,                
-                  onLoadError: onLoadError,                
-                  onSubmitRequest: onSubmitRequest,                
-                  onSubmitResponse: onSubmitResponse,                
-                  onSubmitError: onSubmitError,                
-              },
-              `<camunda-json-forms>
-                <link slot="link" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
-                <link slot="link" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css" integrity="sha512-Zw6ER2h5+Zjtrej6afEKgS8G5kehmDAHYp9M2xf38MPmpUWX39VrYmdGtCrDQbdLQrTnBVT8/gcNhgS4XPgvEg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-                <link slot="link" rel="stylesheet" href="../styles/user-styles.css" />
-    
-                <style slot="style" type="text/css">.v-application--wrap { min-height: 0px; }</style>
-               </camunda-json-forms>`);
-  
-              root.appendChild(node);
-          }]);
-  
-      });
-    </script>
-  </form>
-  
+          form.setAttribute("locale", locale);
+
+          form.setAttribute("config", JSON.stringify(config));
+          form.setAttribute("default-preset", JSON.stringify(preset));
+
+          form.addEventListener("change", onChange);
+          form.addEventListener("load-request", onLoadRequest);
+          form.addEventListener("load-response", onLoadResponse);
+          form.addEventListener("load-error", onLoadError);
+          form.addEventListener("submit-request", onSubmitRequest);
+          form.addEventListener("submit-response", onSubmitResponse);
+          form.addEventListener("submit-error", onSubmitError);
+        },
+      ]);
+    });
+  </script>
+</form>
