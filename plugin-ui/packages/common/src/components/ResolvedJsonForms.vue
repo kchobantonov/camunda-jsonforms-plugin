@@ -62,7 +62,7 @@ import {
 } from '@jsonforms/core';
 import { JsonForms, JsonFormsChangeEvent } from '@jsonforms/vue2';
 import Ajv, { ErrorObject } from 'ajv';
-import { normalizeId } from 'ajv/lib/compile/resolve';
+import { normalizeId } from 'ajv/dist/compile/resolve';
 
 import {
   defineComponent,
