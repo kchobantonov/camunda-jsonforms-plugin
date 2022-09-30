@@ -24,6 +24,7 @@
     <v-sheet v-else :dark="dark" tile>
       <resolved-json-forms
         :input="input"
+        :uischemas="dataUischemas"
         :renderers="renderers"
         :cells="cells"
         :config="dataConfig"
@@ -38,21 +39,25 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
 import { ValidationMode } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { commonRenderers, ResolvedJsonForms } from '@kchobantonov/common-jsonforms';
+import {
+  commonRenderers,
+  ResolvedJsonForms,
+} from '@kchobantonov/common-jsonforms';
 import { merge } from 'lodash';
 import get from 'lodash/get';
+import isArray from 'lodash/isArray';
 import isPlainObject from 'lodash/isPlainObject';
-import { defineComponent, PropType, ref } from 'vue';
+import Vue, { defineComponent, PropType, ref } from 'vue';
+import LoadScript from 'vue-plugin-load-script';
 import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import { VuetifyFormConfig } from '../core';
 import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
-import LoadScript from 'vue-plugin-load-script';
 
 Vue.use(LoadScript);
+
 Vue.config.productionTip = false;
 
 const CustomStyle = defineComponent({
@@ -101,6 +106,20 @@ const vuetifyFormWc = defineComponent({
           const uischema = typeof value == 'string' ? JSON.parse(value) : value;
 
           return uischema !== null;
+        } catch (e) {
+          return false;
+        }
+      },
+    },
+    uischemas: {
+      required: false,
+      type: [String],
+      validator: function (value) {
+        try {
+          const uischemas =
+            typeof value == 'string' ? JSON.parse(value) : value;
+
+          return isArray(uischemas);
         } catch (e) {
           return false;
         }
@@ -198,6 +217,7 @@ const vuetifyFormWc = defineComponent({
 
     let schema: any = undefined;
     let uischema: any = undefined;
+    let dataUischemas: any = [];
     let data: any = undefined;
     let dataConfig: Record<string, any> | undefined = undefined;
     let dataReadonly: boolean | undefined = undefined;
@@ -217,6 +237,8 @@ const vuetifyFormWc = defineComponent({
           : props.uischema;
       data =
         typeof props.data == 'string' ? JSON.parse(props.data) : props.data;
+      dataUischemas =
+        typeof props.uischemas == 'string' ? JSON.parse(props.uischemas) : [];
 
       dataConfig =
         typeof props.config == 'string'
@@ -254,6 +276,7 @@ const vuetifyFormWc = defineComponent({
         uischema: uischema,
         data: data,
       },
+      dataUischemas,
       dataConfig,
       dataReadonly,
       dataValidationMode,
@@ -289,6 +312,15 @@ const vuetifyFormWc = defineComponent({
             uischema: uischema,
             data: this.input.data,
           };
+        }
+      },
+      deep: true,
+    },
+    uischemas: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataUischemas =
+            typeof value == 'string' ? JSON.parse(value) : [];
         }
       },
       deep: true,
