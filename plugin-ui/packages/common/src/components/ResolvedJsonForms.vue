@@ -79,6 +79,7 @@ import { FormContext, JsonFormInput } from '../core/types';
 import { createAjv } from '../core/validate';
 import { createTranslator } from '../i18n';
 import { commonRenderers } from '../renderers/index';
+import _get from 'lodash/get';
 
 export const resolvedJsonFormsProps = () => ({
   input: {
@@ -140,7 +141,7 @@ export const resolvedJsonFormsProps = () => ({
   uidata: {
     required: false,
     type: [Object] as PropType<Record<string, any>>,
-  },  
+  },
 });
 
 const resolvedJsonForms = defineComponent({
@@ -250,11 +251,38 @@ const resolvedJsonForms = defineComponent({
 
       try {
         if (schema) {
-          this.schema = (
-            await resolveRefs(schema, {
-              location: schemaUrl,
-            })
-          ).resolved;
+          this.schema = schema;
+
+          // have custom filter
+          // if not using resolve ref  then the case
+          //   { "$ref": "#/definitions/state" }
+          //   "definitions": {
+          //    "state": { "type": "string", "enum": ["CA", "NY", "FL"] }
+          //   }
+          // then state won't be renderer automatically - needs to have a specified control
+          //
+          // if using a resolve ref but then it points to definition with $id if we resolve those then we will get
+          // Error: reference "{ref}" resolves to more than one schema
+          const refFilter = (refDetails: any, _path: string): boolean => {
+            if (refDetails.type === 'local') {
+              let uri: string | undefined = refDetails?.uriDetails?.fragment;
+              uri = uri ? uri.replace(/\//g, '.') : uri;
+              if (uri?.startsWith('.')) {
+                uri = uri.substring(1);
+              }
+              if (uri && _get(schema, uri)?.$id) {
+                // do not resolve ref that points to def with $id
+                return false;
+              }
+            }
+            return true;
+          };
+          const resolveResult = await resolveRefs(schema, {
+            location: schemaUrl,
+            filter: refFilter,
+          });
+
+          this.schema = resolveResult.resolved;
 
           // clear previous schemas in AVJ - schema with key or id "${id}" already exists
           const { schemaId } = this.ajv.opts;

@@ -6,7 +6,7 @@
     :uidata="JSON.stringify(uidata)"
     :config="JSON.stringify(config)"
     :default-preset="JSON.stringify(preset)"
-    :uischemas="JSON.stringify(dataUIschemas)"
+    :uischemas="JSON.stringify(uischemas)"
     :translations="JSON.stringify(i18n)"
     @change="onChange"
     @init="onInit"
@@ -37,6 +37,7 @@ import i18n from './example/i18n.json';
 import preset from './example/preset.json';
 import schema from './example/schema.json';
 import uischema from './example/uischema.json';
+import uischemas from './example/uischemas.json';
 
 import VuetifyJsonForms from './web-components/VuetifyJsonForms.vue';
 
@@ -65,7 +66,7 @@ export default defineComponent({
       data,
       schema,
       uischema,
-      dataUIschemas: [],
+      uischemas,
       preset,
       config,
       i18n,

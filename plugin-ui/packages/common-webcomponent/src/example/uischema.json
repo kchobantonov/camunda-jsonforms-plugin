@@ -30,7 +30,7 @@
                 "fab": true
               }
             }
-          }          
+          }
         }
       ]
     },
@@ -69,6 +69,33 @@
                 {
                   "type": "Control",
                   "scope": "#/properties/address"
+                }
+              ]
+            },
+            {
+              "type": "HorizontalLayout",
+              "elements": [
+                {
+                  "type": "Control",
+                  "scope": "#/properties/home_address"
+                }
+              ]
+            },
+            {
+              "type": "HorizontalLayout",
+              "elements": [
+                {
+                  "type": "Control",
+                  "scope": "#/properties/shipping_address"
+                }
+              ]
+            },
+            {
+              "type": "HorizontalLayout",
+              "elements": [
+                {
+                  "type": "Control",
+                  "scope": "#/properties/billing_address"
                 }
               ]
             }
@@ -114,7 +141,7 @@
                 "vuetify": {
                   "v-flex": {
                     "id": "data",
-                    "style" : "display: none;"
+                    "style": "display: none;"
                   }
                 }
               }

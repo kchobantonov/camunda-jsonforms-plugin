@@ -1,7 +1,22 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
   "type": "object",
-  "$id": "http://example.com/example.json",
+  "$id": "http://example.com/schema/user#",
+  "definitions": {
+    "address": {
+      "type": "object",
+      "$id": "#/definitions/address",
+      "properties": {
+        "street_address": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "$ref": "#/definitions/address/definitions/state" }
+      },
+      "required": ["street_address", "city", "state"],
+      "definitions": {
+        "state": { "type": "string", "enum": ["CA", "NY", "FL"] }
+      }
+    }
+  },
   "required": ["firstName"],
   "properties": {
     "address": {
@@ -33,6 +48,9 @@
       "type": "string",
       "minLength": 5,
       "maxLength": 15
-    }
+    },
+    "home_address": { "$ref": "#/definitions/address" },
+    "shipping_address": { "$ref": "#/definitions/address" },
+    "billing_address": { "$ref": "#/definitions/address" }
   }
 }

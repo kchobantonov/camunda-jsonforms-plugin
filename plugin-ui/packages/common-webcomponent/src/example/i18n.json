@@ -23,6 +23,66 @@
       "error": {
         "required": "Last name is required"
       }
+    },
+    "home_address": {
+      "street_address": {
+        "label": "Street Address",
+        "error": {
+          "required": "Street address is required"
+        }
+      },
+      "city": {
+        "label": "City",
+        "error": {
+          "required": "City is required"
+        }
+      },
+      "state": {
+        "label": "State",
+        "error": {
+          "required": "State is required"
+        }
+      }
+    },
+    "shipping_address": {
+      "street_address": {
+        "label": "Shipping Street Address",
+        "error": {
+          "required": "Street address is required"
+        }
+      },
+      "city": {
+        "label": "City",
+        "error": {
+          "required": "City is required"
+        }
+      },
+      "state": {
+        "label": "State",
+        "error": {
+          "required": "State is required"
+        }
+      }
+    },
+    "billing_address": {
+      "street_address": {
+        "label": "Billing Street Address",
+        "error": {
+          "required": "Street address is required"
+        }
+      },
+      "city": {
+        "label": "City",
+        "error": {
+          "required": "City is required"
+        }
+      },
+      "state": {
+        "label": "State",
+        "error": {
+          "required": "State is required"
+        }
+      }
     }
   },
   "bg": {
@@ -50,6 +110,66 @@
         "required": "Фамилията е задължителна"
       }
     },
+    "home_address": {
+      "street_address": {
+        "label": "Адрес на улица",
+        "error": {
+          "required": "Изисква се адрес"
+        }
+      },
+      "city": {
+        "label": "Град",
+        "error": {
+          "required": "Изисква се град"
+        }
+      },
+      "state": {
+        "label": "Щат",
+        "error": {
+          "required": "Изисква се щат"
+        }
+      }
+    },
+    "shipping_address": {
+      "street_address": {
+        "label": "Адрес за доставка",
+        "error": {
+          "required": "Изисква се адрес"
+        }
+      },
+      "city": {
+        "label": "Град за доставка",
+        "error": {
+          "required": "Изисква се град"
+        }
+      },
+      "state": {
+        "label": "Щат за доставка",
+        "error": {
+          "required": "Изисква се щат"
+        }
+      }
+    },
+    "billing_address": {
+      "street_address": {
+        "label": "Адрес за плащане",
+        "error": {
+          "required": "Изисква се адрес"
+        }
+      },
+      "city": {
+        "label": "Град",
+        "error": {
+          "required": "Изисква се град"
+        }
+      },
+      "state": {
+        "label": "Щат",
+        "error": {
+          "required": "Изисква се щат"
+        }
+      }
+    },
     "Male": "Мъжки",
     "Female": "Женски",
     "Undisclosed": "Непредоставен",
@@ -59,6 +179,9 @@
     "Hide *": "Скрий *",
     "Save Data (imitate REST call)": "Запазване на данни (имитира REST call)",
     "You have errors. Fix those before saving data.": "Имате грешки. Поправете ги, преди да запазите данните.",
+    "Home Address": "Домашен адрес",
+    "Shipping Address": "Адрес за доставка",
+    "Billing Address": "Адрес за плащане",
     "Error": "Грешка",
     "Vuetify JsonForms Demo": "Демонстрация на Vuetify JsonForms"
   }

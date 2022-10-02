@@ -6,8 +6,10 @@ const path = require('path');
 const data = require('./src/example/data.json');
 const schema = require('./src/example/schema.json');
 const uischema = require('./src/example/uischema.json');
+const uischemas = require('./src/example/uischemas.json');
 const preset = require('./src/example/preset.json');
 const i18n = require('./src/example/i18n.json');
+const uidata = require('./src/example/uidata.json');
 const config = require('./src/example/config.json');
 const style = fs
   .readFileSync(path.join(__dirname, './src/example/user-style.css'))
@@ -35,9 +37,11 @@ module.exports = {
           const data = ${JSON.stringify(data)};
           const schema = ${JSON.stringify(schema)};
           const uischema = ${JSON.stringify(uischema)};
+          const uischemas = ${JSON.stringify(uischemas)};
           const config = ${JSON.stringify(config)};
           const preset = ${JSON.stringify(preset)};
           const i18n = ${JSON.stringify(i18n)}; 
+          const uidata = ${JSON.stringify(uidata)}; 
 
           ${actions.replace(/export const/g, 'const')}
         </script>
@@ -56,6 +60,8 @@ module.exports = {
         form.setAttribute('data', JSON.stringify(data));
         form.setAttribute('schema', JSON.stringify(schema));
         form.setAttribute('uischema', JSON.stringify(uischema));
+        form.setAttribute('uischemas', JSON.stringify(uischemas));
+        form.setAttribute('uidata', JSON.stringify(uidata));
         form.setAttribute('config', JSON.stringify(config));
         form.setAttribute('translations', JSON.stringify(i18n));
         form.setAttribute('default-preset', JSON.stringify(preset));

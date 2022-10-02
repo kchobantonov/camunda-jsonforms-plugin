@@ -45,6 +45,8 @@ import {
   JsonFormsUISchemaRegistryEntry,
   UISchemaElement,
   ValidationMode,
+  UISchemaTester,
+  NOT_APPLICABLE,
 } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import {
@@ -78,6 +80,47 @@ theme.vueMeta = null;
 theme.checkOrCreateStyleElement = function () {
   // do not update any style elements
   return false;
+};
+
+const transformUISchemas = (
+  uischemas?: string
+): JsonFormsUISchemaRegistryEntry[] => {
+  const uischemasMap: {
+    tester: string;
+    uischema: UISchemaElement;
+  }[] = typeof uischemas == 'string' ? JSON.parse(uischemas) : [];
+
+  return uischemasMap
+    .map((elem, index) => {
+      if (elem.tester) {
+        const action: UISchemaTester = (jsonSchema, schemaPath, path) => {
+          try {
+            const tester = new Function(
+              'jsonSchema, schemaPath, path',
+              `const NOT_APPLICABLE = -1; const tester = ${elem.tester}; return tester(jsonSchema, schemaPath, path);`
+            );
+            const result = tester(jsonSchema, schemaPath, path);
+            if (typeof result !== 'number') {
+              console.log(
+                `Error while evaluation a uischema tester[${index}]: invalid result type, expected number but got ${typeof result}`
+              );
+            }
+            return typeof result === 'number' ? result : NOT_APPLICABLE;
+          } catch (e) {
+            console.log(
+              `Error while evaluation a uischema tester[${index}]: ${e}`
+            );
+            return NOT_APPLICABLE;
+          }
+        };
+        return {
+          tester: action,
+          uischema: elem.uischema,
+        };
+      }
+      return null;
+    })
+    .filter((x) => !!x) as JsonFormsUISchemaRegistryEntry[];
 };
 
 const vuetifyFormWc = defineComponent({
@@ -285,10 +328,13 @@ const vuetifyFormWc = defineComponent({
         typeof props.defaultPreset == 'string'
           ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
           : defaultPreset;
+
       dataUiData =
         typeof props.uidata == 'string'
           ? JSON.parse(props.uidata)
           : props.uidata;
+
+      dataUischemas = transformUISchemas(props.uischemas);
     } catch (e) {
       error = `Config error: ${e}`;
     }
@@ -347,7 +393,7 @@ const vuetifyFormWc = defineComponent({
     uischemas: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          this.updateUISchemas();
+          this.dataUischemas = transformUISchemas(value);
         }
       },
       deep: true,
@@ -453,28 +499,8 @@ const vuetifyFormWc = defineComponent({
     },
   },
   methods: {
-    updateUISchemas(): void {
-      const uischemasMap: {
-        tester: string;
-        uischema: UISchemaElement;
-      }[] = typeof this.uischemas == 'string' ? JSON.parse(this.uischemas) : [];
-
-      this.dataUischemas = uischemasMap
-        .map((elem) => {
-          const action = this.actions[elem.tester];
-          if (action) {
-            return {
-              tester: action,
-              uischema: elem.uischema,
-            };
-          }
-          return null;
-        })
-        .filter((x) => !!x) as JsonFormsUISchemaRegistryEntry[];
-    },
     registerActions(actions: Actions) {
       this.actions = actions || {};
-      this.updateUISchemas();
     },
     applyTheme(): void {
       let preset: Partial<VuetifyPreset> | null = null;
