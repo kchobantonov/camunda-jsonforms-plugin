@@ -9,7 +9,20 @@
     },
     "gender": {
       "type": "string",
-      "enum": ["Male", "Female", "Undisclosed"]
+      "oneOf": [
+        {
+          "const": "MALE",
+          "title": "Male"
+        },
+        {
+          "const": "FEMALE",
+          "title": "Female"
+        },
+        {
+          "const": "UNDISCLOSED",
+          "title": "Undisclosed"
+        }
+      ]
     },
     "firstName": {
       "type": "string",

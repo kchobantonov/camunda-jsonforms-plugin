@@ -39,7 +39,7 @@
       "scope": "#/properties/approver"
     },
     {
-      "type": "Button",
+      "type": "CamundaButton",
       "text": "Submit",
       "color": "primary",
       "rule": {

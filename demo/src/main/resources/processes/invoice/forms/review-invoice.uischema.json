@@ -39,7 +39,7 @@
       "scope": "#/properties/clarified"
     },
     {
-      "type": "Button",
+      "type": "CamundaButton",
       "text": "Complete",
       "color": "primary",
       "rule": {

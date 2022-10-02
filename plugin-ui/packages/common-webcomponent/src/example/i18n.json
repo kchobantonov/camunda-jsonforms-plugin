@@ -1,0 +1,65 @@
+{
+  "en": {
+    "address": {
+      "label": "Address",
+      "error": {
+        "required": "Address is required"
+      }
+    },
+    "gender": {
+      "label": "Gender",
+      "error": {
+        "required": "Gender is required"
+      }
+    },
+    "firstName": {
+      "label": "First Name",
+      "error": {
+        "required": "First name is required"
+      }
+    },
+    "lastName": {
+      "label": "Last Name",
+      "error": {
+        "required": "Last name is required"
+      }
+    }
+  },
+  "bg": {
+    "address": {
+      "label": "Адрес",
+      "error": {
+        "required": "Адреса е задължителен"
+      }
+    },
+    "gender": {
+      "label": "Пол",
+      "error": {
+        "required": "Пола е задължителен"
+      }
+    },
+    "firstName": {
+      "label": "Първо име",
+      "error": {
+        "required": "Първото име е задължително"
+      }
+    },
+    "lastName": {
+      "label": "Фамилия",
+      "error": {
+        "required": "Фамилията е задължителна"
+      }
+    },
+    "Male": "Мъжки",
+    "Female": "Женски",
+    "Undisclosed": "Непредоставен",
+    "Show Data": "Показване на данни",
+    "Hide Data": "Скриване на данните",
+    "Show *": "Покажи *",
+    "Hide *": "Скрий *",
+    "Save Data (imitate REST call)": "Запазване на данни (имитира REST call)",
+    "You have errors. Fix those before saving data.": "Имате грешки. Поправете ги, преди да запазите данните.",
+    "Error": "Грешка",
+    "Vuetify JsonForms Demo": "Демонстрация на Vuetify JsonForms"
+  }
+}

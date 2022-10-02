@@ -7,9 +7,13 @@ const data = require('./src/example/data.json');
 const schema = require('./src/example/schema.json');
 const uischema = require('./src/example/uischema.json');
 const preset = require('./src/example/preset.json');
+const i18n = require('./src/example/i18n.json');
 const config = require('./src/example/config.json');
 const style = fs
   .readFileSync(path.join(__dirname, './src/example/user-style.css'))
+  .toString();
+const actions = fs
+  .readFileSync(path.join(__dirname, './src/example/actions.js'))
   .toString();
 
 module.exports = {
@@ -28,15 +32,14 @@ module.exports = {
             
         <script type="text/javascript">
   
-          const data = {"firstName":"Test"};
-          const schema = {"type":"object","required":["firstName"],"properties":{"address":{"type":"string"},"gender":{"type":"string","enum":["Male","Female","Undisclosed"]},"firstName":{"type":"string","minLength":2,"maxLength":20},"lastName":{"type":"string","minLength":5,"maxLength":15}}};
-          const uischema = {"type":"VerticalLayout","elements":[{"type":"HorizontalLayout","elements":[{"type":"Control","scope":"#/properties/firstName"},{"type":"Control","scope":"#/properties/lastName"}]},{"type":"HorizontalLayout","elements":[{"type":"Control","scope":"#/properties/gender"}]},{"type":"HorizontalLayout","elements":[{"type":"Control","scope":"#/properties/address"}]}]};
-          const config = {"restrict":true,"trim":false,"showUnfocusedDescription":false,"hideRequiredAsterisk":true};
-          const preset = {"theme":{"dark":false}}
-          const onChange = (event) => {
-            let [data] = event.detail;
-            console.log('Form state changed:' + JSON.stringify(data));
-          };
+          const data = ${JSON.stringify(data)};
+          const schema = ${JSON.stringify(schema)};
+          const uischema = ${JSON.stringify(uischema)};
+          const config = ${JSON.stringify(config)};
+          const preset = ${JSON.stringify(preset)};
+          const i18n = ${JSON.stringify(i18n)}; 
+
+          ${actions.replace(/export const/g, 'const')}
         </script>
   
       <vuetify-json-forms id="vuetify-json-forms">
@@ -49,12 +52,16 @@ module.exports = {
   
       <script>
         let form = document.getElementById('vuetify-json-forms');
+
         form.setAttribute('data', JSON.stringify(data));
         form.setAttribute('schema', JSON.stringify(schema));
         form.setAttribute('uischema', JSON.stringify(uischema));
         form.setAttribute('config', JSON.stringify(config));
+        form.setAttribute('translations', JSON.stringify(i18n));
         form.setAttribute('default-preset', JSON.stringify(preset));
+
         form.addEventListener('change', onChange);
+        form.addEventListener('init', onInit);
       </script>`,
       }),
     ],

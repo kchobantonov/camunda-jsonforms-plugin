@@ -3,8 +3,13 @@
     :schema="JSON.stringify(schema)"
     :uischema="JSON.stringify(uischema)"
     :data="JSON.stringify(data)"
+    :uidata="JSON.stringify(uidata)"
     :config="JSON.stringify(config)"
     :default-preset="JSON.stringify(preset)"
+    :uischemas="JSON.stringify(dataUIschemas)"
+    :translations="JSON.stringify(i18n)"
+    @change="onChange"
+    @init="onInit"
   >
     <!-- emulate the css since the VuetifyJsonForms are not build as actual web component that includes css during npm run serve -->
     <custom-style slot="style" type="text/css">
@@ -14,7 +19,6 @@
       url('https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css');
       @import
       url("https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.3/vuetify.min.css");
-      .v-application--wrap { min-height: 0px; }
     </custom-style>
   </vuetify-json-forms>
 </template>
@@ -22,12 +26,17 @@
 <script lang="ts">
 import wrap from '@vue/web-component-wrapper';
 import Vue, { defineComponent } from 'vue';
-
+import {
+  onInit as externalInit,
+  onChange as externalOnChange,
+} from './example/actions';
+import config from './example/config.json';
 import data from './example/data.json';
+import uidata from './example/uidata.json';
+import i18n from './example/i18n.json';
+import preset from './example/preset.json';
 import schema from './example/schema.json';
 import uischema from './example/uischema.json';
-import config from './example/config.json';
-import preset from './example/preset.json';
 
 import VuetifyJsonForms from './web-components/VuetifyJsonForms.vue';
 
@@ -52,12 +61,23 @@ export default defineComponent({
   },
   data() {
     return {
+      uidata,
       data,
       schema,
       uischema,
+      dataUIschemas: [],
       preset,
       config,
+      i18n,
     };
+  },
+  methods: {
+    onChange(customEvent: any): void {
+      externalOnChange(customEvent);
+    },
+    onInit(customEvent: any): void {
+      externalInit(customEvent);
+    },
   },
 });
 </script>

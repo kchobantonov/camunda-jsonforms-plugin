@@ -48,8 +48,8 @@ import { CamundaFormApi } from '../core/api';
 import { AppErrorCode, AppException } from '../core/errors';
 import { Action, CamundaFormContext, isTaskIdConfig } from '../core/types';
 
-interface ButtonElement extends UISchemaElement {
-  type: 'Button';
+interface CamundaButtonElement extends UISchemaElement {
+  type: 'CamundaButton';
   /**
    * The text of button.
    */
@@ -72,8 +72,8 @@ interface ButtonElement extends UISchemaElement {
 
 // TODO: pass withVariablesInReturn ??
 
-const buttonRenderer = defineComponent({
-  name: 'button-renderer',
+const camundaButtonRenderer = defineComponent({
+  name: 'camunda-button-renderer',
   components: {
     DispatchRenderer,
     VBtn,
@@ -135,7 +135,7 @@ const buttonRenderer = defineComponent({
   },
   computed: {
     action(): Action {
-      return (this.layout.uischema as ButtonElement).action ?? 'submit';
+      return (this.layout.uischema as CamundaButtonElement).action ?? 'submit';
     },
     isSubmitButton(): boolean {
       return this.action === 'submit' || this.action === 'submit-without-data';
@@ -170,17 +170,17 @@ const buttonRenderer = defineComponent({
       if (this.layout.uischema.options?.i18n) {
         return this.t(
           this.layout.uischema.options.i18n,
-          (this.layout.uischema as ButtonElement).text
+          (this.layout.uischema as CamundaButtonElement).text
         );
       }
       return this.t(
-        (this.layout.uischema as ButtonElement).text,
-        (this.layout.uischema as ButtonElement).text
+        (this.layout.uischema as CamundaButtonElement).text,
+        (this.layout.uischema as CamundaButtonElement).text
       );
     },
     color(): string | undefined {
-      if ((this.layout.uischema as ButtonElement).color) {
-        return (this.layout.uischema as ButtonElement).color;
+      if ((this.layout.uischema as CamundaButtonElement).color) {
+        return (this.layout.uischema as CamundaButtonElement).color;
       }
       return undefined;
     },
@@ -193,21 +193,22 @@ const buttonRenderer = defineComponent({
         const payload: Record<string, any> = {};
 
         if (this.isErrorButton) {
-          const errorCode = (this.layout.uischema as ButtonElement).errorCode;
-          const errorMessage = (this.layout.uischema as ButtonElement)
+          const errorCode = (this.layout.uischema as CamundaButtonElement)
+            .errorCode;
+          const errorMessage = (this.layout.uischema as CamundaButtonElement)
             .errorMessage;
 
           payload.errorCode = errorCode;
           payload.errorMessage = errorMessage;
         } else if (this.isEscalationButton) {
-          const escalationCode = (this.layout.uischema as ButtonElement)
+          const escalationCode = (this.layout.uischema as CamundaButtonElement)
             .escalationCode;
 
           payload.escalationCode = escalationCode;
         } else {
-          if ((this.layout.uischema as ButtonElement).variables) {
+          if ((this.layout.uischema as CamundaButtonElement).variables) {
             payload.variables = (
-              this.layout.uischema as ButtonElement
+              this.layout.uischema as CamundaButtonElement
             ).variables;
           }
         }
@@ -246,10 +247,10 @@ const buttonRenderer = defineComponent({
   },
 });
 
-export default buttonRenderer;
+export default camundaButtonRenderer;
 
 export const entry: JsonFormsRendererRegistryEntry = {
-  renderer: buttonRenderer,
-  tester: rankWith(1, uiTypeIs('Button')),
+  renderer: camundaButtonRenderer,
+  tester: rankWith(1, uiTypeIs('CamundaButton')),
 };
 </script>

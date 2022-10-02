@@ -85,7 +85,7 @@
       "type": "HorizontalLayout",
       "elements": [
         {
-          "type": "Button",
+          "type": "CamundaButton",
           "text": "Approve",
           "color": "primary",
           "action": "submit",
@@ -107,7 +107,7 @@
           }
         },
         {
-          "type": "Button",
+          "type": "CamundaButton",
           "text": "Decline",
           "color": "purple",
           "action": "submit-without-data",
@@ -122,7 +122,7 @@
           }
         },
         {
-          "type": "Button",
+          "type": "CamundaButton",
           "text": "Can't Decide Error",
           "color": "red",
           "action": "error",
@@ -130,7 +130,7 @@
           "errorMessage": "my error message"
         },
         {
-          "type": "Button",
+          "type": "CamundaButton",
           "text": "Escalation",
           "color": "greem",
           "action": "escalation",

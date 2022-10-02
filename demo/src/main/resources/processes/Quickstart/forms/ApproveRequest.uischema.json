@@ -84,7 +84,7 @@
           "type": "HorizontalLayout",
           "elements": [
             {
-              "type": "Button",
+              "type": "CamundaButton",
               "text": "Approve",
               "color": "primary",
               "action": "submit",
@@ -106,7 +106,7 @@
               }
             },
             {
-              "type": "Button",
+              "type": "CamundaButton",
               "text": "Decline",
               "color": "red",
               "options": {

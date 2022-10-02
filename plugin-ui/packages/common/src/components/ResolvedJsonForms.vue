@@ -133,6 +133,14 @@ export const resolvedJsonFormsProps = () => ({
     type: Array as PropType<ErrorObject[]>,
     default: () => [],
   },
+  actions: {
+    required: false,
+    type: [Object] as PropType<Record<string, Function>>,
+  },
+  uidata: {
+    required: false,
+    type: [Object] as PropType<Record<string, any>>,
+  },  
 });
 
 const resolvedJsonForms = defineComponent({
@@ -165,14 +173,21 @@ const resolvedJsonForms = defineComponent({
       locale: string;
     });
 
-    const parentContext = inject<Ref<FormContext>>('formContext');
+    const parentContext = inject<Ref<FormContext> | undefined>(
+      'formContext',
+      undefined
+    );
     if (parentContext) {
       context = parentContext;
+      if (!context.value?.uidata) {
+        context.value!['uidata'] = reactive(props.uidata || {});
+      }
     } else {
       context.value = {
         config: props,
         input: props.input!,
         translations: props.translations,
+        uidata: reactive(props.uidata || {}),
       };
     }
 
@@ -212,10 +227,11 @@ const resolvedJsonForms = defineComponent({
     },
   },
   provide() {
-    const { context } = toRefs(this);
+    const { context, actions } = toRefs(this);
 
     return {
       formContext: context,
+      actions: actions || {},
     };
   },
   mounted() {

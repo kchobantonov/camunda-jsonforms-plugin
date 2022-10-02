@@ -1,5 +1,8 @@
 import {
-  JsonSchema, UISchemaElement, ValidationMode
+  JsonFormsSubStates,
+  JsonSchema,
+  UISchemaElement,
+  ValidationMode,
 } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
@@ -27,9 +30,11 @@ export interface FormConfig {
 }
 
 export interface FormContext {
-  config?: FormConfig,
+  config?: FormConfig;
   translations?: Record<string, any>;
   input: JsonFormInput;
+  actions?: Record<string, Function>;
+  uidata: Record<string, any>;
 }
 
 export interface FormCallback {
@@ -73,3 +78,13 @@ export class ResponseException extends Error {
     };
   }
 }
+
+export interface Actions {
+  [id: string]: Function;
+}
+
+export type ActionEvent = {
+  jsonforms: JsonFormsSubStates;
+  context: FormContext;
+  $el: Element;
+};
