@@ -55,7 +55,7 @@ const changeLangToBg = (event) => {
   form.setAttribute('locale', 'bg');
 };
 
-let actions = {
+export let actions = {
   hideRequiredAsterisk: hideRequiredAsterisk,
   showRequiredAsterisk: showRequiredAsterisk,
   showData: showData,
@@ -63,14 +63,6 @@ let actions = {
   saveData: saveData,
   changeLangToEn: changeLangToEn,
   changeLangToBg: changeLangToBg,
-};
-
-export const onInit = (customEvent) => {
-  let [event] = customEvent.detail;
-
-  if (event && event.registerActions) {
-    event.registerActions(actions);
-  }
 };
 
 export const onChange = (event) => {

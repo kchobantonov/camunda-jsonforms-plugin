@@ -8,8 +8,8 @@
     :default-preset="JSON.stringify(preset)"
     :uischemas="JSON.stringify(uischemas)"
     :translations="JSON.stringify(i18n)"
+    :actions="JSON.stringify(actions)"
     @change="onChange"
-    @init="onInit"
   >
     <!-- emulate the css since the VuetifyJsonForms are not build as actual web component that includes css during npm run serve -->
     <custom-style slot="style" type="text/css">
@@ -27,8 +27,8 @@
 import wrap from '@vue/web-component-wrapper';
 import Vue, { defineComponent } from 'vue';
 import {
-  onInit as externalInit,
   onChange as externalOnChange,
+  actions as externalActions,
 } from './example/actions';
 import config from './example/config.json';
 import data from './example/data.json';
@@ -61,6 +61,12 @@ export default defineComponent({
     CustomStyle,
   },
   data() {
+    const actions: { [id: string]: string } = {};
+
+    Object.keys(externalActions).forEach((key) => {
+      actions[key] = externalActions[key].toString();
+    });
+
     return {
       uidata,
       data,
@@ -70,14 +76,12 @@ export default defineComponent({
       preset,
       config,
       i18n,
+      actions,
     };
   },
   methods: {
     onChange(customEvent: any): void {
       externalOnChange(customEvent);
-    },
-    onInit(customEvent: any): void {
-      externalInit(customEvent);
     },
   },
 });

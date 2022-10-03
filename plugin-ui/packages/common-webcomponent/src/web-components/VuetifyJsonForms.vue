@@ -33,7 +33,7 @@
         :locale="dataLocale"
         :translations="dataTranslations"
         :readonly="dataReadonly"
-        :actions="actions"
+        :actions="dataActions"
         @change="onChange"
       />
     </v-sheet>
@@ -53,6 +53,8 @@ import {
   commonRenderers,
   ResolvedJsonForms,
   Actions,
+  AsyncFunction,
+  ActionEvent,
 } from '@kchobantonov/common-jsonforms';
 import { isArray, isPlainObject, merge } from 'lodash';
 import get from 'lodash/get';
@@ -60,7 +62,7 @@ import Vue, { defineComponent, PropType, ref } from 'vue';
 import LoadScript from 'vue-plugin-load-script';
 import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
-import { VuetifyFormConfig } from '../core';
+import { VuetifyFormConfig, validateActions, isActionsParams } from '../core';
 import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
 
 Vue.use(LoadScript);
@@ -102,14 +104,12 @@ const transformUISchemas = (
             const result = tester(jsonSchema, schemaPath, path);
             if (typeof result !== 'number') {
               console.log(
-                `Error while evaluation a uischema tester[${index}]: invalid result type, expected number but got ${typeof result}`
+                `Error at uischema tester[${index}]: invalid result type, expected number but got ${typeof result}`
               );
             }
             return typeof result === 'number' ? result : NOT_APPLICABLE;
           } catch (e) {
-            console.log(
-              `Error while evaluation a uischema tester[${index}]: ${e}`
-            );
+            console.log(`Error at uischema tester[${index}]: ${e}`);
             return NOT_APPLICABLE;
           }
         };
@@ -123,6 +123,34 @@ const transformUISchemas = (
     .filter((x) => !!x) as JsonFormsUISchemaRegistryEntry[];
 };
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+const transformActions = (actionsString?: string): Record<string, Function> => {
+  const actionsData: {
+    [id: string]: string;
+  } =
+    typeof actionsString == 'string'
+      ? validateActions(JSON.parse(actionsString))
+      : {};
+  const actions: Actions = {};
+
+  Object.keys(actionsData).forEach((key) => {
+    const action = (event: ActionEvent) => {
+      try {
+        const fn = AsyncFunction(
+          'event',
+          `const fn = ${actionsData[key]};\n return await fn(event);`
+        );
+        fn(event);
+      } catch (e) {
+        console.log(`Error at action[${key}]: ${e}`);
+      }
+    };
+    actions[key] = action;
+  });
+
+  return actions;
+};
+
 const vuetifyFormWc = defineComponent({
   vuetify,
   components: {
@@ -131,11 +159,11 @@ const vuetifyFormWc = defineComponent({
     VSheet,
     CustomStyle,
   },
-  emits: ['change', 'init'],
+  emits: ['change'],
   props: {
     schema: {
-      required: true,
-      type: [String, Object],
+      required: false,
+      type: String,
       validator: function (value) {
         try {
           const schema = typeof value == 'string' ? JSON.parse(value) : value;
@@ -148,7 +176,7 @@ const vuetifyFormWc = defineComponent({
     },
     uischema: {
       required: false,
-      type: [String, Object],
+      type: String,
       validator: function (value) {
         try {
           const uischema = typeof value == 'string' ? JSON.parse(value) : value;
@@ -161,7 +189,7 @@ const vuetifyFormWc = defineComponent({
     },
     uischemas: {
       required: false,
-      type: [String],
+      type: String,
       validator: function (value) {
         try {
           const uischemas =
@@ -175,7 +203,7 @@ const vuetifyFormWc = defineComponent({
     },
     data: {
       required: false,
-      type: [String, Object],
+      type: String,
       default: () => {
         return {};
       },
@@ -191,7 +219,7 @@ const vuetifyFormWc = defineComponent({
     },
     uidata: {
       required: false,
-      type: [String, Object],
+      type: String,
       default: () => {
         return {};
       },
@@ -205,9 +233,21 @@ const vuetifyFormWc = defineComponent({
         }
       },
     },
+    actions: {
+      required: false,
+      type: String,
+      default: () => {
+        return {};
+      },
+      validator: function (value) {
+        const actions = typeof value == 'string' ? JSON.parse(value) : {};
+
+        return isActionsParams(actions);
+      },
+    },
     config: {
       required: false,
-      type: [String, Object],
+      type: String,
       default: () => {
         return {
           restrict: true,
@@ -250,7 +290,7 @@ const vuetifyFormWc = defineComponent({
     },
     translations: {
       required: false,
-      type: [String, Object],
+      type: String,
       validator: function (value) {
         try {
           const translations =
@@ -264,7 +304,7 @@ const vuetifyFormWc = defineComponent({
     },
     defaultPreset: {
       required: false,
-      type: [String],
+      type: String,
       validator: function (value) {
         try {
           const preset = typeof value == 'string' ? JSON.parse(value) : value;
@@ -290,8 +330,9 @@ const vuetifyFormWc = defineComponent({
     let dataTranslations: Record<string, any> | undefined = undefined;
     let dataDefaultPreset: Partial<VuetifyPreset> | undefined = undefined;
 
-    let actions: Record<string, any> = ref({}); // Record<string, Function>
-    let dataUiData: Record<string, any> = ref({}); // Record<string, Function>
+    // eslint-disable-next-line  @typescript-eslint/ban-types
+    let dataActions: Record<string, Function> = ref({});
+    let dataUiData: Record<string, any> = ref({});
 
     try {
       schema =
@@ -335,6 +376,7 @@ const vuetifyFormWc = defineComponent({
           : props.uidata;
 
       dataUischemas = transformUISchemas(props.uischemas);
+      dataActions = transformActions(props.actions);
     } catch (e) {
       error = `Config error: ${e}`;
     }
@@ -356,7 +398,7 @@ const vuetifyFormWc = defineComponent({
       dataTranslations,
       dataDefaultPreset,
       vuetifyTheme: ref<{ generatedStyles: string }>(theme),
-      actions,
+      dataActions,
       dataUiData,
     };
   },
@@ -394,6 +436,14 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.dataUischemas = transformUISchemas(value);
+        }
+      },
+      deep: true,
+    },
+    actions: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.dataActions = transformActions(value);
         }
       },
       deep: true,
@@ -485,10 +535,6 @@ const vuetifyFormWc = defineComponent({
     };
 
     this.applyTheme();
-
-    this.$emit('init', {
-      registerActions: this.registerActions.bind(this),
-    });
   },
   computed: {
     dark() {

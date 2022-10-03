@@ -7,6 +7,8 @@ import {
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 
+export const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
+
 export type JsonFormInput = {
   schema: JsonSchema;
   schemaUrl?: string;

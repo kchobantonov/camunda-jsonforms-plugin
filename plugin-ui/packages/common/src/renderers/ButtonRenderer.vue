@@ -22,9 +22,8 @@ import { useTranslator } from '@jsonforms/vue2-vuetify';
 import isFunction from 'lodash/isFunction';
 import { defineComponent, inject, ref } from 'vue';
 import { VBtn } from 'vuetify/lib';
-import { ActionEvent, Actions, FormContext } from '../core';
+import { ActionEvent, Actions, FormContext, AsyncFunction } from '../core';
 import { ButtonElement, useJsonFormsButton, useVuetifyButton } from '../util';
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
 
 const buttonRenderer = defineComponent({
   name: 'button-renderer',
@@ -50,6 +49,7 @@ const buttonRenderer = defineComponent({
         "'jsonforms' couldn't be injected. Are you within JSON Forms?"
       );
     }
+
     const formContext = inject<FormContext>('formContext');
 
     if (!formContext) {

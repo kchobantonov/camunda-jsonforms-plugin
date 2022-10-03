@@ -6,6 +6,7 @@ export interface VuetifyFormConfig {
   uischemas?: string;
   data?: string;
   uidata?: string;
+  actions?: string;
   config?: string;
   readonly?: string | boolean;
   validationMode?: ValidationMode;
