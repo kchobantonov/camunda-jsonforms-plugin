@@ -164,12 +164,12 @@ const resolvedJsonForms = defineComponent({
     const schemaToUse = ref<JsonSchema | undefined>(undefined);
     const actionsToUse = props.actions ?? {};
 
-    const parentContext = inject<Ref<FormContext> | undefined>(
+    const parentContext = inject<FormContext | undefined>(
       'formContext',
       undefined
     );
     if (parentContext) {
-      context = parentContext;
+      context = ref(parentContext);
       if (!context.value.schemaUrl && props.schemaUrl) {
         context.value.schemaUrl = props.schemaUrl;
       }
@@ -182,7 +182,7 @@ const resolvedJsonForms = defineComponent({
         actions: props.actions,
       });
     }
-
+    
     return {
       resolved,
       error,
