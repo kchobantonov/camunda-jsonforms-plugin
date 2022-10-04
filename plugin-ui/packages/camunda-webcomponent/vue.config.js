@@ -8,6 +8,9 @@ const config = require('./src/example/config.json');
 const style = fs
   .readFileSync(path.join(__dirname, './src/example/user-style.css'))
   .toString();
+const listeners = fs
+  .readFileSync(path.join(__dirname, './src/example/listeners.js'))
+  .toString();
 
 module.exports = {
   configureWebpack: {
@@ -25,94 +28,23 @@ module.exports = {
         </style>
             
         <script type="text/javascript">
+        const config = ${JSON.stringify(config)};
+        const preset = ${JSON.stringify(preset)};
 
-          // selected either processDefinitionKey, processDefinitionId or taskId
-          const processDefinitionKey = 'embeddedFormsQuickstart';
-          const processDefinitionId = undefined;
-          const taskId = undefined;
+        ${listeners
+          .replace(/export const /g, 'const ')
+          .replace(/export let /g, 'let ')}
 
-          const config = {"restrict":true,"trim":false,"showUnfocusedDescription":false,"hideRequiredAsterisk":true};
-          const preset = {"theme":{"dark":false}}
-          
-          const onChange = (event) => {
-            let [data] = event.detail;
-            console.log('Form state changed:' + JSON.stringify(data));
-          };
-          const onLoadRequest = (event) => {
-            console.log('onLoadRequest');
-            let [requestInfo, requestInit] = event.detail;
-            
-          };
-          const onLoadResponse = (event) => {
-            console.log('onLoadResponse');
-            let [response] = event.detail;
-          };
-          const onLoadError = (event) => {
-            console.log('onLoadError');
-            let [error] = event.detail;
-      
-            if (
-              error.name === 'AppException' &&
-              (error.code === 'RETRIEVE_TASK_DEPLOYED_FORM' ||
-                error.code === 'INVALID_TASK_DEPLOYED_FORM_RESPONSE' ||
-                error.code === 'RETRIEVE_PROCESS_DEFINITION_DEPLOYED_START_FORM' ||
-                error.code ===
-                  'INVALID_PROCESS_DEFINITION_DEPLOYED_START_FORM_RESPONSE')
-            ) {
-              // ignore loading from deployed forms - most likely JsonFormsFormServicePlugin was not installed - just log the error in the console
-              return;
-            }
-            if (
-              error.name === 'ResponseException' &&
-              (error.response.request.url.endsWith('/deployed-start-form') ||
-                error.response.request.url.endsWith('/deployed-form'))
-            ) {
-              // ignore loading from deployed forms - most likely JsonFormsFormServicePlugin was not installed - just log the error in the console
-              return;
-            }
-      
-            alert('Error: ' + error.message);
-          };
-          const onSubmitRequest = (event) => {
-            console.log('onSubmitRequest');
-            let [requestInfo, requestInit] = event.detail;
-      
-          };
-          const onSubmitResponse = (event) => {
-            console.log('onSubmitResponse');
-            let [response] = event.detail;
-            if (response.status >= 200 && response.status < 300) {
-              alert('Form Completed');
-            }
-          };
-          const onSubmitError = (event) => {
-            console.log('onSubmitError');
-            let [error] = event.detail;
-            if (error.name === 'AppException' && error.response) {
-              let response = error.response;
-              if (response.status == 401) {
-                alert('Error: You are not authenticated');
-                return;
-              } else if (response.status == 403) {
-                alert('Error: You are not authorized');
-                return;
-              }
-            }
-      
-            alert('Error: ' + error.message);
-          };
         </script>
 
         <camunda-json-forms id="camunda-json-forms"
         url="/engine-rest"
         locale="en"
         readonly="false">
-        <style slot="style" type="text/css">
-          .v-application--wrap {
-            min-height: 0px;
-          }
-        </style>
-      </camunda-json-forms>
+          <style slot="style" type="text/css">
+            ${style}
+          </style>
+        </camunda-json-forms>
   
       <script>
         let form = document.getElementById('camunda-json-forms');
@@ -125,7 +57,7 @@ module.exports = {
         if (processDefinitionId) {
           form.setAttribute('process-definition-id', processDefinitionId);
         }
-        if (processDefinitionKey) {
+        if (taskId) {
           form.setAttribute('task-id', taskId);
         }
         
@@ -148,16 +80,15 @@ module.exports = {
   },
   devServer: {
     proxy: {
-      '^/camunda': {
-        target: 'http://localhost:8080/engine-rest',
+      '^/engine-rest': {
+        target: 'http://localhost:8080/',
         changeOrigin: true,
-        pathRewrite: {
-          "^/camunda": "/",
-        },
+        logLevel: 'debug' 
       },
       '^/forms': {
         target: 'http://localhost:8080/',
         changeOrigin: true,
+        logLevel: 'debug' 
       },
     },
     watchOptions: {

@@ -9,7 +9,10 @@
         {
           "type": "Button",
           "label": "EN",
-          "action": "changeLangToEn",
+          "action": "changeLang",
+          "params": {
+            "lang": "en"
+          },
           "options": {
             "vuetify": {
               "v-btn": {
@@ -22,7 +25,10 @@
         {
           "type": "Button",
           "label": "БГ",
-          "action": "changeLangToBg",
+          "action": "changeLang",
+          "params": {
+            "lang": "bg"
+          },
           "options": {
             "vuetify": {
               "v-btn": {

@@ -1,6 +1,8 @@
-import { FormConfig, FormContext } from '@kchobantonov/common-jsonforms';
+import { JsonSchema, UISchemaElement } from '@jsonforms/core';
+import { JsonFormsChangeEvent } from '@jsonforms/vue2';
+import { FormContext } from '@kchobantonov/common-jsonforms';
 
-export interface BaseCamundaFormConfig extends FormConfig {
+export interface BaseCamundaFormConfig {
   url: string;
 }
 export interface CamundaFormTaskIdConfig extends BaseCamundaFormConfig {
@@ -41,6 +43,11 @@ export interface ProcessDefinition {
 
 export interface CamundaFormContext extends FormContext {
   config: CamundaFormConfig;
+  schema: JsonSchema;
+  schemaUrl?: string;
+  uischema?: UISchemaElement;
+  data: Record<string, any>;
+  translations: Record<string, any>;
   taskForm?: TaskForm;
   variables: Record<string, VariableValue>;
 }
@@ -151,3 +158,45 @@ export type Action =
   | 'resolve-without-data'
   | 'error'
   | 'escalation';
+
+export interface FormCallback {
+  onChange: (event: JsonFormsChangeEvent) => void;
+
+  onLoadRequest: (input: RequestInfo, init?: RequestInit) => void;
+  onLoadResponse: (response: Response) => void;
+  onLoadError: (error: any) => void;
+
+  onSubmitRequest: (input: RequestInfo, init?: RequestInit) => void;
+  onSubmitResponse: (response: Response) => void;
+  onSubmitError: (error: any) => void;
+}
+
+export const RESOURCE_SCHEMA_SUFFIX = '.schema.json';
+export const RESOURCE_UISCHEMA_SUFFIX = '.uischema.json';
+export const RESOURCE_I18N_SUFFIX = '.i18n.json';
+
+export type Emitter = (event: string, ...args: any[]) => void;
+
+export class ResponseException extends Error {
+  response: Response;
+  code: number;
+
+  constructor(response: Response) {
+    super(response.statusText);
+    this.name = 'ResponseException';
+    this.code = response.status;
+    this.response = response;
+  }
+
+  toString() {
+    return this.message;
+  }
+
+  toJSON() {
+    return {
+      message: this.message,
+      name: this.name,
+      code: this.code,
+    };
+  }
+}

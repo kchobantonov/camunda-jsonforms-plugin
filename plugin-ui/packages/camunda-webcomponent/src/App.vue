@@ -1,7 +1,7 @@
 <template>
   <div>
     <camunda-json-forms
-      url="/camunda"
+      url="/engine-rest"
       process-definition-key="embeddedFormsQuickstart"
       locale="en"
       readonly="false"
@@ -43,6 +43,16 @@ import Vue, { defineComponent } from 'vue';
 import config from './example/config.json';
 import preset from './example/preset.json';
 
+import {
+  onChange as externalOnChange,
+  onLoadError as externalOnLoadError,
+  onLoadRequest as externalOnLoadRequest,
+  onLoadResponse as externalOnLoadResponse,
+  onSubmitError as externalOnSubmitError,
+  onSubmitRequest as externalOnSubmitRequest,
+  onSubmitResponse as externalOnSubmitResponse,
+} from './example/listeners';
+
 import CamundaJsonForms from './web-components/CamundaJsonForms.vue';
 
 const CamundaJsonFormsElement = wrap(Vue, CamundaJsonForms);
@@ -73,73 +83,26 @@ export default defineComponent({
     };
   },
   methods: {
-    onChange(event: any) {
-      console.log('Form state changed:' + JSON.stringify(event));
+    onChange(customEvent: any): void {
+      externalOnChange(customEvent);
     },
-    onLoadRequest(event: any) {
-      console.log('onLoadRequest');
-      let [requestInfo, requestInit] = event.detail;
-      //requestInit.headers = requestInit.headers || {};
-      //requestInit.headers['Authorization'] = ....;
+    onLoadRequest(customEvent: any): void {
+      externalOnLoadRequest(customEvent);
     },
-    onLoadResponse(event: any) {
-      console.log('onLoadResponse');
-      let [response] = event.detail;
+    onLoadResponse(customEvent: any): void {
+      externalOnLoadResponse(customEvent);
     },
-    onLoadError(event: any) {
-      console.log('onLoadError');
-      let [error] = event.detail;
-
-      if (
-        error.name === 'AppException' &&
-        (error.code === 'RETRIEVE_TASK_DEPLOYED_FORM' ||
-          error.code === 'INVALID_TASK_DEPLOYED_FORM_RESPONSE' ||
-          error.code === 'RETRIEVE_PROCESS_DEFINITION_DEPLOYED_START_FORM' ||
-          error.code ===
-            'INVALID_PROCESS_DEFINITION_DEPLOYED_START_FORM_RESPONSE')
-      ) {
-        // ignore loading from deployed forms - most likely JsonFormsFormServicePlugin was not installed - just log the error in the console
-        return;
-      }
-      if (
-        error.name === 'ResponseException' &&
-        (error.response.request.url.endsWith('/deployed-start-form') ||
-          error.response.request.url.endsWith('/deployed-form'))
-      ) {
-        // ignore loading from deployed forms - most likely JsonFormsFormServicePlugin was not installed - just log the error in the console
-        return;
-      }
-
-      this.camundaError = error.message;
+    onLoadError(customEvent: any): void {
+      externalOnLoadError(customEvent);
     },
-    onSubmitRequest(event: any) {
-      console.log('onSubmitRequest');
-      let [requestInfo, requestInit] = event.detail;
-      //requestInit.headers = requestInit.headers || {};
-      //requestInit.headers['Authorization'] = ....;
+    onSubmitRequest(customEvent: any): void {
+      externalOnSubmitRequest(customEvent);
     },
-    onSubmitResponse(event: any) {
-      console.log('onSubmitResponse');
-      let [response] = event.detail;
-      if (response.status >= 200 && response.status < 300) {
-        this.completed = true;
-      }
+    onSubmitResponse(customEvent: any): void {
+      externalOnSubmitResponse(customEvent);
     },
-    onSubmitError(event: any) {
-      console.log('onSubmitError');
-      let [error] = event.detail;
-      if (error.name === 'AppException' && error.response) {
-        let response = error.response;
-        if (response.status == 401) {
-          this.camundaError = `You are not authenticated`;
-          return;
-        } else if (response.status == 403) {
-          this.camundaError = `You are not authorized`;
-          return;
-        }
-      }
-
-      this.camundaError = error.message;
+    onSubmitError(customEvent: any): void {
+      externalOnSubmitError(customEvent);
     },
   },
 });

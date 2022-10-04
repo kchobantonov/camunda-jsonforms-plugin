@@ -29,7 +29,7 @@ import { ErrorObject } from 'ajv';
 import { defineComponent, inject, unref } from 'vue';
 import { VLabel } from 'vuetify/lib';
 import { template as templateFn } from '../core/template';
-import { FormContext } from '../core/types';
+import { FormContext, TemplateFormContext } from '../core/types';
 
 const templateLabelRenderer = defineComponent({
   name: 'template-label-renderer',
@@ -58,12 +58,15 @@ const templateLabelRenderer = defineComponent({
       );
     }
 
+    const scopeData = inject<any>('scopeData', null);
+
     return {
       ...label,
       t,
       jsonforms,
       parentComponent: this,
       formContext,
+      scopeData,
     };
   },
   computed: {
@@ -76,8 +79,20 @@ const templateLabelRenderer = defineComponent({
     data(): any {
       return this.jsonforms.core?.data;
     },
-    context(): FormContext {
-      return unref(this.formContext);
+    context(): TemplateFormContext {
+      return {
+        ...unref(this.formContext),
+        jsonforms: this.jsonforms,
+        locale: this.jsonforms.i18n?.locale,
+        translate: this.jsonforms.i18n?.translate,
+
+        data: this.jsonforms.core?.data,
+        schema: this.jsonforms.core?.schema,
+        uischema: this.jsonforms.core?.uischema,
+        errors: this.jsonforms.core?.errors,
+        additionalErrors: this.jsonforms.core?.additionalErrors,
+        scopeData: this.scopeData,
+      };
     },
     errors(): ErrorObject[] | undefined {
       return this.jsonforms.core?.errors;

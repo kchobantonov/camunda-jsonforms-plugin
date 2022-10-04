@@ -229,7 +229,7 @@ import {
 } from 'vuetify/lib';
 import TemplateCompiler from '../components/TemplateCompiler.vue';
 import { Components } from '../config/config';
-import { FormContext } from '../core/types';
+import { FormContext, TemplateFormContext } from '../core/types';
 
 interface TemplateElement extends Layout {
   type: 'TemplateLayout';
@@ -292,16 +292,24 @@ const templateLayoutRenderer = defineComponent({
     }
   },
   computed: {
-    dataProvider(): any {
-      const scopeData: any = this.scopeData;
-      return scopeData;
+    context(): TemplateFormContext {
+      return {
+        ...unref(this.formContext),
+        jsonforms: this.jsonforms,
+        locale: this.jsonforms.i18n?.locale,
+        translate: this.jsonforms.i18n?.translate,
+
+        data: this.jsonforms.core?.data,
+        schema: this.jsonforms.core?.schema,
+        uischema: this.jsonforms.core?.uischema,
+        errors: this.jsonforms.core?.errors,
+        additionalErrors: this.jsonforms.core?.additionalErrors,
+        scopeData: this.scopeData,
+      };
     },
     data(): any {
       const jsonforms: JsonFormsSubStates = this.jsonforms;
       return jsonforms.core?.data;
-    },
-    context(): FormContext {
-      return unref(this.formContext);
     },
     errors(): ErrorObject[] | undefined {
       const jsonforms: JsonFormsSubStates = this.jsonforms;
@@ -319,7 +327,7 @@ const templateLayoutRenderer = defineComponent({
       const defaultComputed = {} as ComputedOptions;
       const parentComponent = this as any;
 
-      for (const key of ['data', 'errors', 'context', 'dataProvider']) {
+      for (const key of ['data', 'errors', 'context']) {
         defaultComputed[key] = function () {
           return parentComponent?.[key];
         };

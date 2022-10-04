@@ -18,125 +18,48 @@
     </div>
 
     <resolved-json-forms
-      v-else-if="context != null"
-      :input="context.input"
+      v-else-if="context !== null"
+      :data="context.data"
+      :schema="context.schema"
+      :uischema="context.uischema"
       :renderers="renderers"
       :cells="cells"
       :config="config"
-      :validationMode="validationMode"
-      :locale="locale"
-      :translations="context.translations"
       :readonly="readonly"
-      :additionalErrors="additionalErrors"
+      :uischemas="uischemas"
+      :validationMode="validationMode"
       :ajv="ajv"
+      :i18n="i18n"
+      :additionalErrors="additionalErrors"
       @change="onChange"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import {
-  Emitter,
-  LoadEmitter,
-  ResolvedJsonForms,
-  RestClient,
-  createAjv,
-} from '@kchobantonov/common-jsonforms';
-import { defineComponent, PropType, ref, toRefs } from 'vue';
+  JsonFormsCellRendererRegistryEntry,
+  JsonFormsI18nState,
+  JsonFormsRendererRegistryEntry,
+  JsonFormsUISchemaRegistryEntry,
+  ValidationMode,
+} from '@jsonforms/core';
+import { JsonFormsChangeEvent, MaybeReadonly } from '@jsonforms/vue2';
+import { createAjv, ResolvedJsonForms } from '@kchobantonov/common-jsonforms';
+import { ErrorObject } from 'ajv';
+import Ajv from 'ajv/dist/core';
 import _get from 'lodash/get';
-import _remove from 'lodash/remove';
 import isPlainObject from 'lodash/isPlainObject';
 import merge from 'lodash/merge';
+import _remove from 'lodash/remove';
+import { defineComponent, PropType, ref, toRefs } from 'vue';
 import { VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
+import { LoadEmitter, RestClient } from '../core';
 import { CamundaFormApi } from '../core/api';
-import { CamundaFormContext } from '../core/types';
+import { CamundaFormContext, Emitter } from '../core/types';
 import { validateCamundaFormConfig } from '../core/validate';
 import { camundaRenderers } from '../renderers';
-import { ValidationMode } from '@jsonforms/core';
-import { ErrorObject } from 'ajv';
-
-export const camundaResolvedJsonFormsProps = () => ({
-  url: {
-    required: true,
-    type: String,
-  },
-  processDefinitionId: {
-    required: false,
-    type: String,
-  },
-  processDefinitionKey: {
-    required: false,
-    type: String,
-  },
-  taskId: {
-    required: false,
-    type: String,
-  },
-  config: {
-    required: false,
-    type: [Object] as PropType<Record<string, any>>,
-  },
-  readonly: {
-    required: false,
-    type: Boolean,
-    default: false,
-  },
-  validationMode: {
-    required: false,
-    type: [String] as PropType<ValidationMode>,
-    default: 'ValidateAndShow',
-  },
-  locale: {
-    required: false,
-    type: String,
-    default: 'en',
-  },
-  defaultPreset: {
-    required: false,
-    type: [Object] as PropType<Partial<VuetifyPreset>>,
-    default: () => {
-      return {
-        icons: {
-          iconfont: 'mdi',
-          values: {},
-        },
-        theme: {
-          dark: false,
-          default: 'light',
-          disable: false,
-          options: {
-            cspNonce: undefined,
-            customProperties: undefined,
-            minifyTheme: undefined,
-            themeCache: undefined,
-          },
-          themes: {
-            light: {
-              primary: '#1976D2',
-              secondary: '#424242',
-              accent: '#82B1FF',
-              error: '#FF5252',
-              info: '#2196F3',
-              success: '#4CAF50',
-              warning: '#FB8C00',
-            },
-            dark: {
-              primary: '#2196F3',
-              secondary: '#424242',
-              accent: '#FF4081',
-              error: '#FF5252',
-              info: '#2196F3',
-              success: '#4CAF50',
-              warning: '#FB8C00',
-            },
-          },
-        },
-      };
-    },
-  },
-});
 
 const camundaResolvedJsonForms = defineComponent({
   name: 'camunda-resolved-json-forms',
@@ -157,27 +80,132 @@ const camundaResolvedJsonForms = defineComponent({
     'submit-error',
   ],
   props: {
-    ...camundaResolvedJsonFormsProps(),
+    url: {
+      required: true,
+      type: String,
+    },
+    processDefinitionId: {
+      required: false,
+      type: String,
+    },
+    processDefinitionKey: {
+      required: false,
+      type: String,
+    },
+    taskId: {
+      required: false,
+      type: String,
+    },
+    renderers: {
+      required: false,
+      type: Array as PropType<MaybeReadonly<JsonFormsRendererRegistryEntry[]>>,
+      default: () => camundaRenderers,
+    },
+    cells: {
+      required: false,
+      type: Array as PropType<
+        MaybeReadonly<JsonFormsCellRendererRegistryEntry[]>
+      >,
+      default: () => camundaRenderers,
+    },
+    config: {
+      required: false,
+      type: Object as PropType<any>,
+      default: undefined,
+    },
+    readonly: {
+      required: false,
+      type: Boolean,
+      default: false,
+    },
+    uischemas: {
+      required: false,
+      type: Array as PropType<MaybeReadonly<JsonFormsUISchemaRegistryEntry[]>>,
+      default: () => [],
+    },
+    validationMode: {
+      required: false,
+      type: String as PropType<ValidationMode>,
+      default: 'ValidateAndShow',
+    },
+    ajv: {
+      required: false,
+      type: Object as PropType<Ajv>,
+      default: () => createAjv(),
+    },
+    i18n: {
+      required: false,
+      type: Object as PropType<JsonFormsI18nState>,
+      default: undefined,
+    },
+    additionalErrors: {
+      required: false,
+      type: Array as PropType<ErrorObject[]>,
+      default: () => [],
+    },
+    defaultPreset: {
+      required: false,
+      type: [Object] as PropType<Partial<VuetifyPreset>>,
+      default: () => {
+        return {
+          icons: {
+            iconfont: 'mdi',
+            values: {},
+          },
+          theme: {
+            dark: false,
+            default: 'light',
+            disable: false,
+            options: {
+              cspNonce: undefined,
+              customProperties: undefined,
+              minifyTheme: undefined,
+              themeCache: undefined,
+            },
+            themes: {
+              light: {
+                primary: '#1976D2',
+                secondary: '#424242',
+                accent: '#82B1FF',
+                error: '#FF5252',
+                info: '#2196F3',
+                success: '#4CAF50',
+                warning: '#FB8C00',
+              },
+              dark: {
+                primary: '#2196F3',
+                secondary: '#424242',
+                accent: '#FF4081',
+                error: '#FF5252',
+                info: '#2196F3',
+                success: '#4CAF50',
+                warning: '#FB8C00',
+              },
+            },
+          },
+        };
+      },
+    },
+    actions: {
+      required: false,
+      type: [Object] as PropType<Record<string, Function>>,
+      default: () => {},
+    },
   },
   setup(props) {
     const loading = ref(false);
     const context = ref<CamundaFormContext | null>(null);
-    const api = ref<CamundaFormApi | null>(null);
+    const api = new CamundaFormApi();
     const additionalErrors = ref<ErrorObject[]>([]);
     const previousData = ref({});
 
-    const ajv = createAjv();
-
     return {
+      props,
       loading,
       context,
       api,
-      props,
-      renderers: camundaRenderers,
-      cells: camundaRenderers,
       additionalErrors,
       previousData,
-      ajv,
     };
   },
   watch: {
@@ -216,7 +244,10 @@ const camundaResolvedJsonForms = defineComponent({
     additionalErrors: {
       handler(_value?: ErrorObject[], _oldValue?: ErrorObject[]) {
         // set the last data
-        this.context!.input.data = this.previousData;
+        const context = this.context;
+        if (context) {
+          context.data = this.previousData;
+        }
       },
       deep: true,
     },
@@ -273,9 +304,9 @@ const camundaResolvedJsonForms = defineComponent({
 
       let preset: Partial<VuetifyPreset> | null = null;
 
-      if (this.context?.input?.uischema?.options) {
+      if (this.context?.uischema?.options) {
         preset = this.vuetifyProps(
-          this.context.input.uischema.options,
+          this.context.uischema.options,
           'preset'
         ) as Partial<VuetifyPreset>;
       }
@@ -295,8 +326,6 @@ const camundaResolvedJsonForms = defineComponent({
       this.context = null;
 
       try {
-        this.api = new CamundaFormApi();
-
         const restClient = new RestClient([
           new LoadEmitter(this.$emit.bind(this) as Emitter),
         ]);
@@ -322,8 +351,7 @@ const camundaResolvedJsonForms = defineComponent({
   },
 });
 
-// cast to 'any' because of Typescript problems (ts(7056))
-export default camundaResolvedJsonForms as any;
+export default camundaResolvedJsonForms;
 </script>
 
 <style></style>

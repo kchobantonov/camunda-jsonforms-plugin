@@ -34,19 +34,20 @@ import {
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import {
-  Emitter,
-  ResponseException,
-  RestClient,
-  SubmitEmitter,
-} from '@kchobantonov/common-jsonforms';
 import { ErrorObject } from 'ajv';
 import isArray from 'lodash/isArray';
 import { defineComponent, inject, ref, Ref } from 'vue';
 import { VBtn } from 'vuetify/lib';
+import { RestClient, SubmitEmitter } from '../core';
 import { CamundaFormApi } from '../core/api';
 import { AppErrorCode, AppException } from '../core/errors';
-import { Action, CamundaFormContext, isTaskIdConfig } from '../core/types';
+import {
+  Action,
+  CamundaFormContext,
+  Emitter,
+  isTaskIdConfig,
+  ResponseException,
+} from '../core/types';
 
 interface CamundaButtonElement extends UISchemaElement {
   type: 'CamundaButton';

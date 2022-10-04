@@ -20,9 +20,15 @@ import {
 import { rendererProps, RendererProps } from '@jsonforms/vue2';
 import { useTranslator } from '@jsonforms/vue2-vuetify';
 import isFunction from 'lodash/isFunction';
-import { defineComponent, inject, ref } from 'vue';
+import { defineComponent, inject, ref, unref } from 'vue';
 import { VBtn } from 'vuetify/lib';
-import { ActionEvent, Actions, FormContext, AsyncFunction } from '../core';
+import {
+  ActionEvent,
+  Actions,
+  FormContext,
+  AsyncFunction,
+  TemplateFormContext,
+} from '../core';
 import { ButtonElement, useJsonFormsButton, useVuetifyButton } from '../util';
 
 const buttonRenderer = defineComponent({
@@ -57,6 +63,9 @@ const buttonRenderer = defineComponent({
         "'formContext' couldn't be injected. Are you within JsonForms?"
       );
     }
+
+    const scopeData = inject<any>('scopeData', null);
+
     const loading = ref(false);
 
     return {
@@ -64,15 +73,39 @@ const buttonRenderer = defineComponent({
       t,
       actions,
       jsonforms,
-      context: formContext,
+      formContext,
+      scopeData,
       loading,
     };
+  },
+  computed: {
+    context(): TemplateFormContext {
+      return {
+        ...unref(this.formContext),
+        jsonforms: this.jsonforms,
+        locale: this.jsonforms.i18n?.locale,
+        translate: this.jsonforms.i18n?.translate,
+
+        data: this.jsonforms.core?.data,
+        schema: this.jsonforms.core?.schema,
+        uischema: this.jsonforms.core?.uischema,
+        errors: this.jsonforms.core?.errors,
+        additionalErrors: this.jsonforms.core?.additionalErrors,
+        scopeData: this.scopeData,
+      };
+    },
   },
   methods: {
     async click() {
       this.loading = true;
 
-      const source: ActionEvent = this;
+      const source: ActionEvent = {
+        jsonforms: this.jsonforms,
+        context: this.context,
+        // the action parameters passes from the UI schema
+        params: this.button.params ? { ...this.button.params } : {},
+        $el: this.$el,
+      };
       try {
         if (this.button.action) {
           const action = this.actions[this.button.action];

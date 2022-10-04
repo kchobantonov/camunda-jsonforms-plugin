@@ -43,16 +43,10 @@ const saveData = async (event) => {
   }
 };
 
-const changeLangToEn = (event) => {
+const changeLang = (event) => {
   let form = event.$el.getRootNode().host;
 
-  form.setAttribute('locale', 'en');
-};
-
-const changeLangToBg = (event) => {
-  let form = event.$el.getRootNode().host;
-
-  form.setAttribute('locale', 'bg');
+  form.setAttribute('locale', event.params.lang);
 };
 
 export let actions = {
@@ -61,8 +55,7 @@ export let actions = {
   showData: showData,
   hideData: hideData,
   saveData: saveData,
-  changeLangToEn: changeLangToEn,
-  changeLangToBg: changeLangToBg,
+  changeLang: changeLang,
 };
 
 export const onChange = (event) => {

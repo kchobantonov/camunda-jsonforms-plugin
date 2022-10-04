@@ -23,17 +23,19 @@
     </div>
     <v-sheet v-else :dark="dark" tile>
       <resolved-json-forms
-        :input="input"
-        :uidata="dataUiData"
-        :uischemas="dataUischemas"
+        :data="dataToUse"
+        :schema="schemaToUse"
+        :schemaUrl="schemaUrlToUse"
+        :uischema="uischemaToUse"
         :renderers="renderers"
         :cells="cells"
-        :config="dataConfig"
-        :validationMode="dataValidationMode"
-        :locale="dataLocale"
-        :translations="dataTranslations"
-        :readonly="dataReadonly"
-        :actions="dataActions"
+        :config="configToUse"
+        :readonly="readonlyToUse"
+        :uischemas="uischemasToUse"
+        :validationMode="validationModeToUse"
+        :i18n="i18nToUse"
+        :additionalErrors="additionalErrorsToUse"
+        :actions="actionsToUse"
         @change="onChange"
       />
     </v-sheet>
@@ -42,27 +44,36 @@
 
 <script lang="ts">
 import {
+  JsonFormsI18nState,
   JsonFormsUISchemaRegistryEntry,
-  UISchemaElement,
-  ValidationMode,
-  UISchemaTester,
   NOT_APPLICABLE,
+  Translator,
+  UISchemaElement,
+  UISchemaTester,
+  ValidationMode
 } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import {
-  commonRenderers,
-  ResolvedJsonForms,
+  ActionEvent,
   Actions,
   AsyncFunction,
-  ActionEvent,
+  commonRenderers,
+  createTranslator,
+  FormContext,
+  ResolvedJsonForms
 } from '@kchobantonov/common-jsonforms';
+import { ErrorObject } from 'ajv';
 import { isArray, isPlainObject, merge } from 'lodash';
 import get from 'lodash/get';
-import Vue, { defineComponent, PropType, ref } from 'vue';
+import Vue, {
+  defineComponent,
+  PropType, Ref,
+  ref
+} from 'vue';
 import LoadScript from 'vue-plugin-load-script';
 import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
-import { VuetifyFormConfig, validateActions, isActionsParams } from '../core';
+import { isActionsParams, validateActions } from '../core';
 import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
 
 Vue.use(LoadScript);
@@ -103,13 +114,13 @@ const transformUISchemas = (
             );
             const result = tester(jsonSchema, schemaPath, path);
             if (typeof result !== 'number') {
-              console.log(
+              console.error(
                 `Error at uischema tester[${index}]: invalid result type, expected number but got ${typeof result}`
               );
             }
             return typeof result === 'number' ? result : NOT_APPLICABLE;
           } catch (e) {
-            console.log(`Error at uischema tester[${index}]: ${e}`);
+            console.error(`Error at uischema tester[${index}]: ${e}`);
             return NOT_APPLICABLE;
           }
         };
@@ -150,7 +161,6 @@ const transformActions = (actionsString?: string): Record<string, Function> => {
 
   return actions;
 };
-
 const vuetifyFormWc = defineComponent({
   vuetify,
   components: {
@@ -161,6 +171,19 @@ const vuetifyFormWc = defineComponent({
   },
   emits: ['change'],
   props: {
+    data: {
+      required: false,
+      type: String,
+      validator: function (value) {
+        try {
+          const data = typeof value == 'string' ? JSON.parse(value) : value;
+
+          return data !== undefined && data !== null;
+        } catch (e) {
+          return false;
+        }
+      },
+    },
     schema: {
       required: false,
       type: String,
@@ -181,11 +204,29 @@ const vuetifyFormWc = defineComponent({
         try {
           const uischema = typeof value == 'string' ? JSON.parse(value) : value;
 
-          return uischema !== null;
+          return uischema !== undefined && uischema !== null;
         } catch (e) {
           return false;
         }
       },
+    },
+    config: {
+      required: false,
+      type: String,
+      validator: function (value) {
+        try {
+          const config = typeof value == 'string' ? JSON.parse(value) : value;
+
+          return config !== undefined && config !== null;
+        } catch (e) {
+          return false;
+        }
+      },
+    },
+    readonly: {
+      required: false,
+      type: String ,
+      default: "false",
     },
     uischemas: {
       required: false,
@@ -195,23 +236,71 @@ const vuetifyFormWc = defineComponent({
           const uischemas =
             typeof value == 'string' ? JSON.parse(value) : value;
 
-          return isArray(uischemas);
+          return (
+            uischemas !== undefined && uischemas !== null && isArray(uischemas)
+          );
         } catch (e) {
           return false;
         }
       },
     },
-    data: {
+    validationMode: {
+      required: false,
+      type: [String] as PropType<ValidationMode>,
+      default: 'ValidateAndShow',
+      validator: function (value) {
+        return (
+          value === 'ValidateAndShow' ||
+          value === 'ValidateAndHide' ||
+          value == 'NoValidation'
+        );
+      },
+    },
+    locale: {
       required: false,
       type: String,
-      default: () => {
-        return {};
-      },
+      default: 'en',
+    },
+    translations: {
+      required: false,
+      type: String,
       validator: function (value) {
         try {
-          const data = typeof value == 'string' ? JSON.parse(value) : value;
+          const translations =
+            typeof value == 'string' ? JSON.parse(value) : value;
 
-          return data !== undefined && data !== null;
+          return translations !== null;
+        } catch (e) {
+          return false;
+        }
+      },
+    },
+    additionalErrors: {
+      required: false,
+      type: String,
+      validator: function (value) {
+        try {
+          const additionalErrors =
+            typeof value == 'string' ? JSON.parse(value) : value;
+
+          return (
+            additionalErrors !== undefined &&
+            additionalErrors !== null &&
+            isArray(additionalErrors)
+          );
+        } catch (e) {
+          return false;
+        }
+      },
+    },
+    defaultPreset: {
+      required: false,
+      type: String,
+      validator: function (value) {
+        try {
+          const preset = typeof value == 'string' ? JSON.parse(value) : value;
+
+          return preset !== undefined && preset !== null;
         } catch (e) {
           return false;
         }
@@ -245,245 +334,179 @@ const vuetifyFormWc = defineComponent({
         return isActionsParams(actions);
       },
     },
-    config: {
-      required: false,
-      type: String,
-      default: () => {
-        return {
-          restrict: true,
-          trim: false,
-          showUnfocusedDescription: false,
-          hideRequiredAsterisk: true,
-        };
-      },
-      validator: function (value) {
-        try {
-          const config = typeof value == 'string' ? JSON.parse(value) : value;
-
-          return config !== undefined && config !== null;
-        } catch (e) {
-          return false;
-        }
-      },
-    },
-    readonly: {
-      required: false,
-      type: [String, Boolean],
-      default: false,
-    },
-    validationMode: {
-      required: false,
-      type: [String] as PropType<ValidationMode>,
-      default: 'ValidateAndShow',
-      validator: function (value) {
-        return (
-          value === 'ValidateAndShow' ||
-          value === 'ValidateAndHide' ||
-          value == 'NoValidation'
-        );
-      },
-    },
-    locale: {
-      required: false,
-      type: String,
-      default: 'en',
-    },
-    translations: {
-      required: false,
-      type: String,
-      validator: function (value) {
-        try {
-          const translations =
-            typeof value == 'string' ? JSON.parse(value) : value;
-
-          return translations !== null;
-        } catch (e) {
-          return false;
-        }
-      },
-    },
-    defaultPreset: {
-      required: false,
-      type: String,
-      validator: function (value) {
-        try {
-          const preset = typeof value == 'string' ? JSON.parse(value) : value;
-
-          return preset !== undefined && preset !== null;
-        } catch (e) {
-          return false;
-        }
-      },
-    },
   },
-  setup(props: VuetifyFormConfig, context) {
+  setup(props) {
     let error: any = undefined;
 
-    let schema: any = undefined;
-    let uischema: any = undefined;
-    let dataUischemas: JsonFormsUISchemaRegistryEntry[] = [];
-    let data: any = undefined;
-    let dataConfig: Record<string, any> | undefined = undefined;
-    let dataReadonly: boolean | undefined = undefined;
-    let dataLocale: string | undefined = undefined;
-    let dataValidationMode: ValidationMode | undefined = undefined;
-    let dataTranslations: Record<string, any> | undefined = undefined;
-    let dataDefaultPreset: Partial<VuetifyPreset> | undefined = undefined;
+    let dataToUse: any = undefined;
+    let schemaToUse: Record<string, any> | undefined = undefined;
+    let schemaUrlToUse: string | undefined = undefined;
+    let uischemaToUse: UISchemaElement | undefined = undefined;
+    let configToUse: Record<string, any> | undefined = undefined;
+    let readonlyToUse = false;
+    let uischemasToUse: JsonFormsUISchemaRegistryEntry[] = [];
+    let validationModeToUse: ValidationMode = 'ValidateAndShow';
+    let i18nToUse: JsonFormsI18nState | undefined = undefined;
+    let additionalErrorsToUse: ErrorObject[] = [];
+    let translationsToUse: Record<string, any> = {};
+    let localeToUse = 'en';
 
+    let dataDefaultPreset =
+      typeof props.defaultPreset == 'string'
+        ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
+        : defaultPreset;
     // eslint-disable-next-line  @typescript-eslint/ban-types
-    let dataActions: Record<string, Function> = ref({});
-    let dataUiData: Record<string, any> = ref({});
-
+    let actionsToUse: Record<string, Function> = {};
+    let uidataToUse: Record<string, any> = {};
     try {
-      schema =
-        typeof props.schema == 'string'
-          ? JSON.parse(props.schema)
-          : props.schema;
-      uischema =
+      dataToUse =
+        typeof props.data == 'string' ? JSON.parse(props.data) : undefined;
+      schemaToUse =
+        typeof props.schema == 'string' ? JSON.parse(props.schema) : undefined;
+      schemaUrlToUse =
+        typeof props.schemaUrl == 'string' ? props.schemaUrl : undefined;
+      uischemaToUse =
         typeof props.uischema == 'string'
           ? JSON.parse(props.uischema)
-          : props.uischema;
-      data =
-        typeof props.data == 'string' ? JSON.parse(props.data) : props.data;
+          : undefined;
+      configToUse =
+        typeof props.config == 'string' ? JSON.parse(props.config) : undefined;
 
-      dataConfig =
-        typeof props.config == 'string'
-          ? JSON.parse(props.config)
-          : props.config;
-      dataReadonly =
-        typeof props.readonly == 'string'
-          ? props.readonly == 'true'
-          : props.readonly;
-      dataValidationMode =
+      readonlyToUse = props.readonly == 'true';
+
+      validationModeToUse =
         props.validationMode == 'ValidateAndShow' ||
         props.validationMode == 'ValidateAndHide' ||
         props.validationMode == 'NoValidation'
           ? props.validationMode
           : 'ValidateAndShow';
-      dataLocale = typeof props.locale == 'string' ? props.locale : 'en';
-      dataTranslations =
+
+      translationsToUse =
         typeof props.translations == 'string'
           ? JSON.parse(props.translations)
-          : props.translations;
+          : undefined;
+
+      localeToUse = props.locale ? props.locale : 'en';
+      i18nToUse = {
+        locale: localeToUse,
+        translate: createTranslator(localeToUse, translationsToUse),
+      };
+
       dataDefaultPreset =
         typeof props.defaultPreset == 'string'
           ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
           : defaultPreset;
 
-      dataUiData =
-        typeof props.uidata == 'string'
-          ? JSON.parse(props.uidata)
-          : props.uidata;
+      uischemasToUse = transformUISchemas(props.uischemas);
 
-      dataUischemas = transformUISchemas(props.uischemas);
-      dataActions = transformActions(props.actions);
+      additionalErrorsToUse =
+        typeof props.additionalErrors == 'string'
+          ? JSON.parse(props.additionalErrors)
+          : undefined;
+
+      uischemasToUse = transformUISchemas(props.uischemas);
+      actionsToUse = transformActions(props.actions);
+      uidataToUse =
+        typeof props.uidata == 'string' ? JSON.parse(props.uidata) : {};
     } catch (e) {
       error = `Config error: ${e}`;
     }
 
+    let context: Ref<
+      FormContext & { uidata: Record<string, any> }
+    > = ref({ uidata: uidataToUse });
+
     return {
       error,
-      renderers: commonRenderers,
-      cells: commonRenderers,
-      input: {
-        schema: schema,
-        uischema: uischema,
-        data: data,
-      },
-      dataUischemas,
-      dataConfig,
-      dataReadonly,
-      dataValidationMode,
-      dataLocale,
-      dataTranslations,
+      renderers: Object.freeze(commonRenderers),
+      cells: Object.freeze(commonRenderers),
+
+      dataToUse,
+      schemaToUse,
+      schemaUrlToUse,
+      uischemaToUse,
+      configToUse,
+      readonlyToUse,
+      uischemasToUse,
+      validationModeToUse,
+      i18nToUse,
+      translationsToUse,
+      localeToUse,
+      additionalErrorsToUse,
       dataDefaultPreset,
       vuetifyTheme: ref<{ generatedStyles: string }>(theme),
-      dataActions,
-      dataUiData,
+      actionsToUse,
+      uidataToUse,
+      context,
+    };
+  },
+  provide() {
+    return {
+      formContext: this.context,
     };
   },
   watch: {
+    data: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          const data = typeof value == 'string' ? JSON.parse(value) : undefined;
+          this.dataToUse = data;
+        }
+      },
+    },
     schema: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           const schema =
             typeof value == 'string' ? JSON.parse(value) : undefined;
-          this.input = {
-            schema: schema,
-            uischema: this.input.uischema,
-            data: this.input.data,
-          };
+          this.schemaToUse = schema;
         }
       },
-      deep: true,
+    },
+    schemaUrl: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          const schemaUrl = typeof value == 'string' ? value : undefined;
+          this.schemaUrlToUse = schemaUrl;
+        }
+      },
     },
     uischema: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           const uischema =
             typeof value == 'string' ? JSON.parse(value) : undefined;
-
-          this.input = {
-            schema: this.input.schema,
-            uischema: uischema,
-            data: this.input.data,
-          };
+          this.uischemaToUse = uischema;
         }
       },
-      deep: true,
-    },
-    uischemas: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          this.dataUischemas = transformUISchemas(value);
-        }
-      },
-      deep: true,
-    },
-    actions: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          this.dataActions = transformActions(value);
-        }
-      },
-      deep: true,
-    },
-    data: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          const data = typeof value == 'string' ? JSON.parse(value) : undefined;
-
-          this.input = {
-            schema: this.input.schema,
-            uischema: this.input.uischema,
-            data: data,
-          };
-        }
-      },
-      deep: true,
     },
     config: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          this.dataConfig =
+          const config =
             typeof value == 'string' ? JSON.parse(value) : undefined;
+          this.configToUse = config;
         }
       },
-      deep: true,
     },
     readonly: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          this.dataReadonly =
-            typeof value == 'string' ? value == 'true' : value === true;
+          this.readonlyToUse = value == 'true';
         }
       },
-      deep: true,
+    },
+    uischemas: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.uischemasToUse = transformUISchemas(value);
+        }
+      },
     },
     validationMode: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          this.dataValidationMode =
+          this.validationModeToUse =
             value == 'ValidateAndShow' ||
             value == 'ValidateAndHide' ||
             value == 'NoValidation'
@@ -491,24 +514,44 @@ const vuetifyFormWc = defineComponent({
               : 'ValidateAndShow';
         }
       },
-      deep: true,
     },
     locale: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          this.dataLocale = typeof value == 'string' ? value : 'en';
+          this.localeToUse = value ? value : 'en';
+          this.i18nToUse = {
+            locale: this.localeToUse,
+            translate: createTranslator(
+              this.localeToUse,
+              this.translationsToUse
+            ) as Translator,
+          };
         }
       },
-      deep: true,
     },
     translations: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          this.dataTranslations =
-            typeof value == 'string' ? JSON.parse(value) : undefined;
+          this.translationsToUse =
+            typeof value == 'string' ? JSON.parse(value) : {};
+
+          this.i18nToUse = {
+            locale: this.localeToUse,
+            translate: createTranslator(
+              this.localeToUse,
+              this.translationsToUse
+            ) as Translator,
+          };
         }
       },
-      deep: true,
+    },
+    additionalErrors: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.additionalErrorsToUse =
+            typeof value == 'string' ? JSON.parse(value) : [];
+        }
+      },
     },
     defaultPreset: {
       handler(value?: string, oldValue?: string) {
@@ -521,7 +564,21 @@ const vuetifyFormWc = defineComponent({
           this.applyTheme();
         }
       },
-      deep: true,
+    },
+    actions: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.actionsToUse = transformActions(value);
+        }
+      },
+    },
+    uidata: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.uidataToUse = typeof value == 'string' ? JSON.parse(value) : {};
+          this.context.value.uidata = this.uidataToUse;
+        }
+      },
     },
   },
   async mounted() {
@@ -545,14 +602,11 @@ const vuetifyFormWc = defineComponent({
     },
   },
   methods: {
-    registerActions(actions: Actions) {
-      this.actions = actions || {};
-    },
     applyTheme(): void {
       let preset: Partial<VuetifyPreset> | null = null;
-      if (this.input?.uischema?.options) {
+      if (this.uischemaToUse?.options) {
         preset = this.vuetifyProps(
-          this.input.uischema.options,
+          this.uischemaToUse.options,
           'preset'
         ) as Partial<VuetifyPreset>;
       }

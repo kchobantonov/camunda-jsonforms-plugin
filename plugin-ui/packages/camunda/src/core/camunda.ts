@@ -1,8 +1,9 @@
-import { RestClient, ResponseException } from '@kchobantonov/common-jsonforms';
 import { AppErrorCode, AppException } from './errors';
+import { RestClient } from './rest';
 import {
   ProcessDefinition,
   Resource,
+  ResponseException,
   Task,
   TaskForm,
   VariableValue,

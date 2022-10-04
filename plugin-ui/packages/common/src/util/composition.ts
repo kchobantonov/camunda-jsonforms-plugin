@@ -29,6 +29,7 @@ export interface ButtonElement extends UISchemaElement, Internationalizable {
    */
   label: string;
 
+  params?: Record<string, any>;
   action: string;
   script: string;
 }
@@ -50,6 +51,7 @@ export const mapStateToButtonProps = (
   const label = uischema.label;
   const action = uischema.action;
   const script = uischema.script;
+  const params = uischema.params;
   const t = getTranslator()(state);
   const i18nKeyPrefix = getI18nKeyPrefixBySchema(undefined, uischema);
   const i18nKey = i18nKeyPrefix ? `${i18nKeyPrefix}.label` : label ?? '';
@@ -69,6 +71,7 @@ export const mapStateToButtonProps = (
     label: i18nText,
     action,
     script,
+    params,
     visible,
     enabled,
     config: getConfig(state),

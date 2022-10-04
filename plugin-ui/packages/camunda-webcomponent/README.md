@@ -112,7 +112,7 @@
       if (processDefinitionId) {
         form.setAttribute('process-definition-id', processDefinitionId);
       }
-      if (processDefinitionKey) {
+      if (taskId) {
         form.setAttribute('task-id', taskId);
       }
 

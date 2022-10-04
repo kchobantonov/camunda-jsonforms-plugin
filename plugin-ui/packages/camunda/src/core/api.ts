@@ -17,6 +17,7 @@ import {
   getTaskFormVariables,
 } from './camunda';
 import { AppErrorCode, AppException } from './errors';
+import { RestClient } from './rest';
 import {
   Action,
   CamundaFormConfig,
@@ -27,18 +28,14 @@ import {
   isProcessDefinitionIdConfig,
   isProcessDefinitionKeyConfig,
   isTaskIdConfig,
+  RESOURCE_I18N_SUFFIX,
+  RESOURCE_SCHEMA_SUFFIX,
+  RESOURCE_UISCHEMA_SUFFIX,
+  ResponseException,
   TaskForm,
   ValueInfo,
   VariableValue,
 } from './types';
-
-import {
-  RestClient,
-  ResponseException,
-  RESOURCE_I18N_SUFFIX,
-  RESOURCE_SCHEMA_SUFFIX,
-  RESOURCE_UISCHEMA_SUFFIX,
-} from '@kchobantonov/common-jsonforms';
 
 export const getParameterByName = (
   name: string,
@@ -363,15 +360,13 @@ export class CamundaFormApi {
       }
     });
 
-    result.input = {
-      schema: schema,
-      schemaUrl: schemaUrl,
-      uischema: uischema ?? undefined,
-      data: data,
-    };
+    result.schema = schema;
+    result.schemaUrl = schemaUrl;
+    result.uischema = uischema;
+    result.data = data;
 
-    if (!(result.input.schema as any).$id) {
-      (result.input.schema as any).$id = '/';
+    if (!(result.schema as any).$id) {
+      (result.schema as any).$id = '/';
     }
     return result as CamundaFormContext;
   }
