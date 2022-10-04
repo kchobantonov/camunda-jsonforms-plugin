@@ -130,8 +130,8 @@ const camundaFormWc = defineComponent({
     },
     readonly: {
       required: false,
-      type: [String, Boolean],
-      default: false,
+      type: String,
+      default: "false",
     },
     validationMode: {
       required: false,

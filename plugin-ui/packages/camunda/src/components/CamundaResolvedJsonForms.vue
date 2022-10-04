@@ -42,7 +42,7 @@ import {
   JsonFormsI18nState,
   JsonFormsRendererRegistryEntry,
   JsonFormsUISchemaRegistryEntry,
-  ValidationMode,
+  ValidationMode
 } from '@jsonforms/core';
 import { JsonFormsChangeEvent, MaybeReadonly } from '@jsonforms/vue2';
 import { createAjv, ResolvedJsonForms } from '@kchobantonov/common-jsonforms';
@@ -52,7 +52,7 @@ import _get from 'lodash/get';
 import isPlainObject from 'lodash/isPlainObject';
 import merge from 'lodash/merge';
 import _remove from 'lodash/remove';
-import { defineComponent, PropType, ref, toRefs } from 'vue';
+import { defineComponent, PropType, ref, toRef } from 'vue';
 import { VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import { LoadEmitter, RestClient } from '../core';
@@ -256,13 +256,11 @@ const camundaResolvedJsonForms = defineComponent({
     await this.reload();
   },
   provide() {
-    // provide as a reactive property
-    const { context, api, additionalErrors } = toRefs(this);
 
     return {
-      additionalErrors: additionalErrors,
-      formContext: context,
-      camundaFormApi: api,
+      additionalErrors: toRef(this, 'additionalErrors'),
+      formContext: toRef(this, 'context'),
+      camundaFormApi: this.api,
       camundaFormEmitter: this.$emit.bind(this),
     };
   },

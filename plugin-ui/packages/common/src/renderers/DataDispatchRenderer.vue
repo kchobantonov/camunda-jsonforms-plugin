@@ -7,11 +7,11 @@ import {
   JsonFormsCellRendererRegistryEntry,
   JsonFormsRendererRegistryEntry,
   JsonSchema,
-  UISchemaElement,
+  UISchemaElement
 } from '@jsonforms/core';
 import { UnknownRenderer, useJsonFormsRenderer } from '@jsonforms/vue2';
 import maxBy from 'lodash/maxBy';
-import { defineComponent, PropType, ref, toRefs } from 'vue';
+import { defineComponent, PropType, ref, toRef } from 'vue';
 
 export const rendererDataProps = <U = UISchemaElement>() => ({
   schema: {
@@ -61,10 +61,8 @@ export default defineComponent({
     return { ...useJsonFormsRenderer(props), scopeData: ref(props.data) };
   },
   provide() {
-    const { scopeData } = toRefs(this);
-
     return {
-      scopeData: scopeData,
+      scopeData: toRef(this, 'scopeData'),
     };
   },
   watch: {
