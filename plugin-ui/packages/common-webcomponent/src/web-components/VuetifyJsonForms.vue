@@ -403,7 +403,6 @@ const vuetifyFormWc = defineComponent({
           ? JSON.parse(props.additionalErrors)
           : undefined;
 
-      uischemasToUse = transformUISchemas(props.uischemas);
       actionsToUse = transformActions(props.actions);
       uidataToUse =
         typeof props.uidata == 'string' ? JSON.parse(props.uidata) : {};
