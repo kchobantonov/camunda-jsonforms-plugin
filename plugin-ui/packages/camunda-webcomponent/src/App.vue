@@ -5,6 +5,7 @@
       process-definition-key="embeddedFormsQuickstart"
       locale="en"
       readonly="false"
+      :custom-style="style"
       :config="JSON.stringify(config)"
       :default-preset="JSON.stringify(preset)"
       @load-request="onLoadRequest"
@@ -15,16 +16,6 @@
       @submit-error="onSubmitError"
       @change="onChange"
     >
-      <!-- emulate the css since the VuetifyJsonForms are not build as actual web component that includes css during npm run serve -->
-      <custom-style slot="style" type="text/css">
-        @import
-        url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
-        @import
-        url('https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css');
-        @import
-        url("https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.3/vuetify.min.css");
-        .v-application--wrap { min-height: 0px; }
-      </custom-style>
     </camunda-json-forms>
     <div v-if="camundaError">
       <h2>Error</h2>
@@ -62,20 +53,18 @@ window.customElements.define(
   CamundaJsonFormsElement as any
 );
 
-const CustomStyle = defineComponent({
-  name: 'custom-style',
-  render(createElement) {
-    return createElement('style', this.$slots.default);
-  },
-});
-
 export default defineComponent({
   name: 'App',
-  components: {
-    CustomStyle,
-  },
   data() {
+    // emulate the css since the VuetifyJsonForms are not build as actual web component that includes css during npm run serve -->
+    const style = `
+        @import url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css');
+        @import url("https://cdnjs.cloudflare.com/ajax/libs/vuetify/2.6.3/vuetify.min.css");
+
+        .v-application--wrap { min-height: 0px; }`;
     return {
+      style,
       preset,
       config,
       camundaError: '',

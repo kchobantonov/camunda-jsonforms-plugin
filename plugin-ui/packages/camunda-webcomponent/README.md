@@ -94,15 +94,11 @@
       url="/engine-rest"
       locale="en"
       readonly="false">
-      <style slot="style" type="text/css">
-        .v-application--wrap {
-          min-height: 0px;
-        }
-      </style>
     </camunda-json-forms>
 
     <script>
       let form = document.getElementById('camunda-json-forms');
+      form.setAttribute('custom-style', '.v-application--wrap { min-height: 0px; }');
       form.setAttribute('config', JSON.stringify(config));
       form.setAttribute('default-preset', JSON.stringify(preset));
       

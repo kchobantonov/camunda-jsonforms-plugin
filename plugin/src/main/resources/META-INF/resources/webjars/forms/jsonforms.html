@@ -5,11 +5,6 @@
   </style>
 
   <camunda-json-forms id="camunda-json-forms">
-    <style slot="style" type="text/css">
-      .v-application--wrap {
-        min-height: 0px;
-      }
-    </style>
   </camunda-json-forms>
 
   <script cam-script type="text/form-script">
@@ -70,6 +65,7 @@
       hideRequiredAsterisk: true,
     };
     const preset = { theme: { dark: false } };
+    const style = '.v-application--wrap { min-height: 0px;}';
 
     const onChange = (event) => {
       let [data] = event.detail;
@@ -196,6 +192,7 @@
           }
           form.setAttribute("locale", locale);
 
+          form.setAttribute("custom-style", style);
           form.setAttribute("config", JSON.stringify(config));
           form.setAttribute("default-preset", JSON.stringify(preset));
 

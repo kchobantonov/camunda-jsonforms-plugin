@@ -1,47 +1,45 @@
 <template>
-  <v-app ref="root">
+  <div>
     <custom-style type="text/css" id="vuetify-theme">
       {{ vuetifyThemeCss }}
     </custom-style>
 
-    <slot
-      name="style"
-      v-if="!!$slots['style'] || !!$scopedSlots['style']"
-    ></slot>
-    <custom-style type="text/css" v-else>
-      .v-application--wrap { min-height: 0px; }
+    <custom-style type="text/css">
+      {{ customStyle }}
     </custom-style>
 
-    <div v-if="error !== undefined">
-      <v-container style="height: 400px">
-        <v-row class="fill-height" align-content="center" justify="center">
-          <v-col class="text-subtitle-1 text-center error" cols="12">
-            {{ error }}
-          </v-col>
-        </v-row>
-      </v-container>
-    </div>
-    <v-sheet v-else :dark="dark" tile>
-      <camunda-resolved-json-forms
-        :url="dataUrl"
-        :processDefinitionId="dataProcessDefinitionId"
-        :processDefinitionKey="dataProcessDefinitionKey"
-        :taskId="dataTaskId"
-        :locale="dataLocale"
-        :defaultPreset="dataDefaultPreset"
-        :config="dataConfig"
-        :validationMode="dataValidationMode"
-        :readonly="dataReadonly"
-        @change="onChange"
-        @load-request="onLoadRequest"
-        @load-response="onLoadResponse"
-        @load-error="onLoadError"
-        @submit-request="onSubmitRequest"
-        @submit-response="onSubmitResponse"
-        @submit-error="onSubmitError"
-      />
-    </v-sheet>
-  </v-app>
+    <v-app ref="root">
+      <div v-if="error !== undefined">
+        <v-container style="height: 400px">
+          <v-row class="fill-height" align-content="center" justify="center">
+            <v-col class="text-subtitle-1 text-center error" cols="12">
+              {{ error }}
+            </v-col>
+          </v-row>
+        </v-container>
+      </div>
+      <v-sheet v-else :dark="dark" tile>
+        <camunda-resolved-json-forms
+          :url="dataUrl"
+          :processDefinitionId="dataProcessDefinitionId"
+          :processDefinitionKey="dataProcessDefinitionKey"
+          :taskId="dataTaskId"
+          :locale="dataLocale"
+          :defaultPreset="dataDefaultPreset"
+          :config="dataConfig"
+          :validationMode="dataValidationMode"
+          :readonly="dataReadonly"
+          @change="onChange"
+          @load-request="onLoadRequest"
+          @load-response="onLoadResponse"
+          @load-error="onLoadError"
+          @submit-request="onSubmitRequest"
+          @submit-response="onSubmitResponse"
+          @submit-error="onSubmitError"
+        />
+      </v-sheet>
+    </v-app>
+  </div>
 </template>
 
 <script lang="ts">
@@ -131,7 +129,7 @@ const camundaFormWc = defineComponent({
     readonly: {
       required: false,
       type: String,
-      default: "false",
+      default: 'false',
     },
     validationMode: {
       required: false,
@@ -149,6 +147,11 @@ const camundaFormWc = defineComponent({
       required: false,
       type: String,
       default: 'en',
+    },
+    customStyle: {
+      required: false,
+      type: String,
+      default: '.v-application--wrap { min-height: 0px; }',
     },
     defaultPreset: {
       required: false,

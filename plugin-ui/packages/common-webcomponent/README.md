@@ -27,15 +27,11 @@
     </script>
 
     <vuetify-json-forms id="vuetify-json-forms">
-      <style slot="style" type="text/css">
-        .v-application--wrap {
-          min-height: 0px;
-        }
-      </style>
     </vuetify-json-forms>
 
     <script>
       let form = document.getElementById('vuetify-json-forms');
+      form.setAttribute('custom-style', '.v-application--wrap { min-height: 0px; }');
       form.setAttribute('data', JSON.stringify(data));
       form.setAttribute('schema', JSON.stringify(schema));
       form.setAttribute('uischema', JSON.stringify(uischema));

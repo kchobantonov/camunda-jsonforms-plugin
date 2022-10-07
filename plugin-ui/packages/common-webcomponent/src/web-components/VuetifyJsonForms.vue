@@ -1,45 +1,43 @@
 <template>
-  <v-app ref="root">
+  <div>
     <custom-style type="text/css" id="vuetify-theme">
       {{ vuetifyThemeCss }}
     </custom-style>
 
-    <slot
-      name="style"
-      v-if="!!$slots['style'] || !!$scopedSlots['style']"
-    ></slot>
-    <custom-style type="text/css" v-else>
-      .v-application--wrap { min-height: 0px; }
+    <custom-style type="text/css">
+      {{ customStyle }}
     </custom-style>
 
-    <div v-if="error !== undefined">
-      <v-container style="height: 400px">
-        <v-row class="fill-height" align-content="center" justify="center">
-          <v-col class="text-subtitle-1 text-center error" cols="12">
-            {{ error }}
-          </v-col>
-        </v-row>
-      </v-container>
-    </div>
-    <v-sheet v-else :dark="dark" tile>
-      <resolved-json-forms
-        :data="dataToUse"
-        :schema="schemaToUse"
-        :schemaUrl="schemaUrlToUse"
-        :uischema="uischemaToUse"
-        :renderers="renderers"
-        :cells="cells"
-        :config="configToUse"
-        :readonly="readonlyToUse"
-        :uischemas="uischemasToUse"
-        :validationMode="validationModeToUse"
-        :i18n="i18nToUse"
-        :additionalErrors="additionalErrorsToUse"
-        :actions="actionsToUse"
-        @change="onChange"
-      />
-    </v-sheet>
-  </v-app>
+    <v-app ref="root">
+      <div v-if="error !== undefined">
+        <v-container style="height: 400px">
+          <v-row class="fill-height" align-content="center" justify="center">
+            <v-col class="text-subtitle-1 text-center error" cols="12">
+              {{ error }}
+            </v-col>
+          </v-row>
+        </v-container>
+      </div>
+      <v-sheet v-else :dark="dark" tile>
+        <resolved-json-forms
+          :data="dataToUse"
+          :schema="schemaToUse"
+          :schemaUrl="schemaUrlToUse"
+          :uischema="uischemaToUse"
+          :renderers="renderers"
+          :cells="cells"
+          :config="configToUse"
+          :readonly="readonlyToUse"
+          :uischemas="uischemasToUse"
+          :validationMode="validationModeToUse"
+          :i18n="i18nToUse"
+          :additionalErrors="additionalErrorsToUse"
+          :actions="actionsToUse"
+          @change="onChange"
+        />
+      </v-sheet>
+    </v-app>
+  </div>
 </template>
 
 <script lang="ts">
@@ -50,7 +48,7 @@ import {
   Translator,
   UISchemaElement,
   UISchemaTester,
-  ValidationMode
+  ValidationMode,
 } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import {
@@ -60,16 +58,12 @@ import {
   commonRenderers,
   createTranslator,
   FormContext,
-  ResolvedJsonForms
+  ResolvedJsonForms,
 } from '@kchobantonov/common-jsonforms';
 import { ErrorObject } from 'ajv';
 import { isArray, isPlainObject, merge } from 'lodash';
 import get from 'lodash/get';
-import Vue, {
-  defineComponent,
-  PropType, Ref,
-  ref
-} from 'vue';
+import Vue, { defineComponent, PropType, Ref, ref } from 'vue';
 import LoadScript from 'vue-plugin-load-script';
 import { VApp, VSheet } from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
@@ -225,8 +219,8 @@ const vuetifyFormWc = defineComponent({
     },
     readonly: {
       required: false,
-      type: String ,
-      default: "false",
+      type: String,
+      default: 'false',
     },
     uischemas: {
       required: false,
@@ -260,6 +254,11 @@ const vuetifyFormWc = defineComponent({
       required: false,
       type: String,
       default: 'en',
+    },
+    customStyle: {
+      required: false,
+      type: String,
+      default: '.v-application--wrap { min-height: 0px; }',
     },
     translations: {
       required: false,
@@ -386,7 +385,7 @@ const vuetifyFormWc = defineComponent({
           ? JSON.parse(props.translations)
           : undefined;
 
-      localeToUse = props.locale ? props.locale : 'en';
+      localeToUse = props.locale ? props.locale : localeToUse;
       i18nToUse = {
         locale: localeToUse,
         translate: createTranslator(localeToUse, translationsToUse),
@@ -412,9 +411,9 @@ const vuetifyFormWc = defineComponent({
       error = `Config error: ${e}`;
     }
 
-    let context: Ref<
-      FormContext & { uidata: Record<string, any> }
-    > = ref({ uidata: uidataToUse });
+    let context: Ref<FormContext & { uidata: Record<string, any> }> = ref({
+      uidata: uidataToUse,
+    });
 
     return {
       error,

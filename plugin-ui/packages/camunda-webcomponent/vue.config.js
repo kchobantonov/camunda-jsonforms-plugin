@@ -26,10 +26,49 @@ module.exports = {
         <style type="text/css">
           @import url("//cdnjs.cloudflare.com/ajax/libs/MaterialDesign-Webfont/6.5.95/css/materialdesignicons.min.css");
         </style>
-            
+
+        <style>
+          /* # =================================================================
+          # Global selectors
+          # ================================================================= */
+          html {
+            box-sizing: border-box;
+            overflow-y: scroll;
+            /* All browsers without overlaying scrollbars */
+            -webkit-text-size-adjust: 100%;
+            /* Prevent adjustments of font size after orientation changes in iOS */
+            word-break: normal;
+            -moz-tab-size: 4;
+            tab-size: 4;
+          }
+          
+          *,
+          ::before,
+          ::after {
+            background-repeat: no-repeat;
+            /* Set background-repeat: no-repeat to all elements and pseudo elements */
+            box-sizing: inherit;
+          }
+          
+          ::before,
+          ::after {
+            text-decoration: inherit;
+            /* Inherit text-decoration and vertical align to ::before and ::after pseudo elements */
+            vertical-align: inherit;
+          }
+          
+          * {
+            padding: 0;
+            /* Reset padding and margin of all elements */
+            margin: 0;
+          }
+    
+        </style>
+
         <script type="text/javascript">
         const config = ${JSON.stringify(config)};
         const preset = ${JSON.stringify(preset)};
+        const style = ${"`" + style + "`"}; 
 
         ${listeners
           .replace(/export const /g, 'const ')
@@ -41,13 +80,11 @@ module.exports = {
         url="/engine-rest"
         locale="en"
         readonly="false">
-          <style slot="style" type="text/css">
-            ${style}
-          </style>
         </camunda-json-forms>
   
       <script>
         let form = document.getElementById('camunda-json-forms');
+        form.setAttribute('custom-style', style);
         form.setAttribute('config', JSON.stringify(config));
         form.setAttribute('default-preset', JSON.stringify(preset));
 
