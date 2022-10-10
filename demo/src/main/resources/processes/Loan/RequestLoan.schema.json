@@ -1,7 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "dynamicDefaults": {
+    "queryParams": {
+      "func": "dynamic",
+      "args": {
+        "func": "(event) => { let result = {}; let url = new URL(window.location.href); url.searchParams.forEach((value, key) => { result[key] = value;}); if (url.hash) {const index = url.hash.indexOf('?'); if (index > 0 && index < url.hash.length - 1) {const hashSearchParams = new URLSearchParams(url.hash.substring(index + 1)); hashSearchParams.forEach((value, key) => { result[key] = value;});}} return result;}"
+      }
+    }
+  },
   "properties": {
+    "queryParams": {
+      "type": "object"
+    },
     "_context": {
       "type": "object",
       "default": {},
