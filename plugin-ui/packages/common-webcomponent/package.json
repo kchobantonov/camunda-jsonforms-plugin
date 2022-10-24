@@ -16,6 +16,7 @@
     "src"
   ],
   "dependencies": {
+    "@mdi/font": "^7.0.96",
     "@jsonforms/core": "3.0.0-rc.1",
     "@jsonforms/vue2": "3.0.0-rc.1",
     "@jsonforms/vue2-vuetify": "3.0.0-rc.1",
