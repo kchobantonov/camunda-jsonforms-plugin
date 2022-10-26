@@ -404,7 +404,6 @@ export default camundaFormWc;
 
 <style scoped>
 @import url('//fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
-@import '~@mdi/font/css/materialdesignicons.min.css';
-
-@import '~vuetify/dist/vuetify.min.css';
+@import url('//cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css');
+@import url('//cdn.jsdelivr.net/npm/vuetify@2.6.12/dist/vuetify.min.css');
 </style>
