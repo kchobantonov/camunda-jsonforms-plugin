@@ -3,13 +3,11 @@ import get from 'lodash/get';
 import template from 'lodash/template';
 import memoize from 'lodash/memoize';
 
-let localeTranslations: Record<string, any> | undefined = undefined;
-
 export const createTranslator = (
   locale: string,
   translations?: Record<string, any>
 ): Translator => {
-  localeTranslations = translations ? translations[locale] : undefined;
+  let localeTranslations = translations ? translations[locale] : undefined;
 
   if (!localeTranslations && translations) {
     const dashIndex = locale.indexOf('-');
@@ -17,21 +15,21 @@ export const createTranslator = (
       dashIndex > 0 ? translations[locale.substring(0, dashIndex)] : undefined;
   }
 
+  const translate = (
+    id: string,
+    defaultMessage: string | undefined,
+    values?: any
+  ): string | undefined => {
+    if (!localeTranslations) return defaultMessage;
+
+    const message = get(localeTranslations, id);
+    if (message && values) {
+      return translateWithParams(message, values) ?? defaultMessage;
+    }
+    return message ?? defaultMessage;
+  };
+
   return translate as Translator;
-};
-
-const translate = (
-  id: string,
-  defaultMessage: string | undefined,
-  values?: any
-): string | undefined => {
-  if (!localeTranslations) return defaultMessage;
-
-  const message = get(localeTranslations, id);
-  if (message && values) {
-    return translateWithParams(message, values) ?? defaultMessage;
-  }
-  return message ?? defaultMessage;
 };
 
 const translateWithParams = memoize(templateToMessage);
