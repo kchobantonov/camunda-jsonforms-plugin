@@ -15,7 +15,7 @@
       :i18n="i18n"
       :additionalErrors="additionalErrors"
       @change="onChange"
-    />
+    ></json-forms>
     <v-container v-else style="height: 400px">
       <v-row
         v-if="!resolved"
@@ -182,7 +182,7 @@ const resolvedJsonForms = defineComponent({
         actions: props.actions,
       });
     }
-    
+
     return {
       resolved,
       error,
@@ -243,7 +243,7 @@ const resolvedJsonForms = defineComponent({
               if (uri?.startsWith('.')) {
                 uri = uri.substring(1);
               }
-              if (uri && _get(schema, uri)?.$id) {
+              if (uri && (_get(schema, uri) as any)?.$id) {
                 // do not resolve ref that points to def with $id
                 return false;
               }

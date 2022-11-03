@@ -32,7 +32,7 @@
       :i18n="i18n"
       :additionalErrors="additionalErrors"
       @change="onChange"
-    />
+    ></resolved-json-forms>
   </div>
 </template>
 
@@ -369,8 +369,10 @@ const camundaResolvedJsonForms = defineComponent({
     const previousData = ref({});
     const i18n = ref<JsonFormsI18nState | undefined>(undefined);
     const localeToUse = props.locale ? props.locale : 'en';
+    const vuetifyLocale = 'en';
 
     return {
+      vuetifyLocale,
       localeToUse,
       i18n,
       props,
@@ -436,7 +438,8 @@ const camundaResolvedJsonForms = defineComponent({
             ),
           };
 
-          this.$vuetify.lang.current = this.localeToUse;
+          this.setVuetifyLocale(this.localeToUse);
+          this.$forceUpdate();
         }
       },
     },
@@ -470,8 +473,8 @@ const camundaResolvedJsonForms = defineComponent({
   },
   async mounted() {
     await this.reload();
-
-    this.$vuetify.lang.current = this.localeToUse;
+    this.vuetifyLocale = this.$vuetify.lang.current;
+    this.setVuetifyLocale(this.localeToUse);
   },
   provide() {
     return {
@@ -708,10 +711,16 @@ const camundaResolvedJsonForms = defineComponent({
 
       return props && isPlainObject(props) ? props : {};
     },
+    setVuetifyLocale(locale: string): void {
+      // if vuetify supports that locale then change it
+      if (this.$vuetify.lang.locales[locale]) {
+        this.$vuetify.lang.current = locale;
+      } else {
+        this.$vuetify.lang.current = this.vuetifyLocale || 'en';
+      }
+    },
   },
 });
 
 export default camundaResolvedJsonForms;
 </script>
-
-<style></style>
