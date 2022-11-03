@@ -42,10 +42,14 @@ import {
   JsonFormsI18nState,
   JsonFormsRendererRegistryEntry,
   JsonFormsUISchemaRegistryEntry,
-  ValidationMode
+  ValidationMode,
 } from '@jsonforms/core';
 import { JsonFormsChangeEvent, MaybeReadonly } from '@jsonforms/vue2';
-import { createAjv, ResolvedJsonForms } from '@kchobantonov/common-jsonforms';
+import {
+  createAjv,
+  createTranslator,
+  ResolvedJsonForms,
+} from '@kchobantonov/common-jsonforms';
 import { ErrorObject } from 'ajv';
 import Ajv from 'ajv/dist/core';
 import _get from 'lodash/get';
@@ -53,7 +57,172 @@ import isPlainObject from 'lodash/isPlainObject';
 import merge from 'lodash/merge';
 import _remove from 'lodash/remove';
 import { defineComponent, PropType, ref, toRef } from 'vue';
-import { VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
+import {
+  VAlert,
+  VApp,
+  VAppBar,
+  VAppBarNavIcon,
+  VAppBarTitle,
+  VAutocomplete,
+  VAvatar,
+  VBadge,
+  VBanner,
+  VBottomNavigation,
+  VBottomSheet,
+  VBreadcrumbs,
+  VBreadcrumbsDivider,
+  VBreadcrumbsItem,
+  VBtn,
+  VBtnToggle,
+  VCalendar,
+  VCalendarCategory,
+  VCalendarDaily,
+  VCalendarMonthly,
+  VCalendarWeekly,
+  VCard,
+  VCardActions,
+  VCardSubtitle,
+  VCardText,
+  VCardTitle,
+  VCarousel,
+  VCarouselItem,
+  VCarouselReverseTransition,
+  VCarouselTransition,
+  VCheckbox,
+  VChip,
+  VChipGroup,
+  VCol,
+  VColorPicker,
+  VColorPickerCanvas,
+  VColorPickerSwatches,
+  VCombobox,
+  VContainer,
+  VContent,
+  VCounter,
+  VData,
+  VDataFooter,
+  VDataIterator,
+  VDataTable,
+  VDataTableHeader,
+  VDatePicker,
+  VDatePickerDateTable,
+  VDatePickerHeader,
+  VDatePickerMonthTable,
+  VDatePickerTitle,
+  VDatePickerYears,
+  VDialog,
+  VDialogBottomTransition,
+  VDialogTopTransition,
+  VDialogTransition,
+  VDivider,
+  VEditDialog,
+  VExpandTransition,
+  VExpandXTransition,
+  VExpansionPanel,
+  VExpansionPanelContent,
+  VExpansionPanelHeader,
+  VExpansionPanels,
+  VFabTransition,
+  VFadeTransition,
+  VFileInput,
+  VFlex,
+  VFooter,
+  VForm,
+  VHover,
+  VIcon,
+  VImg,
+  VInput,
+  VItem,
+  VItemGroup,
+  VLabel,
+  VLayout,
+  VLazy,
+  VList,
+  VListGroup,
+  VListItem,
+  VListItemAction,
+  VListItemActionText,
+  VListItemAvatar,
+  VListItemContent,
+  VListItemGroup,
+  VListItemIcon,
+  VListItemSubtitle,
+  VListItemTitle,
+  VMain,
+  VMenu,
+  VMenuTransition,
+  VMessages,
+  VNavigationDrawer,
+  VOtpInput,
+  VOverflowBtn,
+  VOverlay,
+  VPagination,
+  VParallax,
+  VPicker,
+  VProgressCircular,
+  VProgressLinear,
+  VRadio,
+  VRadioGroup,
+  VRangeSlider,
+  VRating,
+  VResponsive,
+  VRow,
+  VScaleTransition,
+  VScrollXReverseTransition,
+  VScrollXTransition,
+  VScrollYReverseTransition,
+  VScrollYTransition,
+  VSelect,
+  VSheet,
+  VSimpleCheckbox,
+  VSimpleTable,
+  VSkeletonLoader,
+  VSlideGroup,
+  VSlideItem,
+  VSlider,
+  VSlideXReverseTransition,
+  VSlideXTransition,
+  VSlideYReverseTransition,
+  VSlideYTransition,
+  VSnackbar,
+  VSpacer,
+  VSparkline,
+  VSpeedDial,
+  VStepper,
+  VStepperContent,
+  VStepperHeader,
+  VStepperItems,
+  VStepperStep,
+  VSubheader,
+  VSwitch,
+  VSystemBar,
+  VTab,
+  VTabItem,
+  VTableOverflow,
+  VTabReverseTransition,
+  VTabs,
+  VTabsItems,
+  VTabsSlider,
+  VTabTransition,
+  VTextarea,
+  VTextField,
+  VThemeProvider,
+  VTimeline,
+  VTimelineItem,
+  VTimePicker,
+  VTimePickerClock,
+  VTimePickerTitle,
+  VToolbar,
+  VToolbarItems,
+  VToolbarTitle,
+  VTooltip,
+  VTreeview,
+  VTreeviewNode,
+  VVirtualScroll,
+  VVirtualTable,
+  VWindow,
+  VWindowItem,
+} from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 import { LoadEmitter, RestClient } from '../core';
 import { CamundaFormApi } from '../core/api';
@@ -133,10 +302,10 @@ const camundaResolvedJsonForms = defineComponent({
       type: Object as PropType<Ajv>,
       default: () => createAjv(),
     },
-    i18n: {
+    locale: {
       required: false,
-      type: Object as PropType<JsonFormsI18nState>,
-      default: undefined,
+      type: String,
+      default: 'en',
     },
     additionalErrors: {
       required: false,
@@ -198,8 +367,12 @@ const camundaResolvedJsonForms = defineComponent({
     const api = new CamundaFormApi();
     const additionalErrors = ref<ErrorObject[]>([]);
     const previousData = ref({});
+    const i18n = ref<JsonFormsI18nState | undefined>(undefined);
+    const localeToUse = props.locale ? props.locale : 'en';
 
     return {
+      localeToUse,
+      i18n,
       props,
       loading,
       context,
@@ -251,14 +424,225 @@ const camundaResolvedJsonForms = defineComponent({
       },
       deep: true,
     },
+    locale: {
+      handler(value?: string, oldValue?: string) {
+        if (value !== oldValue) {
+          this.localeToUse = value ? value : 'en';
+          this.i18n = {
+            locale: this.localeToUse,
+            translate: createTranslator(
+              this.localeToUse,
+              this.context?.translations
+            ),
+          };
+
+          this.$vuetify.lang.current = this.localeToUse;
+        }
+      },
+    },
+    context: {
+      handler(context: CamundaFormContext | null) {
+        let preset: Partial<VuetifyPreset> | null = null;
+
+        if (context?.uischema?.options) {
+          preset = this.vuetifyProps(
+            context.uischema.options,
+            'preset'
+          ) as Partial<VuetifyPreset>;
+        }
+
+        this.i18n = {
+          locale: this.localeToUse,
+          translate: createTranslator(this.localeToUse, context?.translations),
+        };
+
+        // apply any themes
+        this.$vuetify.theme = merge(
+          this.$vuetify.theme,
+          preset && preset.theme ? preset.theme : this.props.defaultPreset.theme
+        );
+        this.$vuetify.icons = merge(
+          this.$vuetify.icons,
+          preset && preset.icons ? preset.icons : this.props.defaultPreset.icons
+        );
+      },
+    },
   },
   async mounted() {
     await this.reload();
+
+    this.$vuetify.lang.current = this.localeToUse;
   },
   provide() {
-
     return {
       additionalErrors: toRef(this, 'additionalErrors'),
+      templateLayoutRendererComponentComponents: {
+        VAlert,
+        VApp,
+        VAppBar,
+        VAppBarNavIcon,
+        VAppBarTitle,
+        VAutocomplete,
+        VAvatar,
+        VBadge,
+        VBanner,
+        VBottomNavigation,
+        VBottomSheet,
+        VBreadcrumbs,
+        VBreadcrumbsDivider,
+        VBreadcrumbsItem,
+        VBtn,
+        VBtnToggle,
+        VCalendar,
+        VCalendarCategory,
+        VCalendarDaily,
+        VCalendarMonthly,
+        VCalendarWeekly,
+        VCard,
+        VCardActions,
+        VCardSubtitle,
+        VCardText,
+        VCardTitle,
+        VCarousel,
+        VCarouselItem,
+        VCarouselReverseTransition,
+        VCarouselTransition,
+        VCheckbox,
+        VChip,
+        VChipGroup,
+        VCol,
+        VColorPicker,
+        VColorPickerCanvas,
+        VColorPickerSwatches,
+        VCombobox,
+        VContainer,
+        VContent,
+        VCounter,
+        VData,
+        VDataFooter,
+        VDataIterator,
+        VDataTable,
+        VDataTableHeader,
+        VDatePicker,
+        VDatePickerDateTable,
+        VDatePickerHeader,
+        VDatePickerMonthTable,
+        VDatePickerTitle,
+        VDatePickerYears,
+        VDialog,
+        VDialogBottomTransition,
+        VDialogTopTransition,
+        VDialogTransition,
+        VDivider,
+        VEditDialog,
+        VExpandTransition,
+        VExpandXTransition,
+        VExpansionPanel,
+        VExpansionPanelContent,
+        VExpansionPanelHeader,
+        VExpansionPanels,
+        VFabTransition,
+        VFadeTransition,
+        VFileInput,
+        VFlex,
+        VFooter,
+        VForm,
+        VHover,
+        VIcon,
+        VImg,
+        VInput,
+        VItem,
+        VItemGroup,
+        VLabel,
+        VLayout,
+        VLazy,
+        VList,
+        VListGroup,
+        VListItem,
+        VListItemAction,
+        VListItemActionText,
+        VListItemAvatar,
+        VListItemContent,
+        VListItemGroup,
+        VListItemIcon,
+        VListItemSubtitle,
+        VListItemTitle,
+        VMain,
+        VMenu,
+        VMenuTransition,
+        VMessages,
+        VNavigationDrawer,
+        VOtpInput,
+        VOverflowBtn,
+        VOverlay,
+        VPagination,
+        VParallax,
+        VPicker,
+        VProgressCircular,
+        VProgressLinear,
+        VRadio,
+        VRadioGroup,
+        VRangeSlider,
+        VRating,
+        VResponsive,
+        VRow,
+        VScaleTransition,
+        VScrollXReverseTransition,
+        VScrollXTransition,
+        VScrollYReverseTransition,
+        VScrollYTransition,
+        VSelect,
+        VSheet,
+        VSimpleCheckbox,
+        VSimpleTable,
+        VSkeletonLoader,
+        VSlideGroup,
+        VSlideItem,
+        VSlider,
+        VSlideXReverseTransition,
+        VSlideXTransition,
+        VSlideYReverseTransition,
+        VSlideYTransition,
+        VSnackbar,
+        VSpacer,
+        VSparkline,
+        VSpeedDial,
+        VStepper,
+        VStepperContent,
+        VStepperHeader,
+        VStepperItems,
+        VStepperStep,
+        VSubheader,
+        VSwitch,
+        VSystemBar,
+        VTab,
+        VTabItem,
+        VTableOverflow,
+        VTabReverseTransition,
+        VTabs,
+        VTabsItems,
+        VTabsSlider,
+        VTabTransition,
+        VTextarea,
+        VTextField,
+        VThemeProvider,
+        VTimeline,
+        VTimelineItem,
+        VTimePicker,
+        VTimePickerClock,
+        VTimePickerTitle,
+        VToolbar,
+        VToolbarItems,
+        VToolbarTitle,
+        VTooltip,
+        VTreeview,
+        VTreeviewNode,
+        VVirtualScroll,
+        VVirtualTable,
+        VWindow,
+        VWindowItem,
+      },
+      templateLayoutRendererContext: this.context || {},
       formContext: toRef(this, 'context'),
       camundaFormApi: this.api,
       camundaFormEmitter: this.$emit.bind(this),
@@ -298,28 +682,6 @@ const camundaResolvedJsonForms = defineComponent({
       });
     },
     async reload() {
-      await this.loadContext();
-
-      let preset: Partial<VuetifyPreset> | null = null;
-
-      if (this.context?.uischema?.options) {
-        preset = this.vuetifyProps(
-          this.context.uischema.options,
-          'preset'
-        ) as Partial<VuetifyPreset>;
-      }
-
-      // apply any themes
-      this.$vuetify.theme = merge(
-        this.$vuetify.theme,
-        preset && preset.theme ? preset.theme : this.props.defaultPreset.theme
-      );
-      this.$vuetify.icons = merge(
-        this.$vuetify.icons,
-        preset && preset.icons ? preset.icons : this.props.defaultPreset.icons
-      );
-    },
-    async loadContext() {
       this.loading = true;
       this.context = null;
 

@@ -1,45 +1,21 @@
 <template>
-  <v-flex v-if="layout.visible" v-bind="vuetifyProps('v-flex')">
-    <div v-if="templateError !== null" class="error">
-      Template Error: {{ templateError }}
-    </div>
+  <div v-if="templateError !== null" class="error">
+    Template Error: {{ templateError }}
+  </div>
 
-    <template-compiler
-      :template="template"
-      :parent="parentComponent"
-      :elements="elements"
-      :componentComputed="componentComputed()"
-      :componentMethods="componentMethods()"
-      :componentFilters="componentFilters()"
-      :componentComponents="componentComponents()"
-    >
-      <template
-        v-if="elements !== undefined && elements.length == 1"
-        v-slot:default
-      >
-        <dispatch-renderer
-          :key="`${layout.path}-${0}`"
-          :schema="layout.schema"
-          :uischema="elements[0]"
-          :path="layout.path"
-          :enabled="layout.enabled"
-          :renderers="layout.renderers"
-          :cells="layout.cells"
-        />
-      </template>
-      <template v-for="(element, index) in elements" v-slot:[`${index}`]>
-        <dispatch-renderer
-          :key="`${layout.path}-${index}`"
-          :schema="layout.schema"
-          :uischema="element"
-          :path="layout.path"
-          :enabled="layout.enabled"
-          :renderers="layout.renderers"
-          :cells="layout.cells"
-        />
-      </template>
-    </template-compiler>
-  </v-flex>
+  <template-compiler
+    v-else-if="layout.visible"
+    :template="template"
+    :parent="parentComponent"
+    :elements="namedElements"
+    :componentComputed="componentComputed"
+    :componentDirectives="componentDirectives"
+    :componentMethods="componentMethods"
+    :componentFilters="componentFilters"
+    :componentComponents="componentComponents"
+    :layout="layout"
+  >
+  </template-compiler>
 </template>
 
 <script lang="ts">
@@ -57,181 +33,68 @@ import {
   RendererProps,
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
-import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
 import { ErrorObject } from 'ajv';
-import Vue, { defineComponent, inject, ref, unref } from 'vue';
+import Vue, { defineComponent, inject, ref } from 'vue';
+import { DirectiveFunction, DirectiveOptions } from 'vue/types/umd';
 import { ComputedOptions, MethodOptions } from 'vue/types/v3-component-options';
 import {
-  VAlert,
-  VApp,
-  VAppBar,
-  VAppBarNavIcon,
-  VAppBarTitle,
   VAutocomplete,
   VAvatar,
   VBadge,
-  VBanner,
-  VBottomNavigation,
-  VBottomSheet,
-  VBreadcrumbs,
-  VBreadcrumbsDivider,
-  VBreadcrumbsItem,
   VBtn,
-  VBtnToggle,
-  VCalendar,
-  VCalendarCategory,
-  VCalendarDaily,
-  VCalendarMonthly,
-  VCalendarWeekly,
   VCard,
   VCardActions,
-  VCardSubtitle,
   VCardText,
   VCardTitle,
-  VCarousel,
-  VCarouselItem,
-  VCarouselReverseTransition,
-  VCarouselTransition,
   VCheckbox,
-  VChip,
-  VChipGroup,
   VCol,
-  VColorPicker,
-  VColorPickerCanvas,
-  VColorPickerSwatches,
   VCombobox,
   VContainer,
-  VContent,
-  VCounter,
-  VData,
-  VDataFooter,
-  VDataIterator,
-  VDataTable,
-  VDataTableHeader,
   VDatePicker,
-  VDatePickerDateTable,
-  VDatePickerHeader,
-  VDatePickerMonthTable,
-  VDatePickerTitle,
-  VDatePickerYears,
   VDialog,
-  VDialogBottomTransition,
-  VDialogTopTransition,
-  VDialogTransition,
   VDivider,
-  VEditDialog,
-  VExpandTransition,
-  VExpandXTransition,
   VExpansionPanel,
   VExpansionPanelContent,
   VExpansionPanelHeader,
   VExpansionPanels,
-  VFabTransition,
-  VFadeTransition,
-  VFileInput,
   VFlex,
-  VFooter,
-  VForm,
   VHover,
   VIcon,
-  VImg,
   VInput,
-  VItem,
-  VItemGroup,
   VLabel,
-  VLayout,
-  VLazy,
   VList,
-  VListGroup,
   VListItem,
   VListItemAction,
-  VListItemActionText,
   VListItemAvatar,
   VListItemContent,
   VListItemGroup,
-  VListItemIcon,
-  VListItemSubtitle,
   VListItemTitle,
-  VMain,
   VMenu,
-  VMenuTransition,
-  VMessages,
-  VNavigationDrawer,
-  VOtpInput,
-  VOverflowBtn,
-  VOverlay,
-  VPagination,
-  VParallax,
-  VPicker,
-  VProgressCircular,
-  VProgressLinear,
   VRadio,
   VRadioGroup,
-  VRangeSlider,
-  VRating,
-  VResponsive,
   VRow,
-  VScaleTransition,
-  VScrollXReverseTransition,
-  VScrollXTransition,
-  VScrollYReverseTransition,
-  VScrollYTransition,
   VSelect,
-  VSheet,
-  VSimpleCheckbox,
   VSimpleTable,
-  VSkeletonLoader,
-  VSlideGroup,
-  VSlideItem,
   VSlider,
-  VSlideXReverseTransition,
-  VSlideXTransition,
-  VSlideYReverseTransition,
-  VSlideYTransition,
-  VSnackbar,
   VSpacer,
-  VSparkline,
-  VSpeedDial,
-  VStepper,
-  VStepperContent,
-  VStepperHeader,
-  VStepperItems,
-  VStepperStep,
-  VSubheader,
   VSwitch,
-  VSystemBar,
   VTab,
   VTabItem,
-  VTableOverflow,
-  VTabReverseTransition,
   VTabs,
-  VTabsItems,
-  VTabsSlider,
-  VTabTransition,
   VTextarea,
   VTextField,
-  VThemeProvider,
-  VTimeline,
-  VTimelineItem,
   VTimePicker,
-  VTimePickerClock,
-  VTimePickerTitle,
-  VToolbar,
-  VToolbarItems,
-  VToolbarTitle,
   VTooltip,
-  VTreeview,
-  VTreeviewNode,
-  VVirtualScroll,
-  VVirtualTable,
-  VWindow,
-  VWindowItem,
 } from 'vuetify/lib';
+import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
 import TemplateCompiler from '../components/TemplateCompiler.vue';
-import { Components } from '../config/config';
-import { FormContext, TemplateFormContext } from '../core/types';
+import {
+  Components,
+  NamedUISchemaElement,
+  TemplateContext,
+} from '../core/types';
 
-interface TemplateElement extends Layout {
+export interface TemplateLayout extends Layout {
   type: 'TemplateLayout';
   /**
    * The template string.
@@ -239,7 +102,6 @@ interface TemplateElement extends Layout {
   template: string;
 }
 
-// Register any components that are not yet provided by other jsonforms renderers and we want to use them in the template like VOtpInput
 const templateLayoutRenderer = defineComponent({
   name: 'template-layout-renderer',
   components: {
@@ -251,9 +113,9 @@ const templateLayoutRenderer = defineComponent({
     VFlex,
   },
   props: {
-    ...rendererProps<Layout>(),
+    ...rendererProps<TemplateLayout>(),
   },
-  setup(props: RendererProps<Layout>) {
+  setup(props: RendererProps<TemplateLayout>) {
     const t = useTranslator();
     const layout = useVuetifyLayout(useJsonFormsLayout(props));
 
@@ -264,17 +126,28 @@ const templateLayoutRenderer = defineComponent({
       );
     }
 
-    const formContext = inject<FormContext>('formContext');
+    const defaultTemplateContext = {
+      jsonforms: jsonforms,
+      locale: jsonforms.i18n?.locale,
+      translate: jsonforms.i18n?.translate,
 
-    if (!formContext) {
-      throw new Error(
-        "'formContext' couldn't be injected. Are you within JsonForms?"
-      );
-    }
+      data: jsonforms.core?.data,
+      schema: jsonforms.core?.schema,
+      uischema: jsonforms.core?.uischema,
+      errors: jsonforms.core?.errors,
+      additionalErrors: jsonforms.core?.additionalErrors,
+    };
+
+    const overrideTemplateContext = inject<TemplateContext | undefined>(
+      'templateLayoutRendererContext',
+      undefined
+    );
+
+    const templateContext = overrideTemplateContext
+      ? { ...defaultTemplateContext, ...overrideTemplateContext }
+      : defaultTemplateContext;
 
     const templateError = ref<string | null>(null);
-
-    const scopeData = inject<any>('scopeData', null);
 
     return {
       ...layout,
@@ -282,8 +155,7 @@ const templateLayoutRenderer = defineComponent({
       jsonforms,
       parentComponent: this,
       templateError,
-      formContext,
-      scopeData,
+      templateContext,
     };
   },
   errorCaptured: function (err: Error, _vm: Vue, info: string) {
@@ -292,21 +164,6 @@ const templateLayoutRenderer = defineComponent({
     }
   },
   computed: {
-    context(): TemplateFormContext {
-      return {
-        ...unref(this.formContext),
-        jsonforms: this.jsonforms,
-        locale: this.jsonforms.i18n?.locale,
-        translate: this.jsonforms.i18n?.translate,
-
-        data: this.jsonforms.core?.data,
-        schema: this.jsonforms.core?.schema,
-        uischema: this.jsonforms.core?.uischema,
-        errors: this.jsonforms.core?.errors,
-        additionalErrors: this.jsonforms.core?.additionalErrors,
-        scopeData: this.scopeData,
-      };
-    },
     data(): any {
       const jsonforms: JsonFormsSubStates = this.jsonforms;
       return jsonforms.core?.data;
@@ -316,225 +173,130 @@ const templateLayoutRenderer = defineComponent({
       return jsonforms.core?.errors;
     },
     template(): string | undefined {
-      return (this.layout.uischema as TemplateElement).template;
+      return (this.layout.uischema as TemplateLayout).template;
     },
-    elements(): UISchemaElement[] {
-      return (this.layout.uischema as TemplateElement).elements;
+    namedElements(): NamedUISchemaElement[] {
+      return (this.layout.uischema as TemplateLayout).elements?.map(
+        (element, index) => {
+          if ((element as any).name === undefined) {
+            (element as any).name = `${index}`;
+          }
+          return element as UISchemaElement & { name: string };
+        }
+      );
     },
-  },
-  methods: {
+    componentDirectives(): Record<
+      string,
+      DirectiveFunction | DirectiveOptions
+    > {
+      const defaultDirective = {};
+
+      const override = inject<
+        Record<string, DirectiveFunction | DirectiveOptions> | undefined
+      >('templateLayoutRendererComponentDirectives', undefined);
+
+      return override ? { ...defaultDirective, ...override } : defaultDirective;
+    },
     componentComputed(): ComputedOptions {
       const defaultComputed = {} as ComputedOptions;
-      const parentComponent = this as any;
 
-      for (const key of ['data', 'errors', 'context']) {
-        defaultComputed[key] = function () {
-          return parentComponent?.[key];
-        };
-      }
+      defaultComputed.data = () => this.data;
+      defaultComputed.errors = () => this.errors;
+      defaultComputed.elements = () => this.namedElements;
+      defaultComputed.context = () => this.templateContext;
 
-      return inject<ComputedOptions>(
+      const override = inject<ComputedOptions | undefined>(
         'templateLayoutRendererComponentComputed',
-        defaultComputed,
-        false
+        undefined
       );
+      return override ? { ...defaultComputed, ...override } : defaultComputed;
     },
     componentMethods() {
       const defaultMethods = {
         translate: this.translate.bind(this.parentComponent),
       } as MethodOptions;
 
-      return inject<MethodOptions>(
+      const override = inject<MethodOptions | undefined>(
         'templateLayoutRendererComponentMethods',
-        defaultMethods,
-        false
+        undefined
       );
+
+      return override ? { ...defaultMethods, ...override } : defaultMethods;
     },
     componentFilters() {
       const defaultFilters = {
         translate: this.translate.bind(this.parentComponent),
       } as MethodOptions;
 
-      return inject<MethodOptions>(
+      const override = inject<MethodOptions | undefined>(
         'templateLayoutRendererComponentFilters',
-        defaultFilters,
-        false
+        undefined
       );
+      return override ? { ...defaultFilters, ...override } : defaultFilters;
     },
     componentComponents() {
+      // by default we use only Vuetify components that are already used by other renderers
       const defaultComponents = {
-        VAlert,
-        VApp,
-        VAppBar,
-        VAppBarNavIcon,
-        VAppBarTitle,
         VAutocomplete,
         VAvatar,
         VBadge,
-        VBanner,
-        VBottomNavigation,
-        VBottomSheet,
-        VBreadcrumbs,
-        VBreadcrumbsDivider,
-        VBreadcrumbsItem,
         VBtn,
-        VBtnToggle,
-        VCalendar,
-        VCalendarCategory,
-        VCalendarDaily,
-        VCalendarMonthly,
-        VCalendarWeekly,
         VCard,
         VCardActions,
-        VCardSubtitle,
         VCardText,
         VCardTitle,
-        VCarousel,
-        VCarouselItem,
-        VCarouselReverseTransition,
-        VCarouselTransition,
         VCheckbox,
-        VChip,
-        VChipGroup,
         VCol,
-        VColorPicker,
-        VColorPickerCanvas,
-        VColorPickerSwatches,
         VCombobox,
         VContainer,
-        VContent,
-        VCounter,
-        VData,
-        VDataFooter,
-        VDataIterator,
-        VDataTable,
-        VDataTableHeader,
         VDatePicker,
-        VDatePickerDateTable,
-        VDatePickerHeader,
-        VDatePickerMonthTable,
-        VDatePickerTitle,
-        VDatePickerYears,
         VDialog,
-        VDialogBottomTransition,
-        VDialogTopTransition,
-        VDialogTransition,
         VDivider,
-        VEditDialog,
-        VExpandTransition,
-        VExpandXTransition,
         VExpansionPanel,
         VExpansionPanelContent,
         VExpansionPanelHeader,
         VExpansionPanels,
-        VFabTransition,
-        VFadeTransition,
-        VFileInput,
         VFlex,
-        VFooter,
-        VForm,
         VHover,
         VIcon,
-        VImg,
         VInput,
-        VItem,
-        VItemGroup,
         VLabel,
-        VLayout,
-        VLazy,
         VList,
-        VListGroup,
         VListItem,
         VListItemAction,
-        VListItemActionText,
         VListItemAvatar,
         VListItemContent,
         VListItemGroup,
-        VListItemIcon,
-        VListItemSubtitle,
         VListItemTitle,
-        VMain,
         VMenu,
-        VMenuTransition,
-        VMessages,
-        VNavigationDrawer,
-        VOtpInput,
-        VOverflowBtn,
-        VOverlay,
-        VPagination,
-        VParallax,
-        VPicker,
-        VProgressCircular,
-        VProgressLinear,
         VRadio,
         VRadioGroup,
-        VRangeSlider,
-        VRating,
-        VResponsive,
         VRow,
-        VScaleTransition,
-        VScrollXReverseTransition,
-        VScrollXTransition,
-        VScrollYReverseTransition,
-        VScrollYTransition,
         VSelect,
-        VSheet,
-        VSimpleCheckbox,
         VSimpleTable,
-        VSkeletonLoader,
-        VSlideGroup,
-        VSlideItem,
         VSlider,
-        VSlideXReverseTransition,
-        VSlideXTransition,
-        VSlideYReverseTransition,
-        VSlideYTransition,
-        VSnackbar,
         VSpacer,
-        VSparkline,
-        VSpeedDial,
-        VStepper,
-        VStepperContent,
-        VStepperHeader,
-        VStepperItems,
-        VStepperStep,
-        VSubheader,
         VSwitch,
-        VSystemBar,
         VTab,
         VTabItem,
-        VTableOverflow,
-        VTabReverseTransition,
         VTabs,
-        VTabsItems,
-        VTabsSlider,
-        VTabTransition,
         VTextarea,
         VTextField,
-        VThemeProvider,
-        VTimeline,
-        VTimelineItem,
         VTimePicker,
-        VTimePickerClock,
-        VTimePickerTitle,
-        VToolbar,
-        VToolbarItems,
-        VToolbarTitle,
         VTooltip,
-        VTreeview,
-        VTreeviewNode,
-        VVirtualScroll,
-        VVirtualTable,
-        VWindow,
-        VWindowItem,
       } as Components;
 
-      return inject<Components>(
+      const override = inject<Components | undefined>(
         'templateLayoutRendererComponentComponents',
-        defaultComponents,
-        false
+        undefined
       );
+
+      return override
+        ? { ...defaultComponents, ...override }
+        : defaultComponents;
     },
+  },
+  methods: {
     translate(
       key: string,
       defaultMessage: string | undefined

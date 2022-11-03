@@ -46,7 +46,7 @@
 import { ValidationMode } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import { CamundaResolvedJsonForms } from '@kchobantonov/camunda-jsonforms';
-import { merge } from 'lodash';
+import merge from 'lodash/merge';
 import Vue, { defineComponent, PropType, ref } from 'vue';
 import LoadScript from 'vue-plugin-load-script';
 import { VApp, VSheet } from 'vuetify/lib';
@@ -62,14 +62,6 @@ const CustomStyle = defineComponent({
     return createElement('style', this.$slots.default);
   },
 });
-
-const theme = vuetify.framework.theme as any;
-// force vuetify to use checkOrCreateStyleElement
-theme.vueMeta = null;
-theme.checkOrCreateStyleElement = function () {
-  // do not update any style elements
-  return false;
-};
 
 const camundaFormWc = defineComponent({
   vuetify,
@@ -227,7 +219,7 @@ const camundaFormWc = defineComponent({
       dataValidationMode,
       dataLocale,
       dataDefaultPreset,
-      vuetifyTheme: ref<{ generatedStyles: string }>(theme),
+      vuetifyTheme: ref<{ generatedStyles: string }>(vuetify.framework.theme as any),
     };
   },
   watch: {

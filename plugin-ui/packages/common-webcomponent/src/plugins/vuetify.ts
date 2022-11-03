@@ -2,6 +2,10 @@ import Vue from 'vue';
 import Vuetify from 'vuetify/lib';
 import { VuetifyPreset } from 'vuetify/types/services/presets';
 
+// This is needed because of the json-ref resolution when the schema url is not specified or it is relative
+import * as process from 'process';
+window.process = process;
+
 Vue.use(Vuetify);
 
 export const preset: Partial<VuetifyPreset> = {
@@ -42,8 +46,18 @@ export const preset: Partial<VuetifyPreset> = {
   },
 };
 
-export default new Vuetify({
+const vuetify = new Vuetify({
   preset,
   rtl: false,
   theme: { dark: false },
 });
+
+const theme = vuetify.framework.theme as any;
+// force vuetify to use checkOrCreateStyleElement
+theme.vueMeta = null;
+theme.checkOrCreateStyleElement = function () {
+  // do not update any style elements
+  return false;
+};
+
+export default vuetify;

@@ -7,7 +7,7 @@
   >
     <v-hover v-slot="{ hover }">
       <v-file-input
-        disabled-icon-focus
+        v-disabled-icon-focus
         :id="control.id + '-input'"
         :class="styles.control.input"
         :disabled="!control.enabled"
@@ -72,6 +72,8 @@ import {
   useTranslator,
   useVuetifyControl,
 } from '@jsonforms/vue2-vuetify';
+import toNumber from 'lodash/toNumber';
+import { defineComponent, ref } from 'vue';
 import {
   VBtn,
   VCard,
@@ -86,9 +88,6 @@ import {
   VToolbarTitle,
 } from 'vuetify/lib';
 import { DisabledIconFocus } from './directives';
-
-import toNumber from 'lodash/toNumber';
-import { computed, defineComponent, ref, unref } from 'vue';
 
 const formatBytes = (bytes: number, decimals = 2) => {
   if (bytes === 0) return '0 Bytes';
@@ -113,8 +112,15 @@ const getFileSize = (
     formatMaximum: any;
     formatExclusiveMinimum: any;
     formatExclusiveMaximum: any;
-    contentSchema?: { minItems: any; maxItems: any };
   },
+  uioptions:
+    | {
+        formatMinimum: any;
+        formatMaximum: any;
+        formatExclusiveMinimum: any;
+        formatExclusiveMaximum: any;
+      }
+    | undefined,
   variant: 'min' | 'max'
 ): [number | undefined, boolean] => {
   let exclusive = false;
@@ -122,21 +128,45 @@ const getFileSize = (
 
   if (variant === 'min') {
     fileSize = toNonNegativeNumber(schema?.formatMinimum);
-    if (fileSize === undefined) {
+    if (fileSize === undefined && schema?.formatExclusiveMinimum) {
       fileSize = toNonNegativeNumber(schema?.formatExclusiveMinimum);
       exclusive = true;
     }
-    if (fileSize === undefined) {
-      fileSize = toNonNegativeNumber(schema?.contentSchema?.minItems);
+
+    if (fileSize === undefined && uioptions) {
+      if (
+        typeof uioptions.formatMinimum === 'number' ||
+        typeof uioptions.formatMinimum === 'string'
+      ) {
+        fileSize = toNonNegativeNumber(uioptions.formatMinimum);
+      } else if (
+        typeof uioptions.formatExclusiveMinimum === 'number' ||
+        typeof uioptions.formatExclusiveMinimum === 'string'
+      ) {
+        fileSize = toNonNegativeNumber(uioptions.formatExclusiveMinimum);
+        exclusive = true;
+      }
     }
   } else {
     fileSize = toNonNegativeNumber(schema?.formatMaximum);
-    if (fileSize === undefined) {
+    if (fileSize === undefined && schema?.formatExclusiveMaximum) {
       fileSize = toNonNegativeNumber(schema?.formatExclusiveMaximum);
       exclusive = true;
     }
-    if (fileSize === undefined) {
-      fileSize = toNonNegativeNumber(schema?.contentSchema?.maxItems);
+
+    if (fileSize === undefined && uioptions) {
+      if (
+        typeof uioptions.formatMaximum === 'number' ||
+        typeof uioptions.formatMaximum === 'string'
+      ) {
+        fileSize = toNonNegativeNumber(uioptions.formatMaximum);
+      } else if (
+        typeof uioptions.formatExclusiveMaximum === 'number' ||
+        typeof uioptions.formatExclusiveMaximum === 'string'
+      ) {
+        fileSize = toNonNegativeNumber(uioptions.formatExclusiveMaximum);
+        exclusive = true;
+      }
     }
   }
 
@@ -212,21 +242,6 @@ const fileRenderer = defineComponent({
     const progressIndeterminate = ref(true);
     const progressValue = ref(0);
 
-    // implement the validation outside the Ajv since we do not want even to transform invalid files into string and then implement custom Avj validator
-    const minFileSize = computed(
-      () => getFileSize(unref(input.control).schema as any, 'min')[0]
-    );
-    const minFileSizeExclusive = computed(
-      () => getFileSize(unref(input.control).schema as any, 'min')[1]
-    );
-
-    const maxFileSize = computed(
-      () => getFileSize(unref(input.control).schema as any, 'max')[0]
-    );
-    const maxFileSizeExclusive = computed(
-      () => getFileSize(unref(input.control).schema as any, 'max')[1]
-    );
-
     return {
       ...useVuetifyControl(input),
       t,
@@ -236,10 +251,6 @@ const fileRenderer = defineComponent({
       currentFile,
       currentFileReader,
       currentFileValidationErrors,
-      maxFileSize,
-      maxFileSizeExclusive,
-      minFileSize,
-      minFileSizeExclusive,
     };
   },
   computed: {
@@ -252,6 +263,34 @@ const fileRenderer = defineComponent({
     },
     standby(): string {
       return this.t('Attaching file...', 'Attaching file...');
+    },
+    minFileSize(): number | undefined {
+      return getFileSize(
+        this.control.schema as any,
+        this.appliedOptions,
+        'min'
+      )[0];
+    },
+    minFileSizeExclusive(): boolean | undefined {
+      return getFileSize(
+        this.control.schema as any,
+        this.appliedOptions,
+        'min'
+      )[1];
+    },
+    maxFileSize(): number | undefined {
+      return getFileSize(
+        this.control.schema as any,
+        this.appliedOptions,
+        'max'
+      )[0];
+    },
+    maxFileSizeExclusive(): boolean | undefined {
+      return getFileSize(
+        this.control.schema as any,
+        this.appliedOptions,
+        'max'
+      )[1];
     },
   },
   methods: {
@@ -283,15 +322,23 @@ const fileRenderer = defineComponent({
               this.control.schema,
               this.control.uischema,
               this.control.path,
-              'error.contentSchema.maxItems'
+              this.maxFileSizeExclusive
+                ? 'error.formatExclusiveMaximum'
+                : 'error.formatMaximum'
             );
 
+            const formatSize = formatBytes(this.maxFileSize);
             this.currentFileValidationErrors = this.t(
-              key!,
-              `size should be less than ${formatBytes(this.maxFileSize)}`
+              key,
+              `size should be less than ${formatSize}`,
+              {
+                limitText: `${formatSize}`,
+                limit: `${this.maxFileSize}`,
+              }
             );
           }
         }
+
         if (this.minFileSize) {
           const minFileSizeValid = this.minFileSizeExclusive
             ? value.size > this.minFileSize
@@ -301,11 +348,19 @@ const fileRenderer = defineComponent({
               this.control.schema,
               this.control.uischema,
               this.control.path,
-              'error.contentSchema.minItems'
+              this.minFileSizeExclusive
+                ? 'error.formatExclusiveMinimum'
+                : 'error.formatMinimum'
             );
+
+            const formatSize = formatBytes(this.minFileSize);
             this.currentFileValidationErrors = this.t(
-              key!,
-              `size should be greater than ${formatBytes(this.minFileSize)}`
+              key,
+              `size should be greater than ${formatSize}`,
+              {
+                limitText: `${formatSize}`,
+                limit: `${this.maxFileSize}`,
+              }
             );
           }
         }
