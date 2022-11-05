@@ -784,6 +784,7 @@ const vuetifyFormWc = defineComponent({
         if (value !== oldValue) {
           const data = typeof value == 'string' ? JSON.parse(value) : undefined;
           this.dataToUse = data;
+          this.$forceUpdate();
         }
       },
     },
@@ -793,6 +794,7 @@ const vuetifyFormWc = defineComponent({
           const schema =
             typeof value == 'string' ? JSON.parse(value) : undefined;
           this.schemaToUse = schema;
+          this.$forceUpdate();
         }
       },
     },
@@ -801,6 +803,7 @@ const vuetifyFormWc = defineComponent({
         if (value !== oldValue) {
           const schemaUrl = typeof value == 'string' ? value : undefined;
           this.schemaUrlToUse = schemaUrl;
+          this.$forceUpdate();
         }
       },
     },
@@ -810,6 +813,7 @@ const vuetifyFormWc = defineComponent({
           const uischema =
             typeof value == 'string' ? JSON.parse(value) : undefined;
           this.uischemaToUse = uischema;
+          this.$forceUpdate();
         }
       },
     },
@@ -819,6 +823,7 @@ const vuetifyFormWc = defineComponent({
           const config =
             typeof value == 'string' ? JSON.parse(value) : undefined;
           this.configToUse = config;
+          this.$forceUpdate();
         }
       },
     },
@@ -826,6 +831,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.readonlyToUse = value == 'true';
+          this.$forceUpdate();
         }
       },
     },
@@ -833,6 +839,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.uischemasToUse = transformUISchemas(value);
+          this.$forceUpdate();
         }
       },
     },
@@ -845,6 +852,7 @@ const vuetifyFormWc = defineComponent({
             value == 'NoValidation'
               ? value
               : 'ValidateAndShow';
+          this.$forceUpdate();
         }
       },
     },
@@ -877,6 +885,7 @@ const vuetifyFormWc = defineComponent({
               this.translationsToUse
             ) as Translator,
           };
+          this.$forceUpdate();
         }
       },
     },
@@ -885,6 +894,7 @@ const vuetifyFormWc = defineComponent({
         if (value !== oldValue) {
           this.additionalErrorsToUse =
             typeof value == 'string' ? JSON.parse(value) : [];
+          this.$forceUpdate();
         }
       },
     },
@@ -897,6 +907,7 @@ const vuetifyFormWc = defineComponent({
               : undefined;
 
           this.applyTheme();
+          this.$forceUpdate();
         }
       },
     },
@@ -904,6 +915,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.actionsToUse = transformActions(value);
+          this.$forceUpdate();
         }
       },
     },
@@ -912,6 +924,7 @@ const vuetifyFormWc = defineComponent({
         if (value !== oldValue) {
           this.uidataToUse = typeof value == 'string' ? JSON.parse(value) : {};
           this.context.value.uidata = this.uidataToUse;
+          this.$forceUpdate();
         }
       },
     },

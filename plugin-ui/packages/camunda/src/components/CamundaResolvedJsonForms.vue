@@ -388,6 +388,7 @@ const camundaResolvedJsonForms = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.reload();
+          this.$forceUpdate();
         }
       },
       deep: true,
@@ -396,6 +397,7 @@ const camundaResolvedJsonForms = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.reload();
+          this.$forceUpdate();
         }
       },
       deep: true,
@@ -404,6 +406,7 @@ const camundaResolvedJsonForms = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.reload();
+          this.$forceUpdate();
         }
       },
       deep: true,
@@ -412,6 +415,7 @@ const camundaResolvedJsonForms = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.reload();
+          this.$forceUpdate();
         }
       },
       deep: true,
@@ -422,6 +426,7 @@ const camundaResolvedJsonForms = defineComponent({
         const context = this.context;
         if (context) {
           context.data = this.previousData;
+          this.$forceUpdate();
         }
       },
       deep: true,
@@ -468,6 +473,8 @@ const camundaResolvedJsonForms = defineComponent({
           this.$vuetify.icons,
           preset && preset.icons ? preset.icons : this.props.defaultPreset.icons
         );
+
+        this.$forceUpdate();
       },
     },
   },
