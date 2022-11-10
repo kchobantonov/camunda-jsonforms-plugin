@@ -19,6 +19,7 @@ const actions = fs
   .toString();
 
 module.exports = {
+  parallel: false,
   configureWebpack: {
     optimization: {
       splitChunks: {

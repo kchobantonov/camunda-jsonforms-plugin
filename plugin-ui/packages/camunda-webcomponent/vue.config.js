@@ -13,6 +13,7 @@ const listeners = fs
   .toString();
 
 module.exports = {
+  parallel: false,
   configureWebpack: {
     optimization: {
       splitChunks: {
