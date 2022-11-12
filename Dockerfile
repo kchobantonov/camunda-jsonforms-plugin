@@ -1,4 +1,10 @@
 ARG ARCH=
+
+FROM maven:3.8.6-openjdk-8 as compiler
+WORKDIR /usr/local/src/
+COPY . .
+RUN mvn clean install
+
 FROM ${ARCH}alpine:latest as builder
 
 ARG VERSION=7.16.0
@@ -24,16 +30,20 @@ RUN apk add --no-cache \
         wget \
         xmlstarlet
 
-COPY docker-camunda-bpm-platform/settings.xml docker-camunda-bpm-platform/download.sh docker-camunda-bpm-platform/camunda-run.sh docker-camunda-bpm-platform/camunda-tomcat.sh docker-camunda-bpm-platform/camunda-wildfly.sh  /tmp/
+COPY --from=compiler /usr/local/src/docker-camunda-bpm-platform/settings.xml /tmp/
+COPY --from=compiler /usr/local/src/docker-camunda-bpm-platform/download.sh /tmp/
+COPY --from=compiler /usr/local/src/docker-camunda-bpm-platform/camunda-run.sh /tmp/
+COPY --from=compiler /usr/local/src/docker-camunda-bpm-platform/camunda-tomcat.sh /tmp/
+COPY --from=compiler /usr/local/src/docker-camunda-bpm-platform/camunda-wildfly.sh /tmp/
 
+RUN chmod +x /tmp/*.sh
 RUN /tmp/download.sh
 
-COPY plugin/target/*.jar /camunda/lib/
-COPY plugin/target/classes/META-INF/resources/webjars/camunda/ /camunda/webapps/camunda/
-
-COPY plugin/target/classes/META-INF/resources/webjars/forms/* /camunda/webapps/camunda-invoice/webjars/forms/
-COPY docker-camunda-bpm-platform/camunda-invoice/forms/ /camunda/webapps/camunda-invoice/forms/
-COPY docker-camunda-bpm-platform/camunda-invoice/classes/ /camunda/webapps/camunda-invoice/WEB-INF/classes
+COPY --chown=camunda:camunda --from=compiler /usr/local/src/plugin/target/*.jar /camunda/lib/
+COPY --chown=camunda:camunda --from=compiler /usr/local/src/plugin/target/classes/META-INF/resources/webjars/camunda/ /camunda/webapps/camunda/
+COPY --chown=camunda:camunda --from=compiler /usr/local/src/plugin/target/classes/META-INF/resources/webjars/forms/* /camunda/webapps/camunda-invoice/webjars/forms/
+COPY --chown=camunda:camunda --from=compiler /usr/local/src/docker-camunda-bpm-platform/camunda-invoice/forms/ /camunda/webapps/camunda-invoice/forms/
+COPY --chown=camunda:camunda --from=compiler /usr/local/src/docker-camunda-bpm-platform/camunda-invoice/classes/ /camunda/webapps/camunda-invoice/WEB-INF/classes
 
 ##### FINAL IMAGE #####
 

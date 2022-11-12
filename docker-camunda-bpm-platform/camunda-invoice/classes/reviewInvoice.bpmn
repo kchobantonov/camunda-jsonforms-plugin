@@ -10,11 +10,11 @@
       <bpmn:incoming>SequenceFlow_0vvoxt0</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="SequenceFlow_0vvoxt0" sourceRef="reviewInvoice" targetRef="EndEvent_1og1zom" />
-    <bpmn:userTask id="assignReviewer" name="Assign Reviewer" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/camunda-invoice/forms/assign-reviewer" camunda:assignee="demo">
+    <bpmn:userTask id="assignReviewer" name="Assign Reviewer" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/forms/assign-reviewer" camunda:assignee="demo">
       <bpmn:incoming>SequenceFlow_1ggutts</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_144f11w</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="reviewInvoice" name="Review Invoice" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/camunda-invoice/forms/review-invoice" camunda:assignee="${reviewer}" camunda:dueDate="${dateTime().plusDays(2).toDate()}">
+    <bpmn:userTask id="reviewInvoice" name="Review Invoice" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/forms/review-invoice" camunda:assignee="${reviewer}" camunda:dueDate="${dateTime().plusDays(2).toDate()}">
       <bpmn:incoming>SequenceFlow_144f11w</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0vvoxt0</bpmn:outgoing>
     </bpmn:userTask>

@@ -4,5 +4,18 @@ Provides client-side and server-side integration for using Camunda Embedded Form
 
 ## Docker
 
-Before building the docker image for camunda-bpm-platform make sure that you have built the project with ```mvn clean install```.
-Note that the docker image will be based on camumda-bpm-platform and will not include the demo project.
+### Try it
+
+------
+
+With Camunda Platform 7.16.0:
+
+```bash
+git clone https://github.com/kchobantonov/camunda-jsonforms-plugin.git
+docker build -f Dockerfile -t camunda-bpm-platform:7.16.0-jsonforms .
+docker run --rm -p 8080:8080 camunda-bpm-platform:7.16.0-jsonforms
+```
+On your browser go to
+http://localhost:8080/camunda
+
+Note: docker image will be based on camumda-bpm-platform and will not include the demo project.

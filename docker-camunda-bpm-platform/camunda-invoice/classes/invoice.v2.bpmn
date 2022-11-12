@@ -27,7 +27,7 @@
       </lane>
     </laneSet>
     <dataStoreReference id="DataStoreReference_1" name="Financial Accounting System" dataStoreRef="FinancialAccountingSystem" />
-    <userTask id="approveInvoice" name="Approve Invoice" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/camunda-invoice/forms/approve-invoice" camunda:candidateGroups="${approverGroups}" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}">
+    <userTask id="approveInvoice" name="Approve Invoice" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/forms/approve-invoice" camunda:candidateGroups="${approverGroups}" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}">
       <documentation>Approve the invoice (or not).</documentation>
       <extensionElements>
         <camunda:taskListener event="create">
@@ -53,7 +53,7 @@
       <outgoing>reviewNotSuccessful</outgoing>
       <outgoing>reviewSuccessful</outgoing>
     </exclusiveGateway>
-    <userTask id="prepareBankTransfer" name="Prepare&#10;Bank&#10;Transfer" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/camunda-invoice/forms/prepare-bank-transfer" camunda:candidateGroups="accounting" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}">
+    <userTask id="prepareBankTransfer" name="Prepare&#10;Bank&#10;Transfer" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/forms/prepare-bank-transfer" camunda:candidateGroups="accounting" camunda:dueDate="${dateTime().plusWeeks(1).toDate()}">
       <documentation>Prepare the bank transfer.</documentation>
       <incoming>invoiceApproved</incoming>
       <outgoing>SequenceFlow_2</outgoing>
@@ -67,7 +67,7 @@
       <incoming>SequenceFlow_1</incoming>
       <outgoing>sequenceFlow_178</outgoing>
     </businessRuleTask>
-    <startEvent id="StartEvent_1" name="Invoice&#10;received" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/camunda-invoice/forms/start-form">
+    <startEvent id="StartEvent_1" name="Invoice&#10;received" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?path=/forms/start-form">
       <outgoing>SequenceFlow_1</outgoing>
     </startEvent>
     <endEvent id="invoiceNotProcessed" name="Invoice not&#10;processed">

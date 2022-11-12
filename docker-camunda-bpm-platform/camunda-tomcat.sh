@@ -14,7 +14,7 @@ fi
 
 DB_DRIVER=${DB_DRIVER:-org.h2.Driver}
 DB_PASSWORD=${DB_PASSWORD:-sa}
-DB_URL=${DB_URL:-jdbc:h2:./camunda-h2-dbs/process-engine;MVCC=TRUE;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE}
+DB_URL=${DB_URL:-jdbc:h2:./camunda-h2-dbs/process-engine;TRACE_LEVEL_FILE=0;DB_CLOSE_ON_EXIT=FALSE}
 DB_USERNAME=${DB_USERNAME:-sa}
 
 XML_JDBC="//Resource[@name='jdbc/ProcessEngine']"
@@ -53,7 +53,7 @@ fi
 if [ "$JMX_PROMETHEUS" = "true" ] ; then
   echo "Enabling Prometheus JMX Exporter on port ${JMX_PROMETHEUS_PORT}"
   [ ! -f "$JMX_PROMETHEUS_CONF" ] && touch "$JMX_PROMETHEUS_CONF"
-  export CATALINA_OPTS="-javaagent:/camunda/javaagent/jmx_prometheus_javaagent.jar=${JMX_PROMETHEUS_PORT}:${JMX_PROMETHEUS_CONF}"
+  export CATALINA_OPTS="${CATALINA_OPTS:=} -javaagent:/camunda/javaagent/jmx_prometheus_javaagent.jar=${JMX_PROMETHEUS_PORT}:${JMX_PROMETHEUS_CONF}"
 fi
 
 CMD+=" run"
