@@ -956,8 +956,8 @@ const vuetifyFormWc = defineComponent({
     },
   },
   methods: {
-        // include the fonts outside the webcomponent for now - https://github.com/google/material-design-icons/issues/1165
-        exportFont(root: ShadowRoot, id: string, startsWith: string): void {
+    // include the fonts outside the webcomponent for now - https://github.com/google/material-design-icons/issues/1165
+    exportFont(root: ShadowRoot, id: string, startsWith: string): void {
       let el = document.querySelector(`style[id="${id}"]`);
       if (!el) {
         el = document.createElement('style');
