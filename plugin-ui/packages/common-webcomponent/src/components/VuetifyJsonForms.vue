@@ -933,6 +933,34 @@ const vuetifyFormWc = defineComponent({
     this.applyTheme();
     this.vuetifyLocale = this.$vuetify.lang.current;
     this.setVuetifyLocale(this.localeToUse);
+
+    // include the fonts outside the webcomponent for now - https://github.com/google/material-design-icons/issues/1165
+    if (this.$el.getRootNode() instanceof ShadowRoot) {
+      let el = document.querySelector(
+        'style[id="vuetify-json-forms-materialdesignicons"]'
+      );
+      if (!el) {
+        el = document.createElement('style');
+        el.id = 'vuetify-json-forms-materialdesignicons';
+
+        const root = this.$el.getRootNode();
+        if (root.hasChildNodes()) {
+          let children = root.childNodes;
+          for (const node of children) {
+            if (
+              node.nodeName.toLowerCase() === 'style' &&
+              node.textContent?.startsWith(
+                '@font-face{font-family:Material Design Icons;'
+              )
+            ) {
+              el.textContent = node.textContent;
+              break;
+            }
+          }
+        }
+        document.head.appendChild(el);
+      }
+    }
   },
   computed: {
     dark() {
@@ -993,6 +1021,6 @@ export default vuetifyFormWc;
 
 <style scoped>
 @import url('//fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
-@import url('//cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css');
-@import url('//cdn.jsdelivr.net/npm/vuetify@2.6.12/dist/vuetify.min.css');
+@import '~@mdi/font/css/materialdesignicons.min.css';
+@import '~vuetify/dist/vuetify.min.css';
 </style>

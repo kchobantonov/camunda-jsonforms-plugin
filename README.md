@@ -8,12 +8,12 @@ Provides client-side and server-side integration for using Camunda Embedded Form
 
 ------
 
-With Camunda Platform 7.16.0:
+With Camunda Platform 7.18.0:
 
 ```bash
 git clone https://github.com/kchobantonov/camunda-jsonforms-plugin.git
-docker build -f Dockerfile -t camunda-bpm-platform:7.16.0-jsonforms .
-docker run --rm -p 8080:8080 camunda-bpm-platform:7.16.0-jsonforms
+docker build -f Dockerfile -t camunda-bpm-platform:7.18.0-jsonforms .
+docker run --rm -p 8080:8080 camunda-bpm-platform:7.18.0-jsonforms
 ```
 On your browser go to
 http://localhost:8080/camunda
