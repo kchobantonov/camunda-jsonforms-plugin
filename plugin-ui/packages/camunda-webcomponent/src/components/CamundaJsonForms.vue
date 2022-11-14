@@ -327,32 +327,17 @@ const camundaFormWc = defineComponent({
   async mounted() {
     this.applyTheme();
 
-    // include the fonts outside the webcomponent for now - https://github.com/google/material-design-icons/issues/1165
     if (this.$el.getRootNode() instanceof ShadowRoot) {
-      let el = document.querySelector(
-        'style[id="camunda-json-forms-materialdesignicons"]'
+      this.exportFont(
+        this.$el.getRootNode() as ShadowRoot,
+        'camunda-json-forms-materialdesignicons',
+        '@font-face{font-family:Material Design Icons;'
       );
-      if (!el) {
-        el = document.createElement('style');
-        el.id = 'camunda-json-forms-materialdesignicons';
-
-        const root = this.$el.getRootNode();
-        if (root.hasChildNodes()) {
-          let children = root.childNodes;
-          for (const node of children) {
-            if (
-              node.nodeName.toLowerCase() === 'style' &&
-              node.textContent?.startsWith(
-                '@font-face{font-family:Material Design Icons;'
-              )
-            ) {
-              el.textContent = node.textContent;
-              break;
-            }
-          }
-        }
-        document.head.appendChild(el);
-      }
+      this.exportFont(
+        this.$el.getRootNode() as ShadowRoot,
+        'camunda-json-forms-roboto',
+        '@font-face{font-family:Roboto;'
+      );
     }
   },
   computed: {
@@ -364,6 +349,28 @@ const camundaFormWc = defineComponent({
     },
   },
   methods: {
+    // include the fonts outside the webcomponent for now - https://github.com/google/material-design-icons/issues/1165
+    exportFont(root: ShadowRoot, id: string, startsWith: string): void {
+      let el = document.querySelector(`style[id="${id}"]`);
+      if (!el) {
+        el = document.createElement('style');
+        el.id = id;
+
+        if (root.hasChildNodes()) {
+          let children = root.childNodes;
+          for (const node of children) {
+            if (
+              node.nodeName.toLowerCase() === 'style' &&
+              node.textContent?.startsWith(startsWith)
+            ) {
+              el.textContent = node.textContent;
+              break;
+            }
+          }
+        }
+        document.head.appendChild(el);
+      }
+    },
     applyTheme(): void {
       let preset: Partial<VuetifyPreset> | null = null;
       if (this.input?.uischema?.options) {
@@ -416,7 +423,7 @@ export default camundaFormWc;
 </script>
 
 <style scoped>
-@import url('//fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
+@import '~@fontsource/roboto/index.css';
 @import '~@mdi/font/css/materialdesignicons.min.css';
 @import '~vuetify/dist/vuetify.min.css';
 </style>
