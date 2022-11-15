@@ -220,7 +220,7 @@ const camundaFormWc = defineComponent({
       dataValidationMode,
       dataLocale,
       dataDefaultPreset,
-      vuetifyTheme: ref<{ generatedStyles: string }>(
+      vuetifyTheme: ref<{ generatedStyles: string } & VuetifyPreset['theme']>(
         vuetify.framework.theme as any
       ),
     };
@@ -335,7 +335,15 @@ const camundaFormWc = defineComponent({
       return this.dataDefaultPreset?.theme?.dark || false;
     },
     vuetifyThemeCss() {
-      return this.vuetifyTheme?.generatedStyles;
+      let css = this.vuetifyTheme?.generatedStyles;
+      if (
+        this.vuetifyTheme?.options?.customProperties &&
+        css.startsWith(':root {')
+      ) {
+        // change to host if the variable generation is enabled
+        css = ':host {' + css.substring(':root {'.length, css.length);
+      }
+      return css;
     },
   },
   methods: {
