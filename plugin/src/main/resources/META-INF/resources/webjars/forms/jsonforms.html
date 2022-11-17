@@ -34,9 +34,9 @@
     function hideUserTaskFormCompleteButton() {
       let elements = document.getElementsByClassName("form-actions");
       if (elements) {
-        _.forEach(elements, (element) => {
+        for (const element of elements) {
           element.classList.add("ng-hide");
-        });
+        }
       }
     }
 
