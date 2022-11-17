@@ -1,6 +1,6 @@
-# [Camunda](https://camunda.com/) [JSONForms](https://jsonforms.io/) Plugin
+# [Camunda](https://camunda.com/) [JSON Forms](https://jsonforms.io/) Plugin
 
-Provides client-side and server-side integration for using Camunda Embedded Forms with JSONForms.
+Provides client-side and server-side integration for using Camunda Embedded Forms with JSON Forms using [JSON Forms Vuetify renderers](https://github.com/eclipsesource/jsonforms-vuetify-renderers).
 
 ## Docker
 
@@ -19,7 +19,7 @@ docker run --rm -p 8080:8080 camunda-bpm-platform:7.18.0-jsonforms
 On your browser go to
 <http://localhost:8080/camunda>
 
-**Note**: docker image is based on camumda-bpm-platform and will not include the demo project, instead the camunda-invoice application that is shipped with camunda-bpm-platform will be modified using the files under [camunda-invoice](./docker-camunda-bpm-platform/camunda-invoice). You can check the JSONForms schema, uischema, i18n JSON files.
+**Note**: docker image is based on camumda-bpm-platform and will not include the demo project, instead the camunda-invoice application that is shipped with camunda-bpm-platform will be modified using the files under [camunda-invoice](./docker-camunda-bpm-platform/camunda-invoice). You can check the JSON Forms schema, uischema, i18n JSON files that are used fro camunda-invoice demo.
 
 ------
 
