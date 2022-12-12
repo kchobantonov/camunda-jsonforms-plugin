@@ -19,9 +19,9 @@
   ],
   "dependencies": {
     "@fontsource/roboto": "^4.5.8",
-    "@jsonforms/core": "3.0.0",
-    "@jsonforms/vue2": "3.0.0",
-    "@jsonforms/vue2-vuetify": "3.0.0",
+    "@jsonforms/core": "3.1.0-alpha.0",
+    "@jsonforms/vue2": "3.1.0-alpha.0",
+    "@jsonforms/vue2-vuetify": "3.1.0-alpha.0",
     "@kchobantonov/camunda-jsonforms": "^0.0.1-SNAPSHOT",
     "@kchobantonov/common-jsonforms": "^0.0.1-SNAPSHOT",
     "@mdi/font": "^7.0.96",
