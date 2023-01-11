@@ -8,7 +8,7 @@
   >
     <v-hover v-slot="{ hover }">
       <v-select
-        disabled-icon-focus
+        v-disabled-icon-focus
         :id="control.id + '-input'"
         :class="styles.control.input"
         :disabled="!control.enabled"
@@ -53,7 +53,7 @@ import { ControlWrapper, useVuetifyControl } from '@jsonforms/vue2-vuetify';
 import { DisabledIconFocus } from './directives/DisabledIconFocus';
 
 import { defineComponent, inject } from 'vue';
-import { VAutocomplete, VHover, VSelect } from 'vuetify/lib';
+import { VHover, VSelect } from 'vuetify/lib';
 import { template as templateFn } from '../core/template';
 
 const controlRenderer = defineComponent({
@@ -61,7 +61,6 @@ const controlRenderer = defineComponent({
   components: {
     ControlWrapper,
     VSelect,
-    VAutocomplete,
     VHover,
   },
   directives: {
@@ -76,8 +75,7 @@ const controlRenderer = defineComponent({
     return {
       ...useVuetifyControl(
         useJsonFormsOneOfEnumControl(props),
-        (value) => value || undefined,
-        300
+        (value) => (value !== null ? value : undefined)
       ),
       scopeData,
     };
