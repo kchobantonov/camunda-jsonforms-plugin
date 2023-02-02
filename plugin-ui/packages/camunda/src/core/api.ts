@@ -102,13 +102,16 @@ const attachCamundaVariable = (
 
       const fileNameIndex = header.indexOf(';filename=');
 
-      const fileName = decodeURIComponent(
-        header.substring(fileNameIndex + ';filename='.length)
-      );
+      const fileName =
+        fileNameIndex !== -1
+          ? decodeURIComponent(
+              header.substring(fileNameIndex + ';filename='.length)
+            )
+          : variableName;
 
       const mimeType = header.substring(
         'data:'.length,
-        header.indexOf(';filename=')
+        fileNameIndex !== -1 ? fileNameIndex : header.length
       );
 
       (valueInfo as FileValueInfo).filename = fileName;
