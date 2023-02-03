@@ -81,7 +81,6 @@ const templateLabelRenderer = defineComponent({
     },
     context(): TemplateFormContext {
       return {
-        ...unref(this.formContext),
         jsonforms: this.jsonforms,
         locale: this.jsonforms.i18n?.locale,
         translate: this.jsonforms.i18n?.translate,
@@ -92,6 +91,7 @@ const templateLabelRenderer = defineComponent({
         errors: this.jsonforms.core?.errors,
         additionalErrors: this.jsonforms.core?.additionalErrors,
         scopeData: this.scopeData,
+        ...unref(this.formContext),
       };
     },
     errors(): ErrorObject[] | undefined {

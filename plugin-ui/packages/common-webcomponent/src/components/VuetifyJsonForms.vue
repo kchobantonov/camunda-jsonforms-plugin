@@ -775,7 +775,7 @@ const vuetifyFormWc = defineComponent({
         VWindow,
         VWindowItem,
       },
-      templateLayoutRendererContext: this.context || {},
+      templateLayoutRendererContext: toRef(this, 'context'),
       formContext: toRef(this, 'context'),
     };
   },

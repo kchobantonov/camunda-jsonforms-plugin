@@ -34,7 +34,7 @@ import {
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { ErrorObject } from 'ajv';
-import Vue, { defineComponent, inject, ref } from 'vue';
+import Vue, { defineComponent, inject, ref, unref } from 'vue';
 import { DirectiveFunction, DirectiveOptions } from 'vue/types/umd';
 import { ComputedOptions, MethodOptions } from 'vue/types/v3-component-options';
 import {
@@ -138,9 +138,11 @@ const templateLayoutRenderer = defineComponent({
       additionalErrors: jsonforms.core?.additionalErrors,
     };
 
-    const overrideTemplateContext = inject<TemplateContext | undefined>(
-      'templateLayoutRendererContext',
-      undefined
+    const overrideTemplateContext = unref(
+      inject<TemplateContext | undefined>(
+        'templateLayoutRendererContext',
+        undefined
+      )
     );
 
     const templateContext = overrideTemplateContext
@@ -191,9 +193,11 @@ const templateLayoutRenderer = defineComponent({
     > {
       const defaultDirective = {};
 
-      const override = inject<
-        Record<string, DirectiveFunction | DirectiveOptions> | undefined
-      >('templateLayoutRendererComponentDirectives', undefined);
+      const override = unref(
+        inject<
+          Record<string, DirectiveFunction | DirectiveOptions> | undefined
+        >('templateLayoutRendererComponentDirectives', undefined)
+      );
 
       return override ? { ...defaultDirective, ...override } : defaultDirective;
     },
@@ -205,9 +209,11 @@ const templateLayoutRenderer = defineComponent({
       defaultComputed.elements = () => this.namedElements;
       defaultComputed.context = () => this.templateContext;
 
-      const override = inject<ComputedOptions | undefined>(
-        'templateLayoutRendererComponentComputed',
-        undefined
+      const override = unref(
+        inject<ComputedOptions | undefined>(
+          'templateLayoutRendererComponentComputed',
+          undefined
+        )
       );
       return override ? { ...defaultComputed, ...override } : defaultComputed;
     },
@@ -216,9 +222,11 @@ const templateLayoutRenderer = defineComponent({
         translate: this.translate.bind(this.parentComponent),
       } as MethodOptions;
 
-      const override = inject<MethodOptions | undefined>(
-        'templateLayoutRendererComponentMethods',
-        undefined
+      const override = unref(
+        inject<MethodOptions | undefined>(
+          'templateLayoutRendererComponentMethods',
+          undefined
+        )
       );
 
       return override ? { ...defaultMethods, ...override } : defaultMethods;
@@ -228,9 +236,11 @@ const templateLayoutRenderer = defineComponent({
         translate: this.translate.bind(this.parentComponent),
       } as MethodOptions;
 
-      const override = inject<MethodOptions | undefined>(
-        'templateLayoutRendererComponentFilters',
-        undefined
+      const override = unref(
+        inject<MethodOptions | undefined>(
+          'templateLayoutRendererComponentFilters',
+          undefined
+        )
       );
       return override ? { ...defaultFilters, ...override } : defaultFilters;
     },
@@ -286,9 +296,11 @@ const templateLayoutRenderer = defineComponent({
         VTooltip,
       } as Components;
 
-      const override = inject<Components | undefined>(
-        'templateLayoutRendererComponentComponents',
-        undefined
+      const override = unref(
+        inject<Components | undefined>(
+          'templateLayoutRendererComponentComponents',
+          undefined
+        )
       );
 
       return override

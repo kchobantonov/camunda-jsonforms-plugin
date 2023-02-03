@@ -652,7 +652,7 @@ const camundaResolvedJsonForms = defineComponent({
         VWindow,
         VWindowItem,
       },
-      templateLayoutRendererContext: this.context || {},
+      templateLayoutRendererContext: toRef(this, 'context'),
       formContext: toRef(this, 'context'),
       camundaFormApi: this.api,
       camundaFormEmitter: this.$emit.bind(this),
