@@ -521,18 +521,43 @@ const vuetifyFormWc = defineComponent({
     let actionsToUse: Record<string, Function> = {};
     let uidataToUse: Record<string, any> = {};
     try {
-      dataToUse =
-        typeof props.data == 'string' ? JSON.parse(props.data) : undefined;
-      schemaToUse =
-        typeof props.schema == 'string' ? JSON.parse(props.schema) : undefined;
+      try {
+        dataToUse =
+          typeof props.data == 'string' ? JSON.parse(props.data) : undefined;
+      } catch (e) {
+        error = `Data Error: ${e}`;
+        console.log(e);
+      }
+      try {
+        schemaToUse =
+          typeof props.schema == 'string'
+            ? JSON.parse(props.schema)
+            : undefined;
+      } catch (e) {
+        error = `Schema Error: ${e}`;
+        console.log(e);
+      }
       schemaUrlToUse =
         typeof props.schemaUrl == 'string' ? props.schemaUrl : undefined;
-      uischemaToUse =
-        typeof props.uischema == 'string'
-          ? JSON.parse(props.uischema)
-          : undefined;
-      configToUse =
-        typeof props.config == 'string' ? JSON.parse(props.config) : undefined;
+      try {
+        uischemaToUse =
+          typeof props.uischema == 'string'
+            ? JSON.parse(props.uischema)
+            : undefined;
+      } catch (e) {
+        error = `UISchema Error: ${e}`;
+        console.log(e);
+      }
+
+      try {
+        configToUse =
+          typeof props.config == 'string'
+            ? JSON.parse(props.config)
+            : undefined;
+      } catch (e) {
+        error = `Config Error: ${e}`;
+        console.log(e);
+      }
 
       readonlyToUse = props.readonly == 'true';
 
@@ -543,10 +568,15 @@ const vuetifyFormWc = defineComponent({
           ? props.validationMode
           : 'ValidateAndShow';
 
-      translationsToUse =
-        typeof props.translations == 'string'
-          ? JSON.parse(props.translations)
-          : undefined;
+      try {
+        translationsToUse =
+          typeof props.translations == 'string'
+            ? JSON.parse(props.translations)
+            : undefined;
+      } catch (e) {
+        error = `Translations Error: ${e}`;
+        console.log(e);
+      }
 
       localeToUse = props.locale ? props.locale : localeToUse;
 
@@ -555,29 +585,61 @@ const vuetifyFormWc = defineComponent({
         translate: createTranslator(localeToUse, translationsToUse),
       };
 
-      dataDefaultPreset =
-        typeof props.defaultPreset == 'string'
-          ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
-          : defaultPreset;
+      try {
+        dataDefaultPreset =
+          typeof props.defaultPreset == 'string'
+            ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
+            : defaultPreset;
+      } catch (e) {
+        error = `Default Preset Error: ${e}`;
+        console.log(e);
+      }
 
-      uischemasToUse = transformUISchemas(props.uischemas);
+      try {
+        uischemasToUse = transformUISchemas(props.uischemas);
+      } catch (e) {
+        error = `UISchemas Error: ${e}`;
+        console.log(e);
+      }
 
-      additionalErrorsToUse =
-        typeof props.additionalErrors == 'string'
-          ? JSON.parse(props.additionalErrors)
-          : undefined;
+      try {
+        additionalErrorsToUse =
+          typeof props.additionalErrors == 'string'
+            ? JSON.parse(props.additionalErrors)
+            : undefined;
+      } catch (e) {
+        error = `Additional Errors Error: ${e}`;
+        console.log(e);
+      }
 
-      actionsToUse = transformActions(props.actions);
-      uidataToUse =
-        typeof props.uidata == 'string' ? JSON.parse(props.uidata) : {};
+      try {
+        actionsToUse = transformActions(props.actions);
+      } catch (e) {
+        error = `Actions Error: ${e}`;
+        console.log(e);
+      }
+
+      try {
+        uidataToUse =
+          typeof props.uidata == 'string' ? JSON.parse(props.uidata) : {};
+      } catch (e) {
+        error = `UIData Error: ${e}`;
+        console.log(e);
+      }
     } catch (e) {
-      error = `Config error: ${e}`;
+      error = `Error: ${e}`;
+      console.log(e);
     }
     let context: Ref<FormContext & { uidata: Record<string, any> }> = ref({
       uidata: uidataToUse,
     });
 
     const vuetifyLocale = 'en';
+
+    // provide the schema $id so that we can refer to it in UI schema rule conditions
+    if (schemaToUse && !schemaToUse.$id) {
+      schemaToUse.$id = '/';
+    }
 
     return {
       vuetifyLocale,
@@ -1063,5 +1125,4 @@ export default vuetifyFormWc;
 @import '~@mdi/font/css/materialdesignicons.min.css';
 @import '~vuetify/dist/vuetify.min.css';
 @import '~@jsonforms/vue2-vuetify/lib/jsonforms-vue2-vuetify.esm.css';
-
 </style>

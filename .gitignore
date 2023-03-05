@@ -26,5 +26,6 @@ target
 plugin-ui/node
 plugin-ui/node_modules
 plugin-ui/packages/*/lib
+plugin-ui/packages/*/dist
 plugin-ui/packages/*/node_modules
 plugin-ui/packages/*/stats.html
