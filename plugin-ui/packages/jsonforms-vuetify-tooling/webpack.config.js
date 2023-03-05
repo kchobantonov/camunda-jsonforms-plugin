@@ -4,11 +4,12 @@
 
 const path = require('path');
 const { IgnorePlugin } = require('webpack');
+const CopyPlugin = require("copy-webpack-plugin");
 
 const optionalPlugins = [];
-if (process.platform !== "darwin") {
+//if (process.platform !== "darwin") {
   optionalPlugins.push(new IgnorePlugin({ resourceRegExp: /^fsevents$/ }));
-}
+//}
 
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
@@ -51,6 +52,21 @@ const extensionConfig = {
     level: "log", // enables logging required for problem matchers
   },
   plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          context: "node_modules/@kchobantonov/common-jsonforms-webcomponent/dist/",
+          from: "*.min.js",
+          to: "./js"
+        },
+        {
+          context: "node_modules/@kchobantonov/common-jsonforms-webcomponent/dist/fonts",
+          from: "*",
+          to: "./js/fonts"
+        },
+      ],
+    }),
+  
     ...optionalPlugins,
   ],
 };

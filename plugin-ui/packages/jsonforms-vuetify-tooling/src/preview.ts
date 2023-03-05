@@ -1,15 +1,7 @@
 import { watch } from "chokidar";
+import { existsSync, readFile } from "fs";
 import { join } from "path";
 import { promisify } from "util";
-import {
-  mkdir,
-  readdir,
-  readFile,
-  stat,
-  unlink,
-  writeFile,
-  existsSync,
-} from "fs";
 
 export const readFileWithPromise = promisify(readFile);
 
@@ -66,10 +58,9 @@ const showWebview = async (
     { enableScripts: true }
   );
 
-  const pathPrefix = schemaPath.substring(
-    0,
-    schemaPath.length - ".schema.json".length
-  );
+  const pathPrefix = schemaPath.endsWith(".schema.json")
+    ? schemaPath.substring(0, schemaPath.length - ".schema.json".length)
+    : schemaPath.substring(0, schemaPath.length - ".json".length);
   const uischemaPath = pathPrefix + ".uischema.json";
   const i18nPath = pathPrefix + ".i18n.json";
   const dataPath = pathPrefix + ".data.json";
@@ -96,27 +87,19 @@ const showWebview = async (
 
   const watchPaths = Object.values(paths).filter((path) => path);
 
-  watch(watchPaths).on(
-    "change",
-    async (path: any, stats: any) => {
-      console.log("Data inside " + path + " changed");
-      paths = {
-        schemaPath: schemaPath,
-        uischemaPath:
-          !uischemaPath || existsSync(uischemaPath) ? uischemaPath : "",
-        i18nPath: !i18nPath || existsSync(i18nPath) ? i18nPath : "",
-        dataPath: !dataPath || existsSync(dataPath) ? dataPath : "",
-      };
+  watch(watchPaths).on("change", async (path: any, stats: any) => {
+    console.log("Data inside " + path + " changed");
+    paths = {
+      schemaPath: schemaPath,
+      uischemaPath:
+        !uischemaPath || existsSync(uischemaPath) ? uischemaPath : "",
+      i18nPath: !i18nPath || existsSync(i18nPath) ? i18nPath : "",
+      dataPath: !dataPath || existsSync(dataPath) ? dataPath : "",
+    };
 
-      html = await preparePreview(
-        webView,
-        editorInstance,
-        extensionPath,
-        paths
-      );
-      webView.webview.html = html;
-    }
-  );
+    html = await preparePreview(webView, editorInstance, extensionPath, paths);
+    webView.webview.html = html;
+  });
 };
 
 export enum MessageType {
@@ -195,13 +178,7 @@ const preparePreview = async (
     }
   }
 
-  const previewFolder = join(
-    extensionPath,
-    "node_modules",
-    "@kchobantonov",
-    "common-jsonforms-webcomponent",
-    "dist"
-  );
+  const previewFolder = join(extensionPath, "dist", "js");
   const scriptPathOnDisk = editorInstance.Uri.file(
     join(previewFolder, "vuetify-json-forms.min.js")
   );
