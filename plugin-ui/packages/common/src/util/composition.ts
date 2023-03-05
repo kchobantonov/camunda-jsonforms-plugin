@@ -1,4 +1,6 @@
 import {
+  composePaths,
+  findUISchema,
   getAjv,
   getCells,
   getConfig,
@@ -28,6 +30,8 @@ export interface ButtonElement extends UISchemaElement, Internationalizable {
    * The label of button.
    */
   label: string;
+  icon: string;
+  color?: string;
 
   params?: Record<string, any>;
   action: string;
@@ -49,8 +53,10 @@ export const mapStateToButtonProps = (
       ? isVisible(ownProps.uischema, rootData, ownProps.path!, getAjv(state))
       : ownProps.visible;
   const label = uischema.label;
+  const icon = uischema.icon;
   const action = uischema.action;
   const script = uischema.script;
+  const color = uischema.color;
   const params = uischema.params;
   const t = getTranslator()(state);
   const i18nKeyPrefix = getI18nKeyPrefixBySchema(undefined, uischema);
@@ -69,11 +75,13 @@ export const mapStateToButtonProps = (
 
   return {
     label: i18nText,
+    icon,
     action,
     script,
     params,
     visible,
     enabled,
+    color,
     config: getConfig(state),
     renderers: ownProps.renderers || getRenderers(state),
     cells: ownProps.cells || getCells(state),
@@ -104,5 +112,27 @@ export const useVuetifyButton = <I extends { button: any }>(input: I) => {
     appliedOptions,
     vuetifyProps,
     styles,
+  };
+};
+
+export const useElementArrayControl = <I extends { control: any }>(
+  input: I
+) => {
+  const childUiSchema = computed(() =>
+    findUISchema(
+      input.control.value.uischemas,
+      input.control.value.schema,
+      input.control.value.uischema.scope,
+      input.control.value.path,
+      undefined,
+      input.control.value.uischema,
+      input.control.value.rootSchema
+    )
+  );
+
+  return {
+    ...input,
+    childUiSchema,
+    composePaths,
   };
 };

@@ -30,8 +30,9 @@
       "scope": "#/properties/invoiceNumber"
     },
     {
-      "type": "CamundaButton",
-      "text": "Start",
+      "type": "Button",
+      "action": "camunda:submit",
+      "label": "Start",
       "color": "primary",
       "rule": {
         "effect": "ENABLE",

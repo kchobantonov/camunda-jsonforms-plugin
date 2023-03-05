@@ -85,10 +85,10 @@
       "type": "HorizontalLayout",
       "elements": [
         {
-          "type": "CamundaButton",
-          "text": "Approve",
+          "type": "Button",
+          "action": "camunda:submit",
+          "label": "Approve",
           "color": "primary",
-          "action": "submit",
           "options": {
             "i18n": "button.approve"
           },
@@ -107,10 +107,10 @@
           }
         },
         {
-          "type": "CamundaButton",
-          "text": "Decline",
+          "type": "Button",
+          "action": "camunda:submit-without-data",
+          "label": "Decline",
           "color": "purple",
-          "action": "submit-without-data",
           "options": {
             "i18n": "button.decline"
           },
@@ -122,18 +122,18 @@
           }
         },
         {
-          "type": "CamundaButton",
-          "text": "Can't Decide Error",
+          "type": "Button",
+          "action": "camunda:error",
+          "label": "Can't Decide Error",
           "color": "red",
-          "action": "error",
           "errorCode": "myError",
           "errorMessage": "my error message"
         },
         {
-          "type": "CamundaButton",
-          "text": "Escalation",
+          "type": "Button",
+          "action": "camunda:escalation",
+          "label": "Escalation",
           "color": "greem",
-          "action": "escalation",
           "escalationCode": "myescalation"
         }
       ]

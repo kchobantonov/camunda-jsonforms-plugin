@@ -129,21 +129,21 @@ const attachCamundaVariable = (
 export class CamundaFormApi {
   private toCamudaPath(action: Action) {
     switch (action) {
-      case 'submit':
+      case 'camunda:submit':
         return 'submit-form';
-      case 'submit-without-data':
+      case 'camunda:submit-without-data':
         return 'submit-form';
-      case 'complete':
+      case 'camunda:complete':
         return 'complete';
-      case 'complete-without-data':
+      case 'camunda:complete-without-data':
         return 'complete';
-      case 'resolve':
+      case 'camunda:resolve':
         return 'resolve';
-      case 'resolve-without-data':
+      case 'camunda:resolve-without-data':
         return 'resolve';
-      case 'error':
+      case 'camunda:error':
         return 'bpmnError';
-      case 'escalation':
+      case 'camunda:escalation':
         return 'bpmnEscalation';
     }
   }
@@ -161,7 +161,7 @@ export class CamundaFormApi {
     }
 
     const includeDataVariables =
-      action == 'submit' || action == 'resolve' || action == 'complete';
+      action == 'camunda:submit' || action == 'camunda:resolve' || action == 'camunda:complete';
 
     if (includeDataVariables) {
       const dataVariables = {};

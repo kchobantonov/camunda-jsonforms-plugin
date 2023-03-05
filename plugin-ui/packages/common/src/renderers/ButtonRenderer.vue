@@ -3,10 +3,13 @@
     v-if="button.visible"
     :disabled="!button.enabled"
     :loading="loading"
+    :color="button.color"
     v-bind="vuetifyProps('v-btn')"
+    :icon="button.icon !== undefined"
     @click="click"
   >
-    {{ button.label }}
+    <v-icon v-if="button.icon">{{ button.icon }}</v-icon>
+    <span v-if="button.label">{{ button.label }}</span>
   </v-btn>
 </template>
 
@@ -21,7 +24,7 @@ import { rendererProps, RendererProps } from '@jsonforms/vue2';
 import { useTranslator } from '@jsonforms/vue2-vuetify';
 import isFunction from 'lodash/isFunction';
 import { defineComponent, inject, ref, unref } from 'vue';
-import { VBtn } from 'vuetify/lib';
+import { VBtn, VIcon } from 'vuetify/lib';
 import {
   ActionEvent,
   Actions,
@@ -35,6 +38,7 @@ const buttonRenderer = defineComponent({
   name: 'button-renderer',
   components: {
     VBtn,
+    VIcon,
   },
   props: {
     ...rendererProps<ButtonElement>(),

@@ -113,7 +113,8 @@
             {
               "type": "Button",
               "label": "Show *",
-              "action": "showRequiredAsterisk"
+              "action": "showRequiredAsterisk",
+              "color": "red"
             },
             {
               "type": "Button",

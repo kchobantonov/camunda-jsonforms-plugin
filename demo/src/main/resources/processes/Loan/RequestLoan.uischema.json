@@ -20,7 +20,7 @@
             "vuetify": {
               "v-autocomplete": {
                 "attach": true
-              }              
+              }
             }
           }
         },
@@ -81,8 +81,9 @@
           "template": "<div class=\"container\"><div class=\"row\"><div class=\"col shrink\"><slot name=\"0\"></slot></div><div class=\"col shrink\"><slot name=\"1\"></slot></div><div class=\"col grow\"></div></div></div>",
           "elements": [
             {
-              "type": "CamundaButton",
-              "text": "Request Loan",
+              "type": "Button",
+              "action": "camunda:submit",
+              "label": "Request Loan",
               "color": "primary",
               "options": {
                 "i18n": "button.request-loan"
@@ -102,8 +103,9 @@
               }
             },
             {
-              "type": "CamundaButton",
-              "text": "Request Loan Without File",
+              "type": "Button",
+              "action": "camunda:submit",
+              "label": "Request Loan Without File",
               "color": "secondary",
               "variables": {
                 "action": {

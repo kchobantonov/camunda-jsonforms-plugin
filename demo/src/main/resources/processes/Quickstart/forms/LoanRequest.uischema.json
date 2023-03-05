@@ -94,8 +94,9 @@
           "scope": "#/properties/amount"
         },
         {
-          "type": "CamundaButton",
-          "text": "Request Loan",
+          "type": "Button",
+          "action": "camunda:submit",
+          "label": "Request Loan",
           "color": "primary",
           "options": {
             "i18n": "button.request"

@@ -20,12 +20,14 @@
 
 <script lang="ts">
 import {
+  and,
   JsonFormsRendererRegistryEntry,
   JsonFormsSubStates,
   Layout,
   rankWith,
   UISchemaElement,
   uiTypeIs,
+  Tester,
 } from '@jsonforms/core';
 import {
   DispatchRenderer,
@@ -34,6 +36,7 @@ import {
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
+import { type ButtonElement } from '@kchobantonov/common-jsonforms';
 import { ErrorObject } from 'ajv';
 import isArray from 'lodash/isArray';
 import { defineComponent, inject, ref, Ref } from 'vue';
@@ -45,22 +48,16 @@ import {
   Action,
   CamundaFormContext,
   Emitter,
+  isAction,
   isTaskIdConfig,
   ResponseException,
 } from '../core/types';
 
-interface CamundaButtonElement extends UISchemaElement {
-  type: 'CamundaButton';
-  /**
-   * The text of button.
-   */
-  text: string;
-
+interface CamundaButtonElement extends ButtonElement {
   action: Action;
   errorCode?: string;
   errorMessage?: string;
   escalationCode?: string;
-  color?: string;
   variables?: Record<
     string,
     {
@@ -136,34 +133,38 @@ const camundaButtonRenderer = defineComponent({
   },
   computed: {
     action(): Action {
-      return (this.layout.uischema as CamundaButtonElement).action ?? 'submit';
+      return (this.layout.uischema as CamundaButtonElement).action;
     },
     isSubmitButton(): boolean {
-      return this.action === 'submit' || this.action === 'submit-without-data';
+      return (
+        this.action === 'camunda:submit' ||
+        this.action === 'camunda:submit-without-data'
+      );
     },
     isCompleteButton(): boolean {
       // complete is defined on task only
       return (
-        (this.action === 'complete' ||
-          this.action === 'complete-without-data') &&
+        (this.action === 'camunda:complete' ||
+          this.action === 'camunda:complete-without-data') &&
         isTaskIdConfig(this.camundaFormContext.config)
       );
     },
     isResolveButton(): boolean {
       return (
-        (this.action === 'resolve' || this.action === 'resolve-without-data') &&
+        (this.action === 'camunda:resolve' ||
+          this.action === 'camunda:resolve-without-data') &&
         isTaskIdConfig(this.camundaFormContext.config)
       );
     },
     isErrorButton(): boolean {
       return (
-        this.action === 'error' &&
+        this.action === 'camunda:error' &&
         isTaskIdConfig(this.camundaFormContext.config)
       );
     },
     isEscalationButton(): boolean {
       return (
-        this.action === 'escalation' &&
+        this.action === 'camunda:escalation' &&
         isTaskIdConfig(this.camundaFormContext.config)
       );
     },
@@ -171,12 +172,12 @@ const camundaButtonRenderer = defineComponent({
       if (this.layout.uischema.options?.i18n) {
         return this.t(
           this.layout.uischema.options.i18n,
-          (this.layout.uischema as CamundaButtonElement).text
+          (this.layout.uischema as CamundaButtonElement).label
         );
       }
       return this.t(
-        (this.layout.uischema as CamundaButtonElement).text,
-        (this.layout.uischema as CamundaButtonElement).text
+        (this.layout.uischema as CamundaButtonElement).label,
+        (this.layout.uischema as CamundaButtonElement).label
       );
     },
     color(): string | undefined {
@@ -250,8 +251,12 @@ const camundaButtonRenderer = defineComponent({
 
 export default camundaButtonRenderer;
 
+export const isCamundaAction: Tester = (uischema: UISchemaElement): boolean => {
+  return isAction((uischema as any).action);
+};
+
 export const entry: JsonFormsRendererRegistryEntry = {
   renderer: camundaButtonRenderer,
-  tester: rankWith(1, uiTypeIs('CamundaButton')),
+  tester: rankWith(2, and(uiTypeIs('Button'), isCamundaAction)),
 };
 </script>

@@ -149,15 +149,22 @@ export interface FileValueInfo extends ValueInfo {
 export const CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT = 'deployment';
 export const CAMUNDA_FORM_KEY_QUERY_PARAM_PATH = 'path';
 
-export type Action =
-  | 'submit'
-  | 'submit-without-data'
-  | 'complete'
-  | 'complete-without-data'
-  | 'resolve'
-  | 'resolve-without-data'
-  | 'error'
-  | 'escalation';
+const actions = [
+  'camunda:submit',
+  'camunda:submit-without-data',
+  'camunda:complete',
+  'camunda:complete-without-data',
+  'camunda:resolve',
+  'camunda:resolve-without-data',
+  'camunda:error',
+  'camunda:escalation',
+] as const;
+
+export type Action = (typeof actions)[number];
+
+export const isAction = (value: string): value is Action => {
+  return actions.includes(value as any);
+};
 
 export interface FormCallback {
   onChange: (event: JsonFormsChangeEvent) => void;

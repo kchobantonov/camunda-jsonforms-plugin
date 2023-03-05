@@ -39,8 +39,9 @@
       "scope": "#/properties/clarified"
     },
     {
-      "type": "CamundaButton",
-      "text": "Complete",
+      "type": "Button",
+      "action": "camunda:submit",
+      "label": "Complete",
       "color": "primary",
       "rule": {
         "effect": "ENABLE",
