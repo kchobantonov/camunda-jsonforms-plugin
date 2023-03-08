@@ -2,7 +2,7 @@
   "name": "jsonforms-vuetify-tooling",
   "displayName": "JSONForms Vuetify Tooling",
   "description": "VSCode extension for JSON Forms tooling using Vue2 Vuetify renderer set",
-  "version": "0.0.1",
+  "version": "0.0.1-SNAPSHOT",
   "repository": "https://github.com/kchobantonov/camunda-jsonforms-plugin",
   "engines": {
     "vscode": "^1.76.0"

@@ -6,14 +6,17 @@ const hideRequiredAsterisk = (event) => {
   event.jsonforms.config.hideRequiredAsterisk = true;
 };
 
+// note that at the moment showData is not use by the template - instead the template shows how to use the script instead
 const showData = (event) => {
   const root = event.$el.getRootNode();
-  root.querySelector('#data').style.display = 'block';
+  const el = root.querySelector('#data'); 
+  if (el) el.style.display = 'block';
 };
 
 const hideData = (event) => {
   const root = event.$el.getRootNode();
-  root.querySelector('#data').style.display = 'none';
+  const el = root.querySelector('#data'); 
+  if (el) el.style.display = 'none';
 };
 
 const saveData = async (event) => {

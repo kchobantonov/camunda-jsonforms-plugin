@@ -69,7 +69,7 @@ import { normalizeId } from 'ajv/dist/compile/resolve';
 import _get from 'lodash/get';
 import { defineComponent, inject, PropType, Ref, ref } from 'vue';
 import { VAlert, VCol, VContainer, VProgressLinear, VRow } from 'vuetify/lib';
-import { createAjv, FormContext, resolveRefs } from '../core';
+import { ActionEvent, createAjv, FormContext, resolveRefs } from '../core';
 import { commonRenderers } from '../renderers/index';
 
 const resolvedJsonForms = defineComponent({
@@ -152,7 +152,7 @@ const resolvedJsonForms = defineComponent({
     },
     actions: {
       required: false,
-      type: [Object] as PropType<Record<string, Function>>,
+      type: [Object] as PropType<Record<string, (event: ActionEvent) => void>>,
       default: () => {},
     },
   },

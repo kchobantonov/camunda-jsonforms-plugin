@@ -7,9 +7,9 @@ import {
 import { ErrorObject } from 'ajv';
 import { AsyncComponent, Component } from 'vue';
 
-export const AsyncFunction = Object.getPrototypeOf(
-  async function () {}
-).constructor;
+export const AsyncFunction = Object.getPrototypeOf(async function (
+  _event: ActionEvent
+) {}).constructor;
 
 export type ResolvedSchema = {
   schema?: JsonSchema;
@@ -19,7 +19,7 @@ export type ResolvedSchema = {
 
 export interface FormContext {
   schemaUrl?: string;
-  actions?: Record<string, Function>;
+  actions?: Record<string, (event: ActionEvent) => void>;
 }
 
 export interface TemplateFormContext extends FormContext {
@@ -36,7 +36,7 @@ export interface TemplateFormContext extends FormContext {
   additionalErrors?: ErrorObject[];
 }
 export interface Actions {
-  [id: string]: Function;
+  [id: string]: (event: ActionEvent) => void;
 }
 
 export type ActionEvent = {

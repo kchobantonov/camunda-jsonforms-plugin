@@ -46,6 +46,7 @@ import {
 } from '@jsonforms/core';
 import { JsonFormsChangeEvent, MaybeReadonly } from '@jsonforms/vue2';
 import {
+  ActionEvent,
   createAjv,
   createTranslator,
   ResolvedJsonForms,
@@ -357,7 +358,7 @@ const camundaResolvedJsonForms = defineComponent({
     },
     actions: {
       required: false,
-      type: [Object] as PropType<Record<string, Function>>,
+      type: [Object] as PropType<Record<string, (event: ActionEvent) => void>>,
       default: () => {},
     },
   },

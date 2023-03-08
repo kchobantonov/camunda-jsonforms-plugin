@@ -54,7 +54,6 @@ import { JsonFormsChangeEvent } from '@jsonforms/vue2';
 import {
   ActionEvent,
   Actions,
-  AsyncFunction,
   commonRenderers,
   createTranslator,
   FormContext,
@@ -253,7 +252,7 @@ const transformUISchemas = (
   const uischemasMap: {
     tester: string;
     uischema: UISchemaElement;
-  }[] = typeof uischemas == 'string' ? JSON.parse(uischemas) : [];
+  }[] = typeof uischemas === 'string' ? JSON.parse(uischemas) : [];
 
   return uischemasMap
     .map((elem, index) => {
@@ -287,21 +286,23 @@ const transformUISchemas = (
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-const transformActions = (actionsString?: string): Record<string, Function> => {
+const transformActions = (
+  actionsString?: string
+): Record<string, (event: ActionEvent) => void> => {
   const actionsData: {
     [id: string]: string;
   } =
-    typeof actionsString == 'string'
+    typeof actionsString === 'string'
       ? validateActions(JSON.parse(actionsString))
       : {};
   const actions: Actions = {};
 
   Object.keys(actionsData).forEach((key) => {
-    const action = (event: ActionEvent) => {
+    const action = async (event: ActionEvent) => {
       try {
-        const fn = AsyncFunction(
+        const fn = Function(
           'event',
-          `const fn = ${actionsData[key]};\n return await fn(event);`
+          `const fn = ${actionsData[key]};\n return fn(event);`
         );
         fn(event);
       } catch (e) {
@@ -313,6 +314,7 @@ const transformActions = (actionsString?: string): Record<string, Function> => {
 
   return actions;
 };
+
 const vuetifyFormWc = defineComponent({
   vuetify,
   components: {
@@ -328,7 +330,7 @@ const vuetifyFormWc = defineComponent({
       type: String,
       validator: function (value) {
         try {
-          const data = typeof value == 'string' ? JSON.parse(value) : value;
+          const data = typeof value === 'string' ? JSON.parse(value) : value;
 
           return data !== undefined && data !== null;
         } catch (e) {
@@ -341,7 +343,7 @@ const vuetifyFormWc = defineComponent({
       type: String,
       validator: function (value) {
         try {
-          const schema = typeof value == 'string' ? JSON.parse(value) : value;
+          const schema = typeof value === 'string' ? JSON.parse(value) : value;
 
           return schema !== undefined && schema !== null;
         } catch (e) {
@@ -359,7 +361,8 @@ const vuetifyFormWc = defineComponent({
       type: String,
       validator: function (value) {
         try {
-          const uischema = typeof value == 'string' ? JSON.parse(value) : value;
+          const uischema =
+            typeof value === 'string' ? JSON.parse(value) : value;
 
           return uischema !== undefined && uischema !== null;
         } catch (e) {
@@ -372,7 +375,7 @@ const vuetifyFormWc = defineComponent({
       type: String,
       validator: function (value) {
         try {
-          const config = typeof value == 'string' ? JSON.parse(value) : value;
+          const config = typeof value === 'string' ? JSON.parse(value) : value;
 
           return config !== undefined && config !== null;
         } catch (e) {
@@ -391,7 +394,7 @@ const vuetifyFormWc = defineComponent({
       validator: function (value) {
         try {
           const uischemas =
-            typeof value == 'string' ? JSON.parse(value) : value;
+            typeof value === 'string' ? JSON.parse(value) : value;
 
           return (
             uischemas !== undefined && uischemas !== null && isArray(uischemas)
@@ -409,7 +412,7 @@ const vuetifyFormWc = defineComponent({
         return (
           value === 'ValidateAndShow' ||
           value === 'ValidateAndHide' ||
-          value == 'NoValidation'
+          value === 'NoValidation'
         );
       },
     },
@@ -429,7 +432,7 @@ const vuetifyFormWc = defineComponent({
       validator: function (value) {
         try {
           const translations =
-            typeof value == 'string' ? JSON.parse(value) : value;
+            typeof value === 'string' ? JSON.parse(value) : value;
 
           return translations !== null;
         } catch (e) {
@@ -443,7 +446,7 @@ const vuetifyFormWc = defineComponent({
       validator: function (value) {
         try {
           const additionalErrors =
-            typeof value == 'string' ? JSON.parse(value) : value;
+            typeof value === 'string' ? JSON.parse(value) : value;
 
           return (
             additionalErrors !== undefined &&
@@ -460,7 +463,7 @@ const vuetifyFormWc = defineComponent({
       type: String,
       validator: function (value) {
         try {
-          const preset = typeof value == 'string' ? JSON.parse(value) : value;
+          const preset = typeof value === 'string' ? JSON.parse(value) : value;
 
           return preset !== undefined && preset !== null;
         } catch (e) {
@@ -476,7 +479,7 @@ const vuetifyFormWc = defineComponent({
       },
       validator: function (value) {
         try {
-          const data = typeof value == 'string' ? JSON.parse(value) : value;
+          const data = typeof value === 'string' ? JSON.parse(value) : value;
 
           return data !== undefined && data !== null;
         } catch (e) {
@@ -517,8 +520,7 @@ const vuetifyFormWc = defineComponent({
       typeof props.defaultPreset == 'string'
         ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
         : defaultPreset;
-    // eslint-disable-next-line  @typescript-eslint/ban-types
-    let actionsToUse: Record<string, Function> = {};
+    let actionsToUse: Record<string, (event: ActionEvent) => void> = {};
     let uidataToUse: Record<string, any> = {};
     try {
       try {
@@ -562,9 +564,9 @@ const vuetifyFormWc = defineComponent({
       readonlyToUse = props.readonly == 'true';
 
       validationModeToUse =
-        props.validationMode == 'ValidateAndShow' ||
-        props.validationMode == 'ValidateAndHide' ||
-        props.validationMode == 'NoValidation'
+        props.validationMode === 'ValidateAndShow' ||
+        props.validationMode === 'ValidateAndHide' ||
+        props.validationMode === 'NoValidation'
           ? props.validationMode
           : 'ValidateAndShow';
 
@@ -578,7 +580,8 @@ const vuetifyFormWc = defineComponent({
         console.log(e);
       }
 
-      localeToUse = props.locale ? props.locale : localeToUse;
+      localeToUse =
+        typeof props.locale === 'string' ? props.locale : localeToUse;
 
       i18nToUse = {
         locale: localeToUse,
@@ -613,7 +616,9 @@ const vuetifyFormWc = defineComponent({
       }
 
       try {
-        actionsToUse = transformActions(props.actions);
+        if (typeof props.actions === 'string') {
+          actionsToUse = transformActions(props.actions);
+        }
       } catch (e) {
         error = `Actions Error: ${e}`;
         console.log(e);
@@ -621,7 +626,7 @@ const vuetifyFormWc = defineComponent({
 
       try {
         uidataToUse =
-          typeof props.uidata == 'string' ? JSON.parse(props.uidata) : {};
+          typeof props.uidata === 'string' ? JSON.parse(props.uidata) : {};
       } catch (e) {
         error = `UIData Error: ${e}`;
         console.log(e);
@@ -845,7 +850,8 @@ const vuetifyFormWc = defineComponent({
     data: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          const data = typeof value == 'string' ? JSON.parse(value) : undefined;
+          const data =
+            typeof value === 'string' ? JSON.parse(value) : undefined;
           this.dataToUse = data;
           this.$forceUpdate();
         }
@@ -855,7 +861,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           const schema =
-            typeof value == 'string' ? JSON.parse(value) : undefined;
+            typeof value === 'string' ? JSON.parse(value) : undefined;
           this.schemaToUse = schema;
           this.$forceUpdate();
         }
@@ -864,7 +870,7 @@ const vuetifyFormWc = defineComponent({
     schemaUrl: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          const schemaUrl = typeof value == 'string' ? value : undefined;
+          const schemaUrl = typeof value === 'string' ? value : undefined;
           this.schemaUrlToUse = schemaUrl;
           this.$forceUpdate();
         }
@@ -874,7 +880,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           const uischema =
-            typeof value == 'string' ? JSON.parse(value) : undefined;
+            typeof value === 'string' ? JSON.parse(value) : undefined;
           this.uischemaToUse = uischema;
           this.$forceUpdate();
         }
@@ -884,7 +890,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           const config =
-            typeof value == 'string' ? JSON.parse(value) : undefined;
+            typeof value === 'string' ? JSON.parse(value) : undefined;
           this.configToUse = config;
           this.$forceUpdate();
         }
@@ -910,9 +916,9 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.validationModeToUse =
-            value == 'ValidateAndShow' ||
-            value == 'ValidateAndHide' ||
-            value == 'NoValidation'
+            value === 'ValidateAndShow' ||
+            value === 'ValidateAndHide' ||
+            value === 'NoValidation'
               ? value
               : 'ValidateAndShow';
           this.$forceUpdate();
@@ -939,7 +945,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.translationsToUse =
-            typeof value == 'string' ? JSON.parse(value) : {};
+            typeof value === 'string' ? JSON.parse(value) : {};
 
           this.i18nToUse = {
             locale: this.localeToUse,
@@ -956,7 +962,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.additionalErrorsToUse =
-            typeof value == 'string' ? JSON.parse(value) : [];
+            typeof value === 'string' ? JSON.parse(value) : [];
           this.$forceUpdate();
         }
       },
@@ -965,7 +971,7 @@ const vuetifyFormWc = defineComponent({
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
           this.dataDefaultPreset =
-            typeof value == 'string'
+            typeof value === 'string'
               ? merge({}, defaultPreset, JSON.parse(value))
               : undefined;
 
@@ -985,7 +991,7 @@ const vuetifyFormWc = defineComponent({
     uidata: {
       handler(value?: string, oldValue?: string) {
         if (value !== oldValue) {
-          this.uidataToUse = typeof value == 'string' ? JSON.parse(value) : {};
+          this.uidataToUse = typeof value === 'string' ? JSON.parse(value) : {};
           this.context.value.uidata = this.uidataToUse;
           this.$forceUpdate();
         }
