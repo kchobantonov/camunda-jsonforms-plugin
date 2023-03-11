@@ -6,7 +6,7 @@ const path = require('path');
 const preset = require('./src/example/preset.json');
 const config = require('./src/example/config.json');
 const style = fs
-  .readFileSync(path.join(__dirname, './src/example/user-style.css'))
+  .readFileSync(path.join(__dirname, './src/example/style.css'))
   .toString();
 const listeners = fs
   .readFileSync(path.join(__dirname, './src/example/listeners.js'))

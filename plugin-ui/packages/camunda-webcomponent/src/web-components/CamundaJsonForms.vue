@@ -38,6 +38,7 @@ const camundaFormWc = defineComponent({
     'submit-request',
     'submit-response',
     'submit-error',
+    'handle-action',
   ],
   props: {
     url: {
@@ -118,7 +119,12 @@ const camundaFormWc = defineComponent({
       },
     },
   },
-
+  provide() {
+    return {
+      // provide the this.$emit to be used as handleActionEmitter since this emitter is connected to the native web component
+      handleActionEmitter: this.$emit,
+    };
+  },
   methods: {
     onChange(event: JsonFormsChangeEvent): void {
       this.$emit('change', event);
