@@ -50,7 +50,7 @@ import {
   createAjv,
   createTranslator,
   ResolvedJsonForms,
-} from '@kchobantonov/common-jsonforms';
+} from '@chobantonov/common-jsonforms';
 import { ErrorObject } from 'ajv';
 import Ajv from 'ajv/dist/core';
 import _get from 'lodash/get';

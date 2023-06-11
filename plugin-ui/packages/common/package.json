@@ -1,5 +1,5 @@
 {
-  "name": "@kchobantonov/common-jsonforms",
+  "name": "@chobantonov/common-jsonforms",
   "private": true,
   "version": "0.0.1-SNAPSHOT",
   "main": "lib/common-jsonforms.cjs.js",

@@ -1,5 +1,5 @@
 {
-    "name": "@kchobantonov/camunda-jsonforms-plugin",
+    "name": "@chobantonov/camunda-jsonforms-plugin",
     "private": true,
     "scripts": {
         "init": "lerna bootstrap --hoist",
@@ -9,18 +9,18 @@
         "test": "lerna run test",
         "build": "lerna run build",
         "snapshot-version": "lerna version --no-git-tag-version --no-push --yes",
-        "common:build": "lerna run --scope=@kchobantonov/common-jsonforms build",
-        "common:watch": "lerna run --scope=@kchobantonov/common-jsonforms watch --stream",
-        "common:test": "lerna run --scope=@kchobantonov/common-jsonforms test",
-        "common-wc:build": "lerna run --scope=@kchobantonov/common-jsonforms-webcomponent build",
-        "common-wc:serve": "lerna run --scope=@kchobantonov/common-jsonforms-webcomponent serve --stream",
-        "common-wc:test": "lerna run --scope=@kchobantonov/common-jsonforms-webcomponent test",
-        "camunda:build": "lerna run --scope=@kchobantonov/camunda-jsonforms build",
-        "camunda:watch": "lerna run --scope=@kchobantonov/camunda-jsonforms watch --stream",
-        "camunda:test": "lerna run --scope=@kchobantonov/camunda-jsonforms test",
-        "camunda-wc:build": "lerna run --scope=@kchobantonov/camunda-jsonforms-webcomponent build",
-        "camunda-wc:serve": "lerna run --scope=@kchobantonov/camunda-jsonforms-webcomponent serve --stream",
-        "camunda-wc:test": "lerna run --scope=@kchobantonov/camunda-jsonforms-webcomponent test"
+        "common:build": "lerna run --scope=@chobantonov/common-jsonforms build",
+        "common:watch": "lerna run --scope=@chobantonov/common-jsonforms watch --stream",
+        "common:test": "lerna run --scope=@chobantonov/common-jsonforms test",
+        "common-wc:build": "lerna run --scope=@chobantonov/common-jsonforms-webcomponent build",
+        "common-wc:serve": "lerna run --scope=@chobantonov/common-jsonforms-webcomponent serve --stream",
+        "common-wc:test": "lerna run --scope=@chobantonov/common-jsonforms-webcomponent test",
+        "camunda:build": "lerna run --scope=@chobantonov/camunda-jsonforms build",
+        "camunda:watch": "lerna run --scope=@chobantonov/camunda-jsonforms watch --stream",
+        "camunda:test": "lerna run --scope=@chobantonov/camunda-jsonforms test",
+        "camunda-wc:build": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent build",
+        "camunda-wc:serve": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent serve --stream",
+        "camunda-wc:test": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent test"
     },
     "devDependencies": {
         "lerna": "^4.0.0"

@@ -1,5 +1,5 @@
 {
-  "name": "@kchobantonov/camunda-jsonforms-webcomponent",
+  "name": "@chobantonov/camunda-jsonforms-webcomponent",
   "private": true,
   "version": "0.0.1-SNAPSHOT",
   "scripts": {
@@ -18,12 +18,12 @@
     "src"
   ],
   "dependencies": {
+    "@chobantonov/camunda-jsonforms": "^0.0.1-SNAPSHOT",
+    "@chobantonov/common-jsonforms": "^0.0.1-SNAPSHOT",
     "@fontsource/roboto": "^4.5.8",
     "@jsonforms/core": "3.1.0-alpha.0",
     "@jsonforms/vue2": "3.1.0-alpha.0",
     "@jsonforms/vue2-vuetify": "3.1.0-alpha.0",
-    "@kchobantonov/camunda-jsonforms": "^0.0.1-SNAPSHOT",
-    "@kchobantonov/common-jsonforms": "^0.0.1-SNAPSHOT",
     "@mdi/font": "^5.9.55",
     "ajv-keywords": "^5.1.0",
     "core-js": "^3.9.1",

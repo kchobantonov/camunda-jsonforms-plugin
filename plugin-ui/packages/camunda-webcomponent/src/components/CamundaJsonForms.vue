@@ -45,7 +45,7 @@
 <script lang="ts">
 import { ValidationMode } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { CamundaResolvedJsonForms } from '@kchobantonov/camunda-jsonforms';
+import { CamundaResolvedJsonForms } from '@chobantonov/camunda-jsonforms';
 import merge from 'lodash/merge';
 import * as shadyCss from 'shady-css-parser';
 import Vue, { defineComponent, PropType, ref } from 'vue';

@@ -36,7 +36,7 @@ import {
   useJsonFormsLayout,
 } from '@jsonforms/vue2';
 import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import { type ButtonElement } from '@kchobantonov/common-jsonforms';
+import { type ButtonElement } from '@chobantonov/common-jsonforms';
 import { ErrorObject } from 'ajv';
 import isArray from 'lodash/isArray';
 import { defineComponent, inject, ref, Ref } from 'vue';

@@ -1,5 +1,5 @@
 {
-  "name": "@kchobantonov/camunda-jsonforms",
+  "name": "@chobantonov/camunda-jsonforms",
   "private": true,
   "version": "0.0.1-SNAPSHOT",
   "main": "lib/camunda-jsonforms.cjs.js",
@@ -19,7 +19,7 @@
     "lerna-publish": "npm publish"
   },
   "dependencies": {
-    "@kchobantonov/common-jsonforms": "^0.0.1-SNAPSHOT",
+    "@chobantonov/common-jsonforms": "^0.0.1-SNAPSHOT",
     "ajv": "^8.6.1",
     "ajv-keywords": "^5.1.0",
     "core-js": "^3.9.1",

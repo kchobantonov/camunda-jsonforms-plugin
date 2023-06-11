@@ -55,7 +55,7 @@ import {
   createTranslator,
   FormContext,
   ResolvedJsonForms,
-} from '@kchobantonov/common-jsonforms';
+} from '@chobantonov/common-jsonforms';
 import { ErrorObject } from 'ajv';
 import isArray from 'lodash/isArray';
 import isPlainObject from 'lodash/isPlainObject';

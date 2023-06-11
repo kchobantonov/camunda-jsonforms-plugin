@@ -27,6 +27,15 @@ cd demo
 mvn spring-boot:run
 ```
 
+### Rebuild package-lock.json
+
+```bash
+cd plugin-ui
+rm -f package-lock.json
+docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app node:14.21.3 sh -c "npm install && npm run init"
+```
+
+
 ### Docker
 
 **Note**: The docker image is based on camumda-bpm-platform and will not include the demo project, instead the camunda-invoice application that is shipped with camunda-bpm-platform will be modified using the files under [camunda-invoice](./docker-camunda-bpm-platform/camunda-invoice). You can check the JSON Forms schema, uischema, i18n JSON files that are used for camunda-invoice demo under that folder.
