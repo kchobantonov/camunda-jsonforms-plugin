@@ -45,7 +45,7 @@ Open <http://localhost:8080/camunda>
 
 ---
 
-* With Camunda Platform 7.18.0 and [Minimal "history plugins" for Camunda Cockpit](https://github.com/datakurre/camunda-cockpit-plugins) plugin
+* With Camunda Platform 7.18.0 and [Minimal "history plugins" for Camunda Cockpit](https://github.com/kchobantonov/camunda-cockpit-plugins) plugin clone of [Minimal "history plugins" for Camunda Cockpit](https://github.com/datakurre/camunda-cockpit-plugins) plugin
 
 ```bash
 git clone https://github.com/kchobantonov/camunda-jsonforms-plugin.git

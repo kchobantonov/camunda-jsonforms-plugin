@@ -1,6 +1,6 @@
 import { JsonSchema, UISchemaElement } from '@jsonforms/core';
 import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { FormContext } from '@kchobantonov/common-jsonforms';
+import { FormContext } from '@chobantonov/jsonforms-vuetify-renderers';
 
 export interface BaseCamundaFormConfig {
   url: string;

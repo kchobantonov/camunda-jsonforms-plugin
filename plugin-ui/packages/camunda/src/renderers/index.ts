@@ -2,6 +2,6 @@ export { default as CamundaButtonRenderer } from './CamundaButtonRenderer.vue';
 
 import { entry as camundaButtonRendererEntry } from './CamundaButtonRenderer.vue';
 
-import { commonRenderers } from '@kchobantonov/common-jsonforms';
+import { vuetifyRenderers } from '@chobantonov/jsonforms-vuetify-renderers';
 
-export const camundaRenderers = [camundaButtonRendererEntry, ...commonRenderers];
+export const camundaRenderers = [camundaButtonRendererEntry, ...vuetifyRenderers];

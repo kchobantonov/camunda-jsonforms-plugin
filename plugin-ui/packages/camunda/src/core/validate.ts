@@ -1,6 +1,6 @@
 import { CamundaFormConfig } from './types';
 import { SchemaObject, ValidateFunction } from 'ajv';
-import { createAjv as createDefaultAjv } from '@kchobantonov/common-jsonforms';
+import { createAjv as createDefaultAjv } from '@chobantonov/jsonforms-vuetify-renderers';
 
 export const CamundaFormConfigSchema: SchemaObject = {
   $schema: 'http://json-schema.org/draft-07/schema#',
