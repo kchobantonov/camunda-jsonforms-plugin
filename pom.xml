@@ -17,7 +17,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <failOnMissingWebXml>false</failOnMissingWebXml>
 
-    <node.version>v14.17.5</node.version>
+    <node.version>v16.20.0</node.version>
     <frontend.working.directory>../plugin-ui</frontend.working.directory>
     <frontend.camunda.build.path>${frontend.working.directory}/packages/camunda-webcomponent/dist</frontend.camunda.build.path>
     <frontend.target.path>META-INF/resources/webjars/camunda/app/tasklist</frontend.target.path>
