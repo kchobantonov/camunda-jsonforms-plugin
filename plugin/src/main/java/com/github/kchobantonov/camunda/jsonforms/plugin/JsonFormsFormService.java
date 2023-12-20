@@ -100,7 +100,8 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
                     InputStream schema = getSchema(task, deploymentEntity);
                     if (schema != null) {
                         try {
-                            JSONObject jsonSchema = new JSONObject(new JSONTokener(schema));
+                            JSONObject jsonSchema = new JSONObject(
+                                    new JSONTokener(new InputStreamReader(schema, StandardCharsets.UTF_8)));
 
                             JSONObject properties = jsonSchema.optJSONObject("properties");
                             if (properties != null) {
@@ -196,15 +197,26 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
                             + deploymentId + "'",
                     "resource", uischema);
 
-            JSONObject result = new JSONObject();
-            result.put(schemaResourcePath,
-                    new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(schema.getBytes()), StandardCharsets.UTF_8))));
-            result.put(uischemaResourcePath,
-                    new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(uischema.getBytes()), StandardCharsets.UTF_8))));
-            if (i18n != null) {
-                result.put(i18nResourcePath,
-                        new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(i18n.getBytes()), StandardCharsets.UTF_8))));
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+
+            result.append(JSONObject.quote(schemaResourcePath));
+            result.append(":");
+            result.append(new String(schema.getBytes(), StandardCharsets.UTF_8));
+
+            if (uischema != null) {
+                result.append(JSONObject.quote(uischemaResourcePath));
+                result.append(":");
+                result.append(new String(uischema.getBytes(), StandardCharsets.UTF_8));
             }
+
+            if (i18n != null) {
+                result.append(JSONObject.quote(i18nResourcePath));
+                result.append(":");
+                result.append(new String(i18n.getBytes(), StandardCharsets.UTF_8));
+            }
+
+            result.append("}");
 
             return new ByteArrayInputStream(result.toString().getBytes(StandardCharsets.UTF_8));
         }

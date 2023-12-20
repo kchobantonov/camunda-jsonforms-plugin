@@ -2,6 +2,8 @@ package com.github.kchobantonov.camunda.jsonforms.plugin;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.camunda.bpm.engine.delegate.VariableScope;
@@ -45,7 +47,7 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
 
             InputStream resource = getSchema(formKey, deploymentId);
             if (resource != null) {
-                JSONObject jsonSchema = new JSONObject(new JSONTokener(resource));
+                JSONObject jsonSchema = new JSONObject(new JSONTokener(new InputStreamReader(resource, StandardCharsets.UTF_8)));
 
                 JSONObject object = new JSONObject();
                 for (Map.Entry<String, Object> entry : submittedValues.entrySet()) {
