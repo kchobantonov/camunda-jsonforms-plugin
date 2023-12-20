@@ -4,6 +4,8 @@ import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -196,15 +198,15 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
 
             JSONObject result = new JSONObject();
             result.put(schemaResourcePath,
-                    new JSONObject(new JSONTokener(new ByteArrayInputStream(schema.getBytes()))));
+                    new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(schema.getBytes()), StandardCharsets.UTF_8))));
             result.put(uischemaResourcePath,
-                    new JSONObject(new JSONTokener(new ByteArrayInputStream(uischema.getBytes()))));
+                    new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(uischema.getBytes()), StandardCharsets.UTF_8))));
             if (i18n != null) {
                 result.put(i18nResourcePath,
-                        new JSONObject(new JSONTokener(new ByteArrayInputStream(i18n.getBytes()))));
+                        new JSONObject(new JSONTokener(new InputStreamReader(new ByteArrayInputStream(i18n.getBytes()), StandardCharsets.UTF_8))));
             }
 
-            return new ByteArrayInputStream(result.toString().getBytes());
+            return new ByteArrayInputStream(result.toString().getBytes(StandardCharsets.UTF_8));
         }
 
     }
