@@ -205,12 +205,14 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
             result.append(new String(schema.getBytes(), StandardCharsets.UTF_8));
 
             if (uischema != null) {
+                result.append(",");
                 result.append(JSONObject.quote(uischemaResourcePath));
                 result.append(":");
                 result.append(new String(uischema.getBytes(), StandardCharsets.UTF_8));
             }
 
             if (i18n != null) {
+                result.append(",");
                 result.append(JSONObject.quote(i18nResourcePath));
                 result.append(":");
                 result.append(new String(i18n.getBytes(), StandardCharsets.UTF_8));
