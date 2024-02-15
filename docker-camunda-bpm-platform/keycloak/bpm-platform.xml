@@ -88,7 +88,7 @@
           <property name="keycloakIssuerUrl">https://keycloak.192.168.1.201.nip.io/auth/realms/master</property>
           <property name="keycloakAdminUrl">https://keycloak.192.168.1.201.nip.io/auth/admin/realms/master</property>
           <property name="clientId">camunda-identity-service</property>
-          <property name="clientSecret">Q8Njp7ofh2cIkL0PnJPw3bWKiIXCXL3C</property>
+          <property name="clientSecret">SZ9aG84hHldzRKitw5t15EqSlQBW2zsR</property>
           <property name="useUsernameAsCamundaUserId">true</property>
           <property name="useGroupPathAsCamundaGroupId">true</property>
           <property name="administratorGroupName">camunda-admin</property>
