@@ -85,8 +85,8 @@
       <plugin>
         <class>org.camunda.bpm.extension.keycloak.plugin.KeycloakIdentityProviderPlugin</class>
         <properties>
-          <property name="keycloakIssuerUrl">https://keycloak.192.168.1.201.nip.io/auth/realms/master</property>
-          <property name="keycloakAdminUrl">https://keycloak.192.168.1.201.nip.io/auth/admin/realms/master</property>
+          <property name="keycloakIssuerUrl">https://keycloak.192.168.1.10.nip.io/auth/realms/master</property>
+          <property name="keycloakAdminUrl">https://keycloak.192.168.1.10.nip.io/auth/admin/realms/master</property>
           <property name="clientId">camunda-identity-service</property>
           <property name="clientSecret">SZ9aG84hHldzRKitw5t15EqSlQBW2zsR</property>
           <property name="useUsernameAsCamundaUserId">true</property>
