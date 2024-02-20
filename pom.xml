@@ -7,10 +7,8 @@
   <name>Camunda JsonForms Plugin Parent</name>
 
   <properties>
-    <camunda.platform.version>7.18.0</camunda.platform.version>
-    <spring.boot.version>2.7.2</spring.boot.version>
-
-    <javax-servlet-api.version>4.0.1</javax-servlet-api.version>
+    <camunda.platform.version>7.20.0</camunda.platform.version>
+    <spring.boot.version>3.1.1</spring.boot.version>
 
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

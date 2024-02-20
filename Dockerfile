@@ -1,13 +1,13 @@
 ARG ARCH=
 
-FROM maven:3.8.6-openjdk-8 as compiler
+FROM maven:3.9.6-eclipse-temurin-17 as compiler
 WORKDIR /usr/local/src/
 COPY . .
 RUN mvn clean install
 
 FROM ${ARCH}alpine:latest as builder
 
-ARG VERSION=7.18.0
+ARG VERSION=7.20.0
 ARG DISTRO=tomcat
 ARG SNAPSHOT=false
 
@@ -38,6 +38,7 @@ COPY --from=compiler /usr/local/src/docker-camunda-bpm-platform/camunda-wildfly.
 
 RUN chmod +x /tmp/*.sh
 RUN /tmp/download.sh
+COPY --from=compiler /usr/local/src/docker-camunda-bpm-platform/camunda-lib.sh /camunda/
 
 COPY --chown=camunda:camunda --from=compiler /usr/local/src/plugin/target/*.jar /camunda/lib/
 COPY --chown=camunda:camunda --from=compiler /usr/local/src/plugin/target/classes/META-INF/resources/webjars/camunda/ /camunda/webapps/camunda/
@@ -49,7 +50,7 @@ COPY --chown=camunda:camunda --from=compiler /usr/local/src/docker-camunda-bpm-p
 
 FROM ${ARCH}alpine:latest
 
-ARG VERSION=7.18.0
+ARG VERSION=7.20.0
 
 ENV CAMUNDA_VERSION=${VERSION}
 ENV DB_DRIVER=
@@ -79,7 +80,7 @@ RUN apk add --no-cache \
         bash \
         ca-certificates \
         curl \
-        openjdk11-jre-headless \
+        openjdk17-jre-headless \
         tzdata \
         tini \
         xmlstarlet \

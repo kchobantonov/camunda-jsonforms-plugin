@@ -1,6 +1,5 @@
 package com.github.kchobantonov.camunda.jsonforms.demo.quickstart;
 
-import org.camunda.bpm.engine.impl.form.validator.FormFieldValidatorContext;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.Validator;
 import org.json.JSONObject;
