@@ -3,7 +3,6 @@ package com.github.kchobantonov.camunda.jsonforms.demo.quickstart;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.Validator;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormFieldValidator;
@@ -13,7 +12,6 @@ import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsPathResourceRes
 @Component
 public class LoadRequestValidator extends JsonFormsFormFieldValidator {
 
-  @Autowired
   public LoadRequestValidator(JsonFormsPathResourceResolver resolver) {
     super(resolver);
   }

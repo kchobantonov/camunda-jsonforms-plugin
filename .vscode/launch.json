@@ -8,7 +8,13 @@
             "console": "internalConsole",
             "mainClass": "com.github.kchobantonov.camunda.jsonforms.demo.Application",
             "projectName": "camunda-jsonforms-plugin-demo",
-            "vmArgs": "-DCAMUNDA_JSONFORMS_ENABLE_JS_CONSOLE_LOG=true -DCAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH=/forms -DCAMUNDA_JSONFORMS_RESOURCES_FOLDER=${workspaceFolder}/demo/src/main/resources"
+            "env": {
+                "OTEL_EXPORTER_JAEGER_ENDPOINT": "http://localhost:14250",
+                "OTEL_TRACES_EXPORTER": "jaeger",
+                "OTEL_SERVICE_NAME": "camunda-jsonforms-demo",
+                "OTEL_INSTRUMENTATION_DEMO_ENABLED" : "true"
+            },
+            "vmArgs": "-javaagent:${workspaceFolder}/demo/target/opentelemetry-javaagent.jar -javaagent:${workspaceFolder}/demo/target/aspectjweaver.jar --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED -Dotel.metrics.exporter=none -DCAMUNDA_JSONFORMS_ENABLE_JS_CONSOLE_LOG=true -DCAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH=/forms -DCAMUNDA_JSONFORMS_RESOURCES_FOLDER=${workspaceFolder}/demo/src/main/resources"
         }
     ]
 }

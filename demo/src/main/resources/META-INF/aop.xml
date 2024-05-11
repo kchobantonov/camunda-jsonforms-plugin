@@ -1,0 +1,5 @@
+<aspectj>
+  <aspects>
+    <aspect name="com.github.kchobantonov.camunda.jsonforms.demo.trace.OpenTelemetryJavaDelegateAspect" />
+  </aspects>
+</aspectj>

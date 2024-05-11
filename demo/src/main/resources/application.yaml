@@ -1,6 +1,11 @@
 spring:
   application:
     name: camunda-jsonforms-demo
+  datasource:
+    url: "jdbc:mysql://localhost:3306/demo"
+    username: demo
+    password: demo
+
 server:
   port: 8080
   # Enable response compression
@@ -12,13 +17,16 @@ server:
     min-response-size: 1024
 camunda:
   bpm:
+    generic-properties.properties:
+      telemetry-reporter-activate: false
+      historyTimeToLive: P180D
     authorization:
       enabled: true     
     admin-user:
       id: demo
       password: demo
     database:
-      type: h2
+      type: mysql
 
 logging:
   level:

@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    hostname: jaeger
+    ports:
+      - 14250:14250
+      - 16686:16686
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=demo
+      - MYSQL_USER=demo
+      - MYSQL_PASSWORD=demo
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql:/var/lib/mysql
+volumes:
+  mysql: {}

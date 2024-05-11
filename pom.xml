@@ -7,11 +7,11 @@
   <name>Camunda JsonForms Plugin Parent</name>
 
   <properties>
-    <camunda.platform.version>7.20.0</camunda.platform.version>
-    <spring.boot.version>3.1.1</spring.boot.version>
+    <camunda.platform.version>7.21.0</camunda.platform.version>
+    <spring.boot.version>3.2.2</spring.boot.version>
 
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <failOnMissingWebXml>false</failOnMissingWebXml>
 
