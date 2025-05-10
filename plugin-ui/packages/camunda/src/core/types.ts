@@ -1,6 +1,8 @@
-import { JsonSchema, UISchemaElement } from '@jsonforms/core';
-import { JsonFormsChangeEvent } from '@jsonforms/vue2';
-import { FormContext } from '@chobantonov/jsonforms-vuetify-renderers';
+import type { FormContext } from '@chobantonov/jsonforms-vuetify-renderers';
+import type { JsonFormsUISchemaRegistryEntry } from '@jsonforms/core';
+import type { JsonFormsChangeEvent } from '@jsonforms/vue';
+import type { ErrorObject } from 'ajv';
+import type { InjectionKey, MaybeRefOrGetter, SetupContext } from 'vue';
 
 export interface BaseCamundaFormConfig {
   url: string;
@@ -42,14 +44,11 @@ export interface ProcessDefinition {
 }
 
 export interface CamundaFormContext extends FormContext {
-  config: CamundaFormConfig;
-  schema: JsonSchema;
-  schemaUrl?: string;
-  uischema?: UISchemaElement;
-  data: Record<string, any>;
-  translations: Record<string, any>;
-  taskForm?: TaskForm;
-  variables: Record<string, VariableValue>;
+  camundaFormConfig: CamundaFormConfig;
+  taskForm?: MaybeRefOrGetter<TaskForm>;
+  variables: MaybeRefOrGetter<Record<string, VariableValue>>;
+  translations: MaybeRefOrGetter<Record<string, any>>;
+  uischemas?: MaybeRefOrGetter<JsonFormsUISchemaRegistryEntry[]>;
 }
 
 export interface Resource {
@@ -87,7 +86,7 @@ export interface VariableValue {
 }
 
 export const isTaskIdConfig = (
-  object: CamundaFormConfig
+  object: CamundaFormConfig,
 ): object is CamundaFormTaskIdConfig => {
   return (
     Object.prototype.hasOwnProperty.call(object, 'taskId') &&
@@ -96,7 +95,7 @@ export const isTaskIdConfig = (
 };
 
 export const isProcessDefinitionIdConfig = (
-  object: CamundaFormConfig
+  object: CamundaFormConfig,
 ): object is CamundaFormProcessDefinitionIdConfig => {
   return (
     Object.prototype.hasOwnProperty.call(object, 'processDefinitionId') &&
@@ -105,7 +104,7 @@ export const isProcessDefinitionIdConfig = (
 };
 
 export const isProcessDefinitionKeyConfig = (
-  object: CamundaFormConfig
+  object: CamundaFormConfig,
 ): object is CamundaFormProcessDefinitionKeyConfig => {
   return (
     Object.prototype.hasOwnProperty.call(object, 'processDefinitionKey') &&
@@ -180,7 +179,9 @@ export interface FormCallback {
 
 export const RESOURCE_SCHEMA_SUFFIX = '.schema.json';
 export const RESOURCE_UISCHEMA_SUFFIX = '.uischema.json';
+export const RESOURCE_UISCHEMAS_SUFFIX = '.uischemas.json';
 export const RESOURCE_I18N_SUFFIX = '.i18n.json';
+export const RESOURCE_UIDATA_SUFFIX = '.uidata.json';
 
 export type Emitter = (event: string, ...args: any[]) => void;
 
@@ -207,3 +208,13 @@ export class ResponseException extends Error {
     };
   }
 }
+
+export const CamundaAdditionalErrorsKey: InjectionKey<ErrorObject[]> =
+  Symbol.for('camunda-jsonforms:camundaAdditionalErrors');
+
+export const CamundaFormApiKey: InjectionKey<ErrorObject[]> = Symbol.for(
+  'camunda-jsonforms:camundaFormApi',
+);
+
+export const CamundaFormEmitterKey: InjectionKey<SetupContext['emit']> =
+  Symbol.for('camunda-jsonforms:camundaFormEmitter');

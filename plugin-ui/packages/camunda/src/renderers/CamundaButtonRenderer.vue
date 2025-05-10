@@ -1,14 +1,14 @@
 <template>
   <v-btn
     v-if="
-      layout.visible &&
+      button.visible &&
       (isSubmitButton ||
         isCompleteButton ||
         isResolveButton ||
         isErrorButton ||
         isEscalationButton)
     "
-    :disabled="!layout.enabled"
+    :disabled="!button.enabled"
     :color="color"
     :loading="loading"
     v-bind="vuetifyProps('v-btn')"
@@ -19,109 +19,89 @@
 </template>
 
 <script lang="ts">
+import { useCamundaButton, useJsonFormsCamundaButton, type CamundaButtonElement } from '@/utils/composition';
 import {
-  and,
-  JsonFormsRendererRegistryEntry,
-  JsonFormsSubStates,
-  Layout,
-  rankWith,
-  UISchemaElement,
-  uiTypeIs,
-  Tester,
-} from '@jsonforms/core';
+  FormContextKey,
+} from '@chobantonov/jsonforms-vuetify-renderers';
+import type { JsonFormsSubStates } from '@jsonforms/core';
 import {
-  DispatchRenderer,
   rendererProps,
-  RendererProps,
-  useJsonFormsLayout,
-} from '@jsonforms/vue2';
-import { useTranslator, useVuetifyLayout } from '@jsonforms/vue2-vuetify';
-import { type ButtonElement } from '@chobantonov/jsonforms-vuetify-renderers';
-import { ErrorObject } from 'ajv';
+  type RendererProps
+} from '@jsonforms/vue';
+import { useTranslator } from '@jsonforms/vue-vuetify';
+import { type ErrorObject } from 'ajv';
 import isArray from 'lodash/isArray';
-import { defineComponent, inject, ref, Ref } from 'vue';
-import { VBtn } from 'vuetify/lib';
+import { defineComponent, inject, ref, type Ref } from 'vue';
+import { VBtn } from 'vuetify/components';
 import { RestClient, SubmitEmitter } from '../core';
 import { CamundaFormApi } from '../core/api';
 import { AppErrorCode, AppException } from '../core/errors';
 import {
-  Action,
-  CamundaFormContext,
-  Emitter,
-  isAction,
+  CamundaAdditionalErrorsKey,
+  CamundaFormApiKey,
+  CamundaFormEmitterKey,
   isTaskIdConfig,
   ResponseException,
+  type CamundaFormContext,
+  type Emitter
 } from '../core/types';
 
-interface CamundaButtonElement extends ButtonElement {
-  action: Action;
-  errorCode?: string;
-  errorMessage?: string;
-  escalationCode?: string;
-  variables?: Record<
-    string,
-    {
-      type: string;
-      value: any;
-      valueInfo: Record<string, any>;
-    }
-  >;
-}
 
 // TODO: pass withVariablesInReturn ??
 
 const camundaButtonRenderer = defineComponent({
   name: 'camunda-button-renderer',
   components: {
-    DispatchRenderer,
     VBtn,
   },
   props: {
-    ...rendererProps<Layout>(),
+    ...rendererProps<CamundaButtonElement>(),
   },
-  setup(props: RendererProps<Layout>) {
+  setup(props: RendererProps<CamundaButtonElement>) {
     const t = useTranslator();
-    const layout = useVuetifyLayout(useJsonFormsLayout(props));
+    const button = useCamundaButton(useJsonFormsCamundaButton(props));
 
     const jsonforms = inject<JsonFormsSubStates>('jsonforms');
     if (!jsonforms) {
       throw new Error(
-        "'jsonforms' couldn't be injected. Are you within JSON Forms?"
+        "'jsonforms' couldn't be injected. Are you within JSON Forms?",
       );
     }
 
-    const additionalErrors = inject<Ref<ErrorObject[]>>('additionalErrors');
+    const additionalErrors = inject<Ref<ErrorObject[]>>(
+      CamundaAdditionalErrorsKey,
+    );
     if (!additionalErrors) {
       throw new Error(
-        "'additionalErrors' couldn't be injected. Are you within CamundaJsonForms?"
+        "'additionalErrors' couldn't be injected. Are you within CamundaJsonForms?",
       );
     }
 
-    const camundaFormContext = inject<CamundaFormContext>('formContext');
+    const camundaFormContext = inject<Ref<CamundaFormContext>>(FormContextKey);
     if (!camundaFormContext) {
       throw new Error(
-        "'formContext' couldn't be injected. Are you within CamundaJsonForms?"
+        "'formContext' couldn't be injected. Are you within CamundaJsonForms?",
       );
     }
 
-    const camundaFormApi = inject<CamundaFormApi>('camundaFormApi');
+    const camundaFormApi = inject<CamundaFormApi>(CamundaFormApiKey);
     if (!camundaFormApi) {
       throw new Error(
-        "'camundaFormApi' couldn't be injected. Are you within CamundaJsonForms?"
+        "'camundaFormApi' couldn't be injected. Are you within CamundaJsonForms?",
       );
     }
 
-    const camundaFormEmitter = inject<Emitter>('camundaFormEmitter');
+    const camundaFormEmitter = inject<Emitter>(CamundaFormEmitterKey);
     if (!camundaFormEmitter) {
       throw new Error(
-        "'camundaFormEmitter' couldn't be injected. Are you within CamundaJsonForms?"
+        "'camundaFormEmitter' couldn't be injected. Are you within CamundaJsonForms?",
       );
     }
 
     const loading = ref(false);
 
     return {
-      ...layout,
+      ...button,
       t,
       jsonforms,
       camundaFormContext,
@@ -132,59 +112,53 @@ const camundaButtonRenderer = defineComponent({
     };
   },
   computed: {
-    action(): Action {
-      return (this.layout.uischema as CamundaButtonElement).action;
-    },
     isSubmitButton(): boolean {
       return (
-        this.action === 'camunda:submit' ||
-        this.action === 'camunda:submit-without-data'
+        this.button.action === 'camunda:submit' ||
+        this.button.action === 'camunda:submit-without-data'
       );
     },
     isCompleteButton(): boolean {
       // complete is defined on task only
       return (
-        (this.action === 'camunda:complete' ||
-          this.action === 'camunda:complete-without-data') &&
-        isTaskIdConfig(this.camundaFormContext.config)
+        (this.button.action === 'camunda:complete' ||
+          this.button.action === 'camunda:complete-without-data') &&
+        isTaskIdConfig(this.camundaFormContext.camundaFormConfig)
       );
     },
     isResolveButton(): boolean {
       return (
-        (this.action === 'camunda:resolve' ||
-          this.action === 'camunda:resolve-without-data') &&
-        isTaskIdConfig(this.camundaFormContext.config)
+        (this.button.action === 'camunda:resolve' ||
+          this.button.action === 'camunda:resolve-without-data') &&
+        isTaskIdConfig(this.camundaFormContext.camundaFormConfig)
       );
     },
     isErrorButton(): boolean {
       return (
-        this.action === 'camunda:error' &&
-        isTaskIdConfig(this.camundaFormContext.config)
+        this.button.action === 'camunda:error' &&
+        isTaskIdConfig(this.camundaFormContext.camundaFormConfig)
       );
     },
     isEscalationButton(): boolean {
       return (
-        this.action === 'camunda:escalation' &&
-        isTaskIdConfig(this.camundaFormContext.config)
+        this.button.action === 'camunda:escalation' &&
+        isTaskIdConfig(this.camundaFormContext.camundaFormConfig)
       );
     },
     translatedLabel(): string | undefined {
-      if (this.layout.uischema.options?.i18n) {
+      if (this.button.uischema.options?.i18n) {
         return this.t(
-          this.layout.uischema.options.i18n,
-          (this.layout.uischema as CamundaButtonElement).label
+          this.button.uischema.options.i18n,
+          this.button.uischema.label,
         );
       }
       return this.t(
-        (this.layout.uischema as CamundaButtonElement).label,
-        (this.layout.uischema as CamundaButtonElement).label
+        this.button.uischema.label,
+        this.button.uischema.label,
       );
     },
     color(): string | undefined {
-      if ((this.layout.uischema as CamundaButtonElement).color) {
-        return (this.layout.uischema as CamundaButtonElement).color;
-      }
-      return undefined;
+      return this.button.uischema.color;
     },
   },
   methods: {
@@ -195,24 +169,12 @@ const camundaButtonRenderer = defineComponent({
         const payload: Record<string, any> = {};
 
         if (this.isErrorButton) {
-          const errorCode = (this.layout.uischema as CamundaButtonElement)
-            .errorCode;
-          const errorMessage = (this.layout.uischema as CamundaButtonElement)
-            .errorMessage;
-
-          payload.errorCode = errorCode;
-          payload.errorMessage = errorMessage;
+          payload.errorCode = this.button.errorCode;
+          payload.errorMessage = this.button.errorMessage;
         } else if (this.isEscalationButton) {
-          const escalationCode = (this.layout.uischema as CamundaButtonElement)
-            .escalationCode;
-
-          payload.escalationCode = escalationCode;
+          payload.escalationCode = this.button.escalationCode;
         } else {
-          if ((this.layout.uischema as CamundaButtonElement).variables) {
-            payload.variables = (
-              this.layout.uischema as CamundaButtonElement
-            ).variables;
-          }
+          payload.variables = this.button.variables;
         }
         const restClient = new RestClient([
           new SubmitEmitter(this.camundaFormEmitter),
@@ -226,8 +188,8 @@ const camundaButtonRenderer = defineComponent({
           schema,
           data,
           this.camundaFormContext,
-          this.action,
-          payload
+          this.button.action,
+          payload,
         );
       } catch (e) {
         if (
@@ -250,13 +212,4 @@ const camundaButtonRenderer = defineComponent({
 });
 
 export default camundaButtonRenderer;
-
-export const isCamundaAction: Tester = (uischema: UISchemaElement): boolean => {
-  return isAction((uischema as any).action);
-};
-
-export const entry: JsonFormsRendererRegistryEntry = {
-  renderer: camundaButtonRenderer,
-  tester: rankWith(2, and(uiTypeIs('Button'), isCamundaAction)),
-};
 </script>

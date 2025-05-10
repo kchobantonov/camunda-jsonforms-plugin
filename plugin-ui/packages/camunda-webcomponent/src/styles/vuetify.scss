@@ -1,0 +1,5 @@
+@use 'vuetify/settings' with (
+  $body-font-family: var(--v-font-family),
+);
+
+@use 'vuetify/styles';

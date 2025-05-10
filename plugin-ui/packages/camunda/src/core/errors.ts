@@ -12,6 +12,10 @@ export enum AppErrorCode {
   INVALID_JSONFORMS_UISCHEMA = 'INVALID_JSONFORMS_UISCHEMA',
   RETRIEVE_JSONFORMS_I18N = 'RETRIEVE_JSONFORMS_I18N',
   INVALID_JSONFORMS_I18N = 'INVALID_JSONFORMS_I18N',
+  RETRIEVE_JSONFORMS_UISCHEMAS = 'RETRIEVE_JSONFORMS_UISCHEMAS',
+  INVALID_JSONFORMS_UISCHEMAS = 'INVALID_JSONFORMS_UISCHEMAS',
+  RETRIEVE_JSONFORMS_UIDATA = 'RETRIEVE_JSONFORMS_UIDATA',
+  INVALID_JSONFORMS_UIDATA = 'INVALID_JSONFORMS_UIDATA',
 
   RETRIEVE_TASK_FORM_VARIABLES = 'RETRIEVE_TASK_FORM_VARIABLES',
   INVALID_TASK_FORM_VARIABLES_RESPONSE = 'INVALID_TASK_FORM_VARIABLES_RESPONSE',
@@ -66,6 +70,13 @@ const codeErrors: Record<
     'Unable to retrieve form internationalization resource',
   INVALID_JSONFORMS_I18N: (_params) =>
     'Invalid form internationalization resource',
+  RETRIEVE_JSONFORMS_UISCHEMAS: (_params) =>
+    'Unable to retrieve form UI schemas resource',
+  INVALID_JSONFORMS_UISCHEMAS: (_params) => 'Invalid form UI schemas resource',
+  RETRIEVE_JSONFORMS_UIDATA: (_params) =>
+    'Unable to retrieve form UI data resource',
+  INVALID_JSONFORMS_UIDATA: (_params) =>
+    'Invalid form UI data resource',
 
   RETRIEVE_TASK_FORM_VARIABLES: (_params) =>
     'Unable to retrieve form variables',

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+    />
+    <title>Vuetify JsonForms WebComponent</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <!-- <script type="module" src="./dist/vuetify-json-forms.js"></script> -->
+    <script type="module" src="./src/web-component.ts"></script>
+
+    <vuetify-json-forms> </vuetify-json-forms>
+
+    <script type="module">
+      import { examples } from './src/examples/index.js';
+
+      const example = examples[0];
+      const input = example.input;
+
+      const form = document.querySelector('vuetify-json-forms');
+
+      if (input && input.data) {
+        form.setAttribute('data', JSON.stringify(input.data));
+      }
+      if (input && input.schema) {
+        form.setAttribute('schema', JSON.stringify(input.schema));
+      }
+      if (input && input.uischema) {
+        form.setAttribute('uischema', JSON.stringify(input.uischema));
+      }
+      if (input && input.uischemas) {
+        form.setAttribute('uischemas', JSON.stringify(input.uischemas));
+      }
+      if (input && input.config) {
+        form.setAttribute('config', JSON.stringify(input.config));
+      }
+      if (input && input.style) {
+        form.setAttribute('custom-style', input.style);
+      }
+      if (input && input.i18n) {
+        form.setAttribute('translations', JSON.stringify(input.i18n));
+      }
+      if (input && input.uidata) {
+        form.setAttribute('uidata', JSON.stringify(input.uidata));
+      }
+      if (input && input.preset) {
+        form.setAttribute('vuetify-options', JSON.stringify(input.preset));
+      }
+
+      if (input && input.actions && input.actions.onChange) {
+        form.addEventListener('change', input.actions.onChange);
+      }
+      if (input && input.actions && input.actions.onHandleAction) {
+        form.addEventListener('handle-action', input.actions.onHandleAction);
+      }
+    </script>
+  </body>
+</html>

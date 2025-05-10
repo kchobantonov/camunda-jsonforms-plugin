@@ -1,75 +1,99 @@
 <template>
-  <div ref="root">
-    <custom-style type="text/css" id="vuetify-theme">
-      {{ vuetifyThemeCss }}
-    </custom-style>
+  <Suspense>
+    <div>
+      <custom-style type="text/css" id="vuetify-theme-stylesheet">
+        {{ vuetifyThemeCss }}
+      </custom-style>
 
-    <custom-style type="text/css">
-      {{ customStyle }}
-    </custom-style>
+      <custom-style type="text/css">
+        {{ customStyleToUse }}
+      </custom-style>
 
-    <v-app>
-      <div v-if="error !== undefined">
-        <v-container style="height: 400px">
-          <v-row class="fill-height" align-content="center" justify="center">
-            <v-col class="text-subtitle-1 text-center error" cols="12">
-              {{ error }}
-            </v-col>
-          </v-row>
-        </v-container>
-      </div>
-      <v-sheet v-else :dark="dark" tile>
-        <camunda-resolved-json-forms
-          :url="dataUrl"
-          :processDefinitionId="dataProcessDefinitionId"
-          :processDefinitionKey="dataProcessDefinitionKey"
-          :taskId="dataTaskId"
-          :locale="dataLocale"
-          :defaultPreset="dataDefaultPreset"
-          :config="dataConfig"
-          :validationMode="dataValidationMode"
-          :readonly="dataReadonly"
-          @change="onChange"
-          @load-request="onLoadRequest"
-          @load-response="onLoadResponse"
-          @load-error="onLoadError"
-          @submit-request="onSubmitRequest"
-          @submit-response="onSubmitResponse"
-          @submit-error="onSubmitError"
-        />
-      </v-sheet>
-    </v-app>
-  </div>
+      <v-locale-provider :rtl="appStore.rtl" :locale="appStore.locale">
+        <v-theme-provider :theme="theme">
+          <v-defaults-provider :defaults="appStore.defaults">
+            <div v-if="error !== undefined">
+              <v-container style="height: 400px">
+                <v-row
+                  class="fill-height"
+                  align-content="center"
+                  justify="center"
+                >
+                  <v-col class="text-subtitle-1 text-center error" cols="12">
+                    {{ error }}
+                  </v-col>
+                </v-row>
+              </v-container>
+            </div>
+            <camunda-resolved-json-forms
+              :url="urlToUse"
+              :processDefinitionId="processDefinitionIdToUse"
+              :processDefinitionKey="processDefinitionKeyToUse"
+              :taskId="taskIdToUse"
+              :locale="localeToUse"
+              :vuetify-config="vuetifyConfig"
+              :config="configToUse"
+              :validationMode="validationModeToUse"
+              :readonly="readonlyToUse"
+              @change="onChange"
+              @load-request="onLoadRequest"
+              @load-response="onLoadResponse"
+              @load-error="onLoadError"
+              @submit-request="onSubmitRequest"
+              @submit-response="onSubmitResponse"
+              @submit-error="onSubmitError"
+            ></camunda-resolved-json-forms>
+          </v-defaults-provider>
+        </v-theme-provider>
+      </v-locale-provider>
+    </div>
+  </Suspense>
 </template>
 
 <script lang="ts">
-import { ValidationMode } from '@jsonforms/core';
-import { JsonFormsChangeEvent } from '@jsonforms/vue2';
+import { useAppStore } from '@/store';
 import { CamundaResolvedJsonForms } from '@chobantonov/camunda-jsonforms';
-import merge from 'lodash/merge';
-import * as shadyCss from 'shady-css-parser';
-import Vue, { defineComponent, PropType, ref } from 'vue';
-import LoadScript from 'vue-plugin-load-script';
-import { VApp, VSheet } from 'vuetify/lib';
-import { VuetifyPreset } from 'vuetify/types/services/presets';
-import vuetify, { preset as defaultPreset } from '../plugins/vuetify';
+import {
+  HandleActionEmitterKey,
+  type VuetifyConfig
+} from '@chobantonov/jsonforms-vuetify-renderers';
+import {
+  type ValidationMode
+} from '@jsonforms/core';
+import { type JsonFormsChangeEvent } from '@jsonforms/vue';
+import {
+  computed,
+  defineComponent,
+  h,
+  inject,
+  type InjectionKey,
+  type PropType,
+  ref,
+  watch
+} from 'vue';
+import { type ThemeInstance } from 'vuetify';
+import {
+  VDefaultsProvider,
+  VLocaleProvider,
+  VThemeProvider,
+} from 'vuetify/components';
+import { extractAndInjectFonts } from '../util/inject-fonts';
 
-Vue.use(LoadScript);
-Vue.config.productionTip = false;
+const ThemeSymbol: InjectionKey<ThemeInstance> = Symbol.for('vuetify:theme');
 
 const CustomStyle = defineComponent({
   name: 'custom-style',
-  render(createElement) {
-    return createElement('style', this.$slots.default);
+  setup(_, { slots }) {
+    return () => h('style', slots.default ? slots.default() : []);
   },
 });
 
 const camundaFormWc = defineComponent({
-  vuetify,
   components: {
     CamundaResolvedJsonForms,
-    VApp,
-    VSheet,
+    VThemeProvider,
+    VLocaleProvider,
+    VDefaultsProvider,
     CustomStyle,
   },
   emits: [
@@ -100,18 +124,10 @@ const camundaFormWc = defineComponent({
     },
     config: {
       required: false,
-      type: [String, Object],
-      default: () => {
-        return {
-          restrict: true,
-          trim: false,
-          showUnfocusedDescription: false,
-          hideRequiredAsterisk: true,
-        };
-      },
+      type: String,
       validator: function (value) {
         try {
-          const config = typeof value == 'string' ? JSON.parse(value) : value;
+          const config = typeof value === 'string' ? JSON.parse(value) : value;
 
           return config !== undefined && config !== null;
         } catch (e) {
@@ -121,8 +137,8 @@ const camundaFormWc = defineComponent({
     },
     readonly: {
       required: false,
-      type: String,
-      default: 'false',
+      type: Boolean,
+      default: false,
     },
     validationMode: {
       required: false,
@@ -132,214 +148,220 @@ const camundaFormWc = defineComponent({
         return (
           value === 'ValidateAndShow' ||
           value === 'ValidateAndHide' ||
-          value == 'NoValidation'
+          value === 'NoValidation'
         );
       },
-    },
-    locale: {
-      required: false,
-      type: String,
-      default: 'en',
     },
     customStyle: {
       required: false,
       type: String,
-      default: '.v-application--wrap { min-height: 0px; }',
-    },
-    defaultPreset: {
-      required: false,
-      type: [String],
-      validator: function (value) {
-        try {
-          const config = typeof value == 'string' ? JSON.parse(value) : value;
-
-          return config !== undefined && config !== null;
-        } catch (e) {
-          return false;
-        }
-      },
     },
   },
-  setup(props) {
-    let error: any = undefined;
+  async setup(props) {
+    const appStore = useAppStore();
 
-    let dataUrl: string | undefined = undefined;
-    let dataProcessDefinitionId: string | undefined = undefined;
-    let dataProcessDefinitionKey: string | undefined = undefined;
-    let dataTaskId: string | undefined = undefined;
-    let dataConfig: Record<string, any> | undefined = undefined;
-    let dataReadonly: boolean | undefined = undefined;
-    let dataLocale: string | undefined = undefined;
-    let dataValidationMode: ValidationMode | undefined = undefined;
-    let dataDefaultPreset: Partial<VuetifyPreset> | undefined = undefined;
+    const getJsonDataType = (value: any): string | null => {
+      if (typeof value === 'string') {
+        return 'string';
+      } else if (typeof value === 'number') {
+        return Number.isInteger(value) ? 'integer' : 'number';
+      } else if (typeof value === 'boolean') {
+        return 'boolean';
+      } else if (Array.isArray(value)) {
+        return 'array';
+      } else if (value === null) {
+        return 'null';
+      } else if (typeof value === 'object') {
+        return 'object';
+      }
 
-    try {
-      dataConfig =
-        typeof props.config == 'string'
-          ? JSON.parse(props.config)
-          : props.config;
-
-      dataUrl = typeof props.url == 'string' ? props.url : undefined;
-      dataProcessDefinitionId =
-        typeof props.processDefinitionId == 'string'
-          ? props.processDefinitionId
-          : undefined;
-      dataProcessDefinitionKey =
-        typeof props.processDefinitionKey == 'string'
-          ? props.processDefinitionKey
-          : undefined;
-      dataTaskId = typeof props.taskId == 'string' ? props.taskId : undefined;
-
-      dataReadonly =
-        typeof props.readonly == 'string'
-          ? props.readonly == 'true'
-          : props.readonly;
-      dataValidationMode =
-        props.validationMode == 'ValidateAndShow' ||
-        props.validationMode == 'ValidateAndHide' ||
-        props.validationMode == 'NoValidation'
-          ? props.validationMode
-          : 'ValidateAndShow';
-      dataLocale = typeof props.locale == 'string' ? props.locale : 'en';
-      dataDefaultPreset =
-        typeof props.defaultPreset == 'string'
-          ? merge({}, defaultPreset, JSON.parse(props.defaultPreset))
-          : defaultPreset;
-    } catch (e) {
-      error = `Config error: ${e}`;
-    }
-
-    return {
-      error,
-      dataConfig,
-      dataUrl,
-      dataProcessDefinitionId,
-      dataProcessDefinitionKey,
-      dataTaskId,
-      dataReadonly,
-      dataValidationMode,
-      dataLocale,
-      dataDefaultPreset,
-      vuetifyTheme: ref<{ generatedStyles: string } & VuetifyPreset['theme']>(
-        vuetify.framework.theme as any
-      ),
+      return null;
     };
-  },
-  watch: {
-    url: {
-      handler(value?: string, oldValue?: string) {
+
+    const toJsonData = (
+      prop: string,
+      jsonType:
+        | 'string'
+        | 'integer'
+        | 'number'
+        | 'boolean'
+        | 'array'
+        | 'null'
+        | 'object'
+        | 'any',
+      value: string | undefined,
+    ) => {
+      try {
+        const result = typeof value == 'string' ? JSON.parse(value) : undefined;
+        if (jsonType !== 'any' && result !== undefined) {
+          const resultType = getJsonDataType(result);
+          if (resultType !== jsonType) {
+            throw new Error(
+              `Invalid data type. Expected ${jsonType} but found ${resultType}`,
+            );
+          }
+        }
+        return result;
+      } catch (e) {
+        error.value = `${prop} error: ${e}`;
+        console.log(e);
+
+        return undefined;
+      }
+    };
+
+    let error = ref<string | undefined>(undefined);
+    let urlToUse = ref<string | undefined>(props.url);
+    let processDefinitionIdToUse = ref<string | undefined>(
+      props.processDefinitionId,
+    );
+    let processDefinitionKeyToUse = ref<string | undefined>(
+      props.processDefinitionKey,
+    );
+    let taskIdToUse = ref<string | undefined>(props.taskId);
+    let configToUse = ref<Record<string, any>>(toJsonData('config', 'object', props.config));
+    let readonlyToUse = ref<boolean | undefined>(props.readonly);
+    let validationModeToUse = ref(
+      props.validationMode === 'ValidateAndShow' ||
+        props.validationMode === 'ValidateAndHide' ||
+        props.validationMode === 'NoValidation'
+        ? props.validationMode
+        : 'ValidateAndShow',
+    );
+    let customStyleToUse = ref(props.customStyle);
+    let localeToUse = ref<string | undefined>(appStore.locale);
+
+    watch(
+      () => props.url,
+      (value, oldValue) => {
         if (value !== oldValue) {
-          this.dataUrl = typeof value == 'string' ? value : undefined;
+          urlToUse.value = value;
         }
       },
-      deep: true,
-    },
-    processDefinitionId: {
-      handler(value?: string, oldValue?: string) {
+    );
+    watch(
+      () => props.processDefinitionId,
+      (value, oldValue) => {
         if (value !== oldValue) {
-          this.dataProcessDefinitionId =
-            typeof value == 'string' ? value : undefined;
+          processDefinitionIdToUse.value = value;
 
           // reset other 2
-          this.dataProcessDefinitionKey = undefined;
-          this.dataTaskId = undefined;
+          processDefinitionKeyToUse.value = undefined;
+          taskIdToUse.value = undefined;
         }
       },
-      deep: true,
-    },
-    processDefinitionKey: {
-      handler(value?: string, oldValue?: string) {
+    );
+    watch(
+      () => props.processDefinitionKey,
+      (value, oldValue) => {
         if (value !== oldValue) {
-          this.dataProcessDefinitionKey =
-            typeof value == 'string' ? value : undefined;
+          processDefinitionKeyToUse.value = value;
 
           // reset other 2
-          this.dataProcessDefinitionId = undefined;
-          this.dataTaskId = undefined;
+          processDefinitionIdToUse.value = undefined;
+          taskIdToUse.value = undefined;
         }
       },
-      deep: true,
-    },
-    taskId: {
-      handler(value?: string, oldValue?: string) {
+    );
+    watch(
+      () => props.taskId,
+      (value, oldValue) => {
         if (value !== oldValue) {
-          this.dataTaskId = typeof value == 'string' ? value : undefined;
+          taskIdToUse.value = value;
 
           // reset other 2
-          this.dataProcessDefinitionId = undefined;
-          this.dataProcessDefinitionKey = undefined;
+          processDefinitionIdToUse.value = undefined;
+          processDefinitionKeyToUse.value = undefined;
         }
       },
-      deep: true,
-    },
-    config: {
-      handler(value?: string, oldValue?: string) {
+    );
+    watch(
+      () => props.config,
+      (value, oldValue) => {
         if (value !== oldValue) {
-          this.dataConfig =
-            typeof value == 'string' ? JSON.parse(value) : undefined;
+          configToUse.value = toJsonData('config', 'object', value);
         }
       },
-      deep: true,
-    },
-    readonly: {
-      handler(value?: string, oldValue?: string) {
+    );
+    watch(
+      () => props.readonly,
+      (value, oldValue) => {
         if (value !== oldValue) {
-          this.dataReadonly =
-            typeof value == 'string' ? value == 'true' : value === true;
+          readonlyToUse.value = value;
         }
       },
-      deep: true,
-    },
-    validationMode: {
-      handler(value?: string, oldValue?: string) {
+    );
+    watch(
+      () => props.validationMode,
+      (value, oldValue) => {
         if (value !== oldValue) {
-          this.dataValidationMode =
-            value == 'ValidateAndShow' ||
-            value == 'ValidateAndHide' ||
-            value == 'NoValidation'
+          validationModeToUse.value =
+            value === 'ValidateAndShow' ||
+            value === 'ValidateAndHide' ||
+            value === 'NoValidation'
               ? value
               : 'ValidateAndShow';
         }
       },
-      deep: true,
-    },
-    locale: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          this.dataLocale = typeof value == 'string' ? value : 'en';
+    );
+    watch(
+      () => props.customStyle,
+      (customStyle, oldCustomStyle) => {
+        if (customStyle !== oldCustomStyle) {
+          customStyleToUse.value = customStyle;
         }
       },
-      deep: true,
-    },
-    defaultPreset: {
-      handler(value?: string, oldValue?: string) {
+    );
+    watch(
+      () => appStore.locale,
+      (value, oldValue) => {
         if (value !== oldValue) {
-          this.dataDefaultPreset =
-            typeof value == 'string'
-              ? merge({}, defaultPreset, JSON.parse(value))
-              : undefined;
+          localeToUse.value = value;
+        }
+      },
+    );
 
-          this.applyTheme();
-        }
-      },
-      deep: true,
-    },
+    const theme = computed(() => {
+      return appStore.dark ? 'dark' : 'light';
+    });
+
+    const vuetifyConfig = computed<VuetifyConfig>(() => ({
+      theme: theme.value,
+      rtl: appStore.rtl,
+      defaults: appStore.defaults,
+    }));
+
+    return {
+      error,
+      urlToUse,
+      processDefinitionIdToUse,
+      processDefinitionKeyToUse,
+      taskIdToUse,
+      configToUse,
+      readonlyToUse,
+      validationModeToUse,
+      customStyleToUse,
+      localeToUse,
+      appStore,
+      theme,
+      vuetifyConfig,
+    };
+  },
+  provide() {
+    return {
+      // provide the this.$emit to be used as handleActionEmitter since this emitter is connected to the native web component
+      [HandleActionEmitterKey]: this.$root!.$emit,
+    };
   },
   async mounted() {
-    this.applyTheme();
-
-    this.injectShadowFontsInDocument();
+    extractAndInjectFonts(this.$el.getRootNode());
   },
   computed: {
-    dark(): boolean {
-      return this.dataDefaultPreset?.theme?.dark || false;
-    },
     vuetifyThemeCss() {
-      let css = this.vuetifyTheme?.generatedStyles;
-      if (
-        this.vuetifyTheme?.options?.customProperties &&
-        css.startsWith(':root {')
-      ) {
+      const theme = inject(ThemeSymbol);
+
+      let css = theme?.styles.value;
+      if (css && css.startsWith(':root {')) {
         // change to host if the variable generation is enabled
         css = ':host {' + css.substring(':root {'.length, css.length);
       }
@@ -347,86 +369,6 @@ const camundaFormWc = defineComponent({
     },
   },
   methods: {
-    // include the fonts outside the webcomponent for now - https://github.com/google/material-design-icons/issues/1165
-    injectShadowFontsInDocument(): void {
-      const root = this.$el.getRootNode();
-      if (root instanceof ShadowRoot && root.hasChildNodes()) {
-        const parser = new shadyCss.Parser();
-        class FaceFontStringifier extends shadyCss.Stringifier {
-          insideFontFace = false;
-          visit(node: shadyCss.Node): string | undefined {
-            if (node.type === shadyCss.nodeType.stylesheet) {
-              return super.visit(node);
-            }
-            if (
-              node.type === shadyCss.nodeType.atRule &&
-              node.name === 'font-face'
-            ) {
-              try {
-                this.insideFontFace = true;
-                return super.visit(node);
-              } finally {
-                this.insideFontFace = false;
-              }
-            }
-            return this.insideFontFace ? super.visit(node) : '';
-          }
-        }
-        const faceFontStringifier = new FaceFontStringifier();
-
-        // we have css with scope so we should have unique id
-        const rootTemplate = this.$refs['root'] as Element;
-        const dataAttrNames = rootTemplate
-          .getAttributeNames()
-          .filter((an) => an.startsWith('data-v-'));
-        const uniqueId =
-          dataAttrNames && dataAttrNames.length > 0 ? dataAttrNames[0] : '';
-
-        let children = root.childNodes;
-        for (let i = 0; i < children.length; i++) {
-          const node = children[i];
-          if (node.nodeName.toLowerCase() === 'style' && node.textContent) {
-            try {
-              const id = `camunda-json-forms-${uniqueId}-ff-${i}`;
-              let el = document.querySelector(`style[id="${id}"]`);
-              if (!el) {
-                el = document.createElement('style');
-                el.id = id;
-                const ast = parser.parse(node.textContent);
-                el.textContent = faceFontStringifier.stringify(ast);
-                document.head.appendChild(el);
-              }
-            } catch (e) {
-              console.log(e);
-            }
-          }
-        }
-      }
-    },
-    applyTheme(): void {
-      let preset: Partial<VuetifyPreset> | null = null;
-      if (this.input?.uischema?.options) {
-        preset = this.vuetifyProps(
-          this.input.uischema.options,
-          'preset'
-        ) as Partial<VuetifyPreset>;
-      }
-
-      // apply any themes
-      this.$vuetify.theme = merge(
-        this.$vuetify.theme,
-        preset && preset.theme
-          ? preset.theme
-          : this.dataDefaultPreset?.theme || {}
-      );
-
-      this.$vuetify.icons = merge(
-        this.$vuetify.icons,
-        preset && preset.icons
-          ? preset.icons
-          : this.dataDefaultPreset?.icons || {}
-      );
-    },
     onChange(event: JsonFormsChangeEvent): void {
       this.$emit('change', event);
     },
@@ -453,11 +395,3 @@ const camundaFormWc = defineComponent({
 
 export default camundaFormWc;
 </script>
-
-<style scoped>
-@import '~@fontsource/roboto/index.css';
-@import '~@mdi/font/css/materialdesignicons.min.css';
-@import '~vuetify/dist/vuetify.min.css';
-@import '~@jsonforms/vue2-vuetify/lib/jsonforms-vue2-vuetify.esm.css';
-
-</style>

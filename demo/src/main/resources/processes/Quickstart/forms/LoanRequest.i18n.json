@@ -12,6 +12,10 @@
       "label": "Birth Date",
       "description": "Please enter your birth date."
     },
+    "preferredContactTime": {
+      "label": "Preferred Contact Time",
+      "description": "Select your preferred time to be contacted."
+    },
     "nationality": {
       "label": "Nationality"
     },
@@ -57,6 +61,10 @@
     "birthDate": {
       "label": "Дата на раждане",
       "description": "Моля въведете вашата рождена дата."
+    },
+    "preferredContactTime": {
+      "label": "Предпочитано време за контакт",
+      "description": "Изберете предпочитано време за връзка с вас."
     },
     "nationality": {
       "label": "Националност"

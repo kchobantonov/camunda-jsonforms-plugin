@@ -19,18 +19,8 @@
 
     <resolved-json-forms
       v-else-if="context !== null"
-      :data="context.data"
-      :schema="context.schema"
-      :uischema="context.uischema"
-      :renderers="renderers"
-      :cells="cells"
-      :config="config"
-      :readonly="readonly"
-      :uischemas="uischemas"
-      :validationMode="validationMode"
-      :ajv="ajv"
-      :i18n="i18n"
-      :additionalErrors="additionalErrors"
+      :state="state"
+      :vuetify-config="vuetifyConfig"
       @change="onChange"
     ></resolved-json-forms>
   </div>
@@ -38,26 +28,37 @@
 
 <script lang="ts">
 import {
-  JsonFormsCellRendererRegistryEntry,
-  JsonFormsI18nState,
-  JsonFormsRendererRegistryEntry,
-  JsonFormsUISchemaRegistryEntry,
-  ValidationMode,
-} from '@jsonforms/core';
-import { JsonFormsChangeEvent, MaybeReadonly } from '@jsonforms/vue2';
-import {
-  ActionEvent,
-  createAjv,
   createTranslator,
+  FormContextKey,
   ResolvedJsonForms,
+  TemplateComponentsKey,
+  type JsonFormsProps,
+  type VuetifyConfig,
 } from '@chobantonov/jsonforms-vuetify-renderers';
-import { ErrorObject } from 'ajv';
-import Ajv from 'ajv/dist/core';
+import {
+  defaultMiddleware,
+  type JsonFormsCellRendererRegistryEntry,
+  type JsonFormsI18nState,
+  type JsonFormsRendererRegistryEntry,
+  type ValidationMode,
+} from '@jsonforms/core';
+import type { JsonFormsChangeEvent, MaybeReadonly } from '@jsonforms/vue';
+import { type ErrorObject } from 'ajv';
 import _get from 'lodash/get';
 import isPlainObject from 'lodash/isPlainObject';
-import merge from 'lodash/merge';
 import _remove from 'lodash/remove';
-import { defineComponent, PropType, ref, toRef } from 'vue';
+import {
+  defineComponent,
+  getCurrentInstance,
+  markRaw,
+  reactive,
+  ref,
+  toRef,
+  toValue,
+  watch,
+  type PropType,
+  type Ref,
+} from 'vue';
 import {
   VAlert,
   VApp,
@@ -75,11 +76,6 @@ import {
   VBreadcrumbsItem,
   VBtn,
   VBtnToggle,
-  VCalendar,
-  VCalendarCategory,
-  VCalendarDaily,
-  VCalendarMonthly,
-  VCalendarWeekly,
   VCard,
   VCardActions,
   VCardSubtitle,
@@ -87,46 +83,31 @@ import {
   VCardTitle,
   VCarousel,
   VCarouselItem,
-  VCarouselReverseTransition,
-  VCarouselTransition,
   VCheckbox,
   VChip,
   VChipGroup,
   VCol,
   VColorPicker,
-  VColorPickerCanvas,
-  VColorPickerSwatches,
   VCombobox,
   VContainer,
-  VContent,
   VCounter,
-  VData,
-  VDataFooter,
   VDataIterator,
   VDataTable,
-  VDataTableHeader,
   VDatePicker,
-  VDatePickerDateTable,
   VDatePickerHeader,
-  VDatePickerMonthTable,
-  VDatePickerTitle,
   VDatePickerYears,
   VDialog,
   VDialogBottomTransition,
   VDialogTopTransition,
   VDialogTransition,
   VDivider,
-  VEditDialog,
   VExpandTransition,
   VExpandXTransition,
   VExpansionPanel,
-  VExpansionPanelContent,
-  VExpansionPanelHeader,
   VExpansionPanels,
   VFabTransition,
   VFadeTransition,
   VFileInput,
-  VFlex,
   VFooter,
   VForm,
   VHover,
@@ -142,24 +123,17 @@ import {
   VListGroup,
   VListItem,
   VListItemAction,
-  VListItemActionText,
-  VListItemAvatar,
-  VListItemContent,
-  VListItemGroup,
-  VListItemIcon,
   VListItemSubtitle,
   VListItemTitle,
   VMain,
   VMenu,
-  VMenuTransition,
   VMessages,
   VNavigationDrawer,
+  VNumberInput,
   VOtpInput,
-  VOverflowBtn,
   VOverlay,
   VPagination,
   VParallax,
-  VPicker,
   VProgressCircular,
   VProgressLinear,
   VRadio,
@@ -175,11 +149,8 @@ import {
   VScrollYTransition,
   VSelect,
   VSheet,
-  VSimpleCheckbox,
-  VSimpleTable,
   VSkeletonLoader,
   VSlideGroup,
-  VSlideItem,
   VSlider,
   VSlideXReverseTransition,
   VSlideXTransition,
@@ -190,44 +161,43 @@ import {
   VSparkline,
   VSpeedDial,
   VStepper,
-  VStepperContent,
   VStepperHeader,
-  VStepperItems,
-  VStepperStep,
-  VSubheader,
   VSwitch,
   VSystemBar,
   VTab,
-  VTabItem,
-  VTableOverflow,
-  VTabReverseTransition,
   VTabs,
-  VTabsItems,
-  VTabsSlider,
-  VTabTransition,
   VTextarea,
   VTextField,
   VThemeProvider,
   VTimeline,
   VTimelineItem,
-  VTimePicker,
-  VTimePickerClock,
-  VTimePickerTitle,
   VToolbar,
   VToolbarItems,
   VToolbarTitle,
   VTooltip,
-  VTreeview,
-  VTreeviewNode,
   VVirtualScroll,
-  VVirtualTable,
   VWindow,
   VWindowItem,
-} from 'vuetify/lib';
-import { VuetifyPreset } from 'vuetify/types/services/presets';
-import { LoadEmitter, RestClient } from '../core';
+} from 'vuetify/components';
+import {
+  VCalendar,
+  VDateInput,
+  VFileUpload,
+  VPicker,
+  VPullToRefresh,
+  VStepperVertical,
+  VTimePicker,
+  VTreeview,
+} from 'vuetify/labs/components';
+import {
+  CamundaAdditionalErrorsKey,
+  CamundaFormApiKey,
+  CamundaFormEmitterKey,
+  LoadEmitter,
+  RestClient,
+} from '../core';
 import { CamundaFormApi } from '../core/api';
-import { CamundaFormContext, Emitter } from '../core/types';
+import type { CamundaFormContext, Emitter } from '../core/types';
 import { validateCamundaFormConfig } from '../core/validate';
 import { camundaRenderers } from '../renderers';
 
@@ -280,7 +250,7 @@ const camundaResolvedJsonForms = defineComponent({
     },
     config: {
       required: false,
-      type: Object as PropType<any>,
+      type: Object as PropType<Record<string, any>>,
       default: undefined,
     },
     readonly: {
@@ -288,92 +258,153 @@ const camundaResolvedJsonForms = defineComponent({
       type: Boolean,
       default: false,
     },
-    uischemas: {
-      required: false,
-      type: Array as PropType<MaybeReadonly<JsonFormsUISchemaRegistryEntry[]>>,
-      default: () => [],
-    },
     validationMode: {
       required: false,
       type: String as PropType<ValidationMode>,
       default: 'ValidateAndShow',
-    },
-    ajv: {
-      required: false,
-      type: Object as PropType<Ajv>,
-      default: () => createAjv(),
     },
     locale: {
       required: false,
       type: String,
       default: 'en',
     },
-    additionalErrors: {
+    vuetifyConfig: {
       required: false,
-      type: Array as PropType<ErrorObject[]>,
-      default: () => [],
-    },
-    defaultPreset: {
-      required: false,
-      type: [Object] as PropType<Partial<VuetifyPreset>>,
-      default: () => {
-        return {
-          icons: {
-            iconfont: 'mdi',
-            values: {},
-          },
-          theme: {
-            dark: false,
-            default: 'light',
-            disable: false,
-            options: {
-              cspNonce: undefined,
-              customProperties: undefined,
-              minifyTheme: undefined,
-              themeCache: undefined,
-            },
-            themes: {
-              light: {
-                primary: '#1976D2',
-                secondary: '#424242',
-                accent: '#82B1FF',
-                error: '#FF5252',
-                info: '#2196F3',
-                success: '#4CAF50',
-                warning: '#FB8C00',
-              },
-              dark: {
-                primary: '#2196F3',
-                secondary: '#424242',
-                accent: '#FF4081',
-                error: '#FF5252',
-                info: '#2196F3',
-                success: '#4CAF50',
-                warning: '#FB8C00',
-              },
-            },
-          },
-        };
-      },
-    },
-    actions: {
-      required: false,
-      type: [Object] as PropType<Record<string, (event: ActionEvent) => void>>,
-      default: () => {},
+      type: Object as PropType<VuetifyConfig>,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const loading = ref(false);
-    const context = ref<CamundaFormContext | null>(null);
+    const context: Ref<CamundaFormContext | null> =
+      ref<CamundaFormContext | null>(null);
     const api = new CamundaFormApi();
     const additionalErrors = ref<ErrorObject[]>([]);
-    const previousData = ref({});
+    const previousData = ref<any>(undefined);
     const i18n = ref<JsonFormsI18nState | undefined>(undefined);
-    const localeToUse = props.locale ? props.locale : 'en';
-    const vuetifyLocale = 'en';
+    const localeToUse = ref(props.locale ?? 'en');
+    const currentInstance = getCurrentInstance();
+
+    const state = reactive<JsonFormsProps>({
+      data: context.value?.data,
+      schema: toValue(context.value?.schema),
+      schemaUrl: context.value?.schemaUrl,
+      uischema: toValue(context.value?.uischema),
+      renderers: markRaw(props.renderers),
+      cells: undefined, // not defined
+      config: props.config,
+      readonly: props.readonly,
+      uischemas: toValue(context.value?.uischemas),
+      validationMode: props.validationMode,
+      i18n: i18n.value,
+      additionalErrors: additionalErrors.value,
+      middleware: defaultMiddleware,
+    });
+
+    const reload = async () => {
+      loading.value = true;
+      context.value = null;
+
+      try {
+        const restClient = new RestClient([
+          new LoadEmitter(emit.bind(this) as Emitter),
+        ]);
+        const camundaFormConfig = validateCamundaFormConfig(props);
+        const newContext = await api.loadForm(restClient, camundaFormConfig);
+        newContext.camundaFormConfig = camundaFormConfig;
+        newContext.config = props.config;
+
+        context.value = newContext;
+      } catch (e) {
+        emit('load-error', e);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    watch(
+      () => props.url,
+      (value, oldValue) => {
+        if (value !== oldValue) {
+          reload();
+        }
+      },
+    );
+    watch(
+      () => props.processDefinitionId,
+      (value, oldValue) => {
+        if (value !== oldValue) {
+          reload();
+        }
+      },
+    );
+    watch(
+      () => props.processDefinitionKey,
+      (value, oldValue) => {
+        if (value !== oldValue) {
+          reload();
+        }
+      },
+    );
+    watch(
+      () => props.taskId,
+      (value, oldValue) => {
+        if (value !== oldValue) {
+          reload();
+        }
+      },
+    );
+    watch(
+      () => additionalErrors.value,
+      (value, oldValue) => {
+        // set the last data
+        if (context.value) {
+          context.value.data = previousData.value;
+          state.data = context.value.data;
+          state.additionalErrors = value;
+          currentInstance?.update();
+        }
+      },
+      { deep: true },
+    );
+    watch(
+      () => props.locale,
+      (value, oldValue) => {
+        if (value !== oldValue) {
+          localeToUse.value = value ?? 'en';
+          i18n.value = {
+            locale: localeToUse.value,
+            translate: createTranslator(
+              localeToUse.value,
+              context.value?.translations,
+            ),
+          };
+
+          state.i18n = i18n.value;
+        }
+      },
+    );
+    watch(
+      () => context.value,
+      (value, oldValue) => {
+        // apply presets
+
+        i18n.value = {
+          locale: localeToUse.value,
+          translate: createTranslator(localeToUse.value, value?.translations),
+        };
+        state.data = value?.data;
+        state.schema = toValue(value?.schema);
+        state.schemaUrl = value?.schemaUrl;
+        state.uischema = toValue(value?.uischema);
+        state.uischemas = toValue(value?.uischemas);
+        state.i18n = i18n.value;
+        // apply any themes
+
+        currentInstance?.update();
+      },
+    );
 
     return {
-      vuetifyLocale,
       localeToUse,
       i18n,
       props,
@@ -382,112 +413,16 @@ const camundaResolvedJsonForms = defineComponent({
       api,
       additionalErrors,
       previousData,
+      reload,
+      state,
     };
-  },
-  watch: {
-    url: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          this.reload();
-          this.$forceUpdate();
-        }
-      },
-      deep: true,
-    },
-    processDefinitionId: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          this.reload();
-          this.$forceUpdate();
-        }
-      },
-      deep: true,
-    },
-    processDefinitionKey: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          this.reload();
-          this.$forceUpdate();
-        }
-      },
-      deep: true,
-    },
-    taskId: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          this.reload();
-          this.$forceUpdate();
-        }
-      },
-      deep: true,
-    },
-    additionalErrors: {
-      handler(_value?: ErrorObject[], _oldValue?: ErrorObject[]) {
-        // set the last data
-        const context = this.context;
-        if (context) {
-          context.data = this.previousData;
-          this.$forceUpdate();
-        }
-      },
-      deep: true,
-    },
-    locale: {
-      handler(value?: string, oldValue?: string) {
-        if (value !== oldValue) {
-          this.localeToUse = value ? value : 'en';
-          this.i18n = {
-            locale: this.localeToUse,
-            translate: createTranslator(
-              this.localeToUse,
-              this.context?.translations
-            ),
-          };
-
-          this.setVuetifyLocale(this.localeToUse);
-          this.$forceUpdate();
-        }
-      },
-    },
-    context: {
-      handler(context: CamundaFormContext | null) {
-        let preset: Partial<VuetifyPreset> | null = null;
-
-        if (context?.uischema?.options) {
-          preset = this.vuetifyProps(
-            context.uischema.options,
-            'preset'
-          ) as Partial<VuetifyPreset>;
-        }
-
-        this.i18n = {
-          locale: this.localeToUse,
-          translate: createTranslator(this.localeToUse, context?.translations),
-        };
-
-        // apply any themes
-        this.$vuetify.theme = merge(
-          this.$vuetify.theme,
-          preset && preset.theme ? preset.theme : this.props.defaultPreset.theme
-        );
-        this.$vuetify.icons = merge(
-          this.$vuetify.icons,
-          preset && preset.icons ? preset.icons : this.props.defaultPreset.icons
-        );
-
-        this.$forceUpdate();
-      },
-    },
   },
   async mounted() {
     await this.reload();
-    this.vuetifyLocale = this.$vuetify.lang.current;
-    this.setVuetifyLocale(this.localeToUse);
   },
   provide() {
     return {
-      additionalErrors: toRef(this, 'additionalErrors'),
-      templateLayoutRendererComponentComponents: {
+      [TemplateComponentsKey]: {
         VAlert,
         VApp,
         VAppBar,
@@ -505,10 +440,6 @@ const camundaResolvedJsonForms = defineComponent({
         VBtn,
         VBtnToggle,
         VCalendar,
-        VCalendarCategory,
-        VCalendarDaily,
-        VCalendarMonthly,
-        VCalendarWeekly,
         VCard,
         VCardActions,
         VCardSubtitle,
@@ -516,46 +447,31 @@ const camundaResolvedJsonForms = defineComponent({
         VCardTitle,
         VCarousel,
         VCarouselItem,
-        VCarouselReverseTransition,
-        VCarouselTransition,
         VCheckbox,
         VChip,
         VChipGroup,
         VCol,
         VColorPicker,
-        VColorPickerCanvas,
-        VColorPickerSwatches,
         VCombobox,
         VContainer,
-        VContent,
         VCounter,
-        VData,
-        VDataFooter,
         VDataIterator,
         VDataTable,
-        VDataTableHeader,
         VDatePicker,
-        VDatePickerDateTable,
         VDatePickerHeader,
-        VDatePickerMonthTable,
-        VDatePickerTitle,
         VDatePickerYears,
         VDialog,
         VDialogBottomTransition,
         VDialogTopTransition,
         VDialogTransition,
         VDivider,
-        VEditDialog,
         VExpandTransition,
         VExpandXTransition,
         VExpansionPanel,
-        VExpansionPanelContent,
-        VExpansionPanelHeader,
         VExpansionPanels,
         VFabTransition,
         VFadeTransition,
         VFileInput,
-        VFlex,
         VFooter,
         VForm,
         VHover,
@@ -571,20 +487,13 @@ const camundaResolvedJsonForms = defineComponent({
         VListGroup,
         VListItem,
         VListItemAction,
-        VListItemActionText,
-        VListItemAvatar,
-        VListItemContent,
-        VListItemGroup,
-        VListItemIcon,
         VListItemSubtitle,
         VListItemTitle,
         VMain,
         VMenu,
-        VMenuTransition,
         VMessages,
         VNavigationDrawer,
         VOtpInput,
-        VOverflowBtn,
         VOverlay,
         VPagination,
         VParallax,
@@ -604,11 +513,8 @@ const camundaResolvedJsonForms = defineComponent({
         VScrollYTransition,
         VSelect,
         VSheet,
-        VSimpleCheckbox,
-        VSimpleTable,
         VSkeletonLoader,
         VSlideGroup,
-        VSlideItem,
         VSlider,
         VSlideXReverseTransition,
         VSlideXTransition,
@@ -619,44 +525,35 @@ const camundaResolvedJsonForms = defineComponent({
         VSparkline,
         VSpeedDial,
         VStepper,
-        VStepperContent,
         VStepperHeader,
-        VStepperItems,
-        VStepperStep,
-        VSubheader,
         VSwitch,
         VSystemBar,
         VTab,
-        VTabItem,
-        VTableOverflow,
-        VTabReverseTransition,
         VTabs,
-        VTabsItems,
-        VTabsSlider,
-        VTabTransition,
         VTextarea,
         VTextField,
         VThemeProvider,
         VTimeline,
         VTimelineItem,
         VTimePicker,
-        VTimePickerClock,
-        VTimePickerTitle,
         VToolbar,
         VToolbarItems,
         VToolbarTitle,
         VTooltip,
         VTreeview,
-        VTreeviewNode,
         VVirtualScroll,
-        VVirtualTable,
         VWindow,
         VWindowItem,
+        VDateInput,
+        VFileUpload,
+        VNumberInput,
+        VStepperVertical,
+        VPullToRefresh,
       },
-      templateLayoutRendererContext: toRef(this, 'context'),
-      formContext: toRef(this, 'context'),
-      camundaFormApi: this.api,
-      camundaFormEmitter: this.$emit.bind(this),
+      [FormContextKey]: toRef(this, 'context'),
+      [CamundaAdditionalErrorsKey]: toRef(this, 'additionalErrors'),
+      [CamundaFormApiKey]: this.api,
+      [CamundaFormEmitterKey]: this.$emit.bind(this),
     };
   },
   methods: {
@@ -692,40 +589,13 @@ const camundaResolvedJsonForms = defineComponent({
         additionalErrors: this.additionalErrors,
       });
     },
-    async reload() {
-      this.loading = true;
-      this.context = null;
-
-      try {
-        const restClient = new RestClient([
-          new LoadEmitter(this.$emit.bind(this) as Emitter),
-        ]);
-        const config = validateCamundaFormConfig(this.props);
-        const context = await this.api.loadForm(restClient, config);
-        context.config = config;
-
-        this.context = context;
-      } catch (e) {
-        this.$emit('load-error', e);
-      } finally {
-        this.loading = false;
-      }
-    },
     vuetifyProps(
       options: Record<string, any>,
-      path: string
+      path: string,
     ): Record<string, any> {
       const props = _get(options?.vuetify, path);
 
       return props && isPlainObject(props) ? props : {};
-    },
-    setVuetifyLocale(locale: string): void {
-      // if vuetify supports that locale then change it
-      if (this.$vuetify.lang.locales[locale]) {
-        this.$vuetify.lang.current = locale;
-      } else {
-        this.$vuetify.lang.current = this.vuetifyLocale || 'en';
-      }
     },
   },
 });

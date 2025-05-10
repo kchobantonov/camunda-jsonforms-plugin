@@ -60,8 +60,12 @@
       showUnfocusedDescription: false,
       hideRequiredAsterisk: true,
     };
-    const preset = { theme: { dark: false } };
-    const style = '.v-application--wrap { min-height: 0px;}';
+    const preset = { 
+      blueprint: "md1",
+      theme: { dark: false } 
+    };
+    const fontFamily = getComputedStyle(document.body).fontFamily;
+    const style = ":host { --v-font-family: " + fontFamily + "; font-family: var(--v-font-family); }";
 
     const onChange = (event) => {
       let [data] = event.detail;
@@ -190,7 +194,7 @@
 
           form.setAttribute("custom-style", style);
           form.setAttribute("config", JSON.stringify(config));
-          form.setAttribute("default-preset", JSON.stringify(preset));
+          form.setAttribute("vuetify-options", JSON.stringify(preset));
 
           form.addEventListener("change", onChange);
           form.addEventListener("load-request", onLoadRequest);

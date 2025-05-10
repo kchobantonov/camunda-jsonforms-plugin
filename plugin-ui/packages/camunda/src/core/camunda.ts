@@ -1,12 +1,12 @@
 import { AppErrorCode, AppException } from './errors';
 import { RestClient } from './rest';
 import {
-  ProcessDefinition,
-  Resource,
+  type ProcessDefinition,
+  type Resource,
   ResponseException,
-  Task,
-  TaskForm,
-  VariableValue,
+  type Task,
+  type TaskForm,
+  type VariableValue,
 } from './types';
 
 export const getTaskFormVariables = async (
@@ -146,6 +146,31 @@ export const getDeploymentResourceJsonData = async (
     throw new AppException(resourceErrorCode, new ResponseException(response));
   }
   return response.json().catch((e) => {
+    throw new AppException(jsonErrorCode, e);
+  });
+};
+
+export const getDeploymentResourceTextData = async (
+  client: RestClient,
+  url: string,
+  deploymentId: string,
+  resourceId: string,
+  resourceErrorCode: AppErrorCode,
+  jsonErrorCode: AppErrorCode
+): Promise<string> => {
+  const response = await client
+    .fetch(
+      `${url}/deployment/${encodeURIComponent(
+        deploymentId
+      )}/resources/${encodeURIComponent(resourceId)}/data`
+    )
+    .catch((e) => {
+      throw new AppException(resourceErrorCode, e);
+    });
+  if (!response.ok) {
+    throw new AppException(resourceErrorCode, new ResponseException(response));
+  }
+  return response.text().catch((e) => {
     throw new AppException(jsonErrorCode, e);
   });
 };

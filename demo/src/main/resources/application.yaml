@@ -5,7 +5,8 @@ spring:
     url: "jdbc:mysql://localhost:3306/demo"
     username: demo
     password: demo
-
+    hikari:
+      transaction-isolation: 2 # READ_COMMITED
 server:
   port: 8080
   # Enable response compression
@@ -18,7 +19,6 @@ server:
 camunda:
   bpm:
     generic-properties.properties:
-      telemetry-reporter-activate: false
       historyTimeToLive: P180D
     authorization:
       enabled: true     
@@ -30,4 +30,4 @@ camunda:
 
 logging:
   level:
-    org.camunda.bpm.client: info
+    org.camunda.bpm.client: INFO

@@ -1,22 +1,24 @@
 {
-    "name": "@chobantonov/camunda-jsonforms-plugin",
-    "private": true,
-    "scripts": {
-        "init": "lerna bootstrap --hoist",
-        "clean": "lerna run clean",
-        "lint": "lerna run lint",
-        "lint:fix": "lerna run lint:fix",
-        "test": "lerna run test",
-        "build": "lerna run build",
-        "snapshot-version": "lerna version --no-git-tag-version --no-push --yes",
-        "camunda:build": "lerna run --scope=@chobantonov/camunda-jsonforms build",
-        "camunda:watch": "lerna run --scope=@chobantonov/camunda-jsonforms watch --stream",
-        "camunda:test": "lerna run --scope=@chobantonov/camunda-jsonforms test",
-        "camunda-wc:build": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent build",
-        "camunda-wc:serve": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent serve --stream",
-        "camunda-wc:test": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent test"
-    },
-    "devDependencies": {
-        "lerna": "^4.0.0"
-    }
+  "name": "@chobantonov/camunda-jsonforms-plugin",
+  "private": true,
+  "scripts": {
+    "lerna": "lerna",
+    "clean": "lerna run clean",
+    "lint": "lerna run lint",
+    "lint:fix": "lerna run lint:fix",
+    "test": "lerna run test",
+    "build": "lerna run build",
+    "snapshot-version": "lerna version --no-git-tag-version --no-push --yes",
+    "camunda:build": "lerna run --scope=@chobantonov/camunda-jsonforms build",
+    "camunda:watch": "lerna run --scope=@chobantonov/camunda-jsonforms watch --stream",
+    "camunda:test": "lerna run --scope=@chobantonov/camunda-jsonforms test",
+    "camunda-wc:build": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent build",
+    "camunda-wc:serve": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent serve --stream",
+    "camunda-wc:test": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent test"
+  },
+  "devDependencies": {
+    "lerna": "^6.6.2",
+    "rimraf": "^5.0.10",
+    "typescript": "~5.4.0"
+  }
 }

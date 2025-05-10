@@ -91,6 +91,10 @@
       "elements": [
         {
           "type": "Control",
+          "scope": "#/properties/preferredContactTime"
+        },
+        {
+          "type": "Control",
           "scope": "#/properties/amount"
         },
         {

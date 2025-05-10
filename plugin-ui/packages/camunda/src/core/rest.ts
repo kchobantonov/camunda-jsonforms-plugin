@@ -1,4 +1,4 @@
-import { Emitter } from "./types";
+import type { Emitter } from "./types";
 
 export interface FetchInterceptorResponse extends Response {
   request: Request;

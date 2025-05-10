@@ -2,11 +2,11 @@
 
 (function () {
   "use strict";
-  var src = "../scripts/jsonforms/camunda-json-forms.min.js";
+  var src = "../scripts/jsonforms/camunda-json-forms.js";
   var el = document.querySelector('script[src="' + src + '"]');
   if (!el) {
     el = document.createElement("script");
-    el.type = "text/javascript";
+    el.type = "module";
     el.src = src;
 
     document.head.appendChild(el);

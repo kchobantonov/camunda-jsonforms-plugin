@@ -1,8 +1,14 @@
-import { JsonSchema, JsonSchema7, UISchemaElement } from '@jsonforms/core';
+import type {
+  JsonFormsUISchemaRegistryEntry,
+  JsonSchema,
+  JsonSchema7,
+  UISchemaElement,
+} from '@jsonforms/core';
 import forOwn from 'lodash/forOwn';
 import {
   getDeploymentResourceJsonData,
   getDeploymentResources,
+  getDeploymentResourceTextData,
   getProcessDefinition,
   getProcessDefinitionByKey,
   getProcessDefinitionDeployedStartFormById,
@@ -19,12 +25,12 @@ import {
 import { AppErrorCode, AppException } from './errors';
 import { RestClient } from './rest';
 import {
-  Action,
-  CamundaFormConfig,
-  CamundaFormContext,
+  type Action,
+  type CamundaFormConfig,
+  type CamundaFormContext,
   CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT,
   CAMUNDA_FORM_KEY_QUERY_PARAM_PATH,
-  FileValueInfo,
+  type FileValueInfo,
   isProcessDefinitionIdConfig,
   isProcessDefinitionKeyConfig,
   isTaskIdConfig,
@@ -32,14 +38,18 @@ import {
   RESOURCE_SCHEMA_SUFFIX,
   RESOURCE_UISCHEMA_SUFFIX,
   ResponseException,
-  TaskForm,
-  ValueInfo,
-  VariableValue,
+  type TaskForm,
+  type ValueInfo,
+  type VariableValue,
+  RESOURCE_UISCHEMAS_SUFFIX,
+  RESOURCE_UIDATA_SUFFIX,
 } from './types';
+import { parseAndTransformUISchemaRegistryEntries } from '@chobantonov/jsonforms-vuetify-renderers';
+import { reactive } from 'vue';
 
 export const getParameterByName = (
   name: string,
-  url: string | undefined
+  url: string | undefined,
 ): string | null => {
   if (!url) return null;
 
@@ -77,7 +87,7 @@ const attachCamundaVariable = (
   variables: Record<string, any>,
   variableName: string,
   variableSchema: JsonSchema,
-  variableData: any
+  variableData: any,
 ): void => {
   if ((variableSchema as any).readOnly !== true) {
     const type = getCamundaType(variableSchema);
@@ -105,13 +115,13 @@ const attachCamundaVariable = (
       const fileName =
         fileNameIndex !== -1
           ? decodeURIComponent(
-              header.substring(fileNameIndex + ';filename='.length)
+              header.substring(fileNameIndex + ';filename='.length),
             )
           : variableName;
 
       const mimeType = header.substring(
         'data:'.length,
-        fileNameIndex !== -1 ? fileNameIndex : header.length
+        fileNameIndex !== -1 ? fileNameIndex : header.length,
       );
 
       (valueInfo as FileValueInfo).filename = fileName;
@@ -154,14 +164,16 @@ export class CamundaFormApi {
     data: Record<string, any>,
     context: CamundaFormContext,
     action: Action,
-    payload?: Record<string, any>
+    payload?: Record<string, any>,
   ) {
     if (!payload) {
       payload = {};
     }
 
     const includeDataVariables =
-      action == 'camunda:submit' || action == 'camunda:resolve' || action == 'camunda:complete';
+      action == 'camunda:submit' ||
+      action == 'camunda:resolve' ||
+      action == 'camunda:complete';
 
     if (includeDataVariables) {
       const dataVariables = {};
@@ -172,7 +184,7 @@ export class CamundaFormApi {
               dataVariables,
               key,
               schema.properties![key],
-              data[key]
+              data[key],
             );
           }
         });
@@ -208,56 +220,58 @@ export class CamundaFormApi {
         if (errorAsJson.message) {
           errorMessage = errorAsJson.message;
         }
-      } catch (e) {}
+      } catch (e) {
+        // ignore
+      }
       throw new AppException(
         AppErrorCode.SUBMIT_FORM,
         new ResponseException(response),
         {
           message: errorMessage,
         },
-        errorAsJson
+        errorAsJson,
       );
     }
   }
 
   submitFormUrl(context: CamundaFormContext, action: Action): string {
-    if (isTaskIdConfig(context.config)) {
-      return `${context.config.url}/task/${encodeURIComponent(
-        context.config.taskId
+    if (isTaskIdConfig(context.camundaFormConfig)) {
+      return `${context.camundaFormConfig.url}/task/${encodeURIComponent(
+        context.camundaFormConfig.taskId,
       )}/${encodeURIComponent(this.toCamudaPath(action))}`;
     }
 
-    if (isProcessDefinitionIdConfig(context.config)) {
+    if (isProcessDefinitionIdConfig(context.camundaFormConfig)) {
       const actionPath = this.toCamudaPath(action);
       if (actionPath !== 'submit-form') {
         throw new AppException(AppErrorCode.UNSUPPORTED_ACTION, undefined, {
           action: action,
         });
       }
-      return `${context.config.url}/process-definition/${encodeURIComponent(
-        context.config.processDefinitionId
+      return `${context.camundaFormConfig.url}/process-definition/${encodeURIComponent(
+        context.camundaFormConfig.processDefinitionId,
       )}/${encodeURIComponent(actionPath)}`;
     }
 
-    if (isProcessDefinitionKeyConfig(context.config)) {
+    if (isProcessDefinitionKeyConfig(context.camundaFormConfig)) {
       const actionPath = this.toCamudaPath(action);
       if (actionPath !== 'submit-form') {
         throw new AppException(AppErrorCode.UNSUPPORTED_ACTION, undefined, {
           action: action,
         });
       }
-      if (context.config.tenantId) {
+      if (context.camundaFormConfig.tenantId) {
         return `${
-          context.config.url
+          context.camundaFormConfig.url
         }/process-definition/key/${encodeURIComponent(
-          context.config.processDefinitionKey
+          context.camundaFormConfig.processDefinitionKey,
         )}/tenant-id/${encodeURIComponent(
-          context.config.tenantId
+          context.camundaFormConfig.tenantId,
         )}/${encodeURIComponent(actionPath)}`;
       }
 
-      return `${context.config.url}/process-definition/key/${encodeURIComponent(
-        context.config.processDefinitionKey
+      return `${context.camundaFormConfig.url}/process-definition/key/${encodeURIComponent(
+        context.camundaFormConfig.processDefinitionKey,
       )}/${encodeURIComponent(actionPath)}`;
     }
 
@@ -266,33 +280,33 @@ export class CamundaFormApi {
 
   async loadForm(
     client: RestClient,
-    config: CamundaFormConfig
+    camundaFormConfig: CamundaFormConfig,
   ): Promise<CamundaFormContext> {
-    const result: Partial<CamundaFormContext> = { config: config };
+    const result: Partial<CamundaFormContext> = { camundaFormConfig: camundaFormConfig };
 
-    if (isTaskIdConfig(config)) {
-      const taskForm = await getTaskForm(client, config.url, config.taskId);
+    if (isTaskIdConfig(camundaFormConfig)) {
+      const taskForm = await getTaskForm(client, camundaFormConfig.url, camundaFormConfig.taskId);
       if (!taskForm.key) {
         throw new AppException(AppErrorCode.INVALID_TASK_FORM_RESPONSE);
       }
       result.taskForm = taskForm;
     } else {
-      if (isProcessDefinitionIdConfig(config)) {
+      if (isProcessDefinitionIdConfig(camundaFormConfig)) {
         const taskForm = await getProcessDefinitionStartFormById(
           client,
-          config.url,
-          config.processDefinitionId
+          camundaFormConfig.url,
+          camundaFormConfig.processDefinitionId,
         );
         if (!taskForm.key) {
           throw new AppException(AppErrorCode.INVALID_TASK_FORM_RESPONSE);
         }
         result.taskForm = taskForm;
-      } else if (isProcessDefinitionKeyConfig(config)) {
+      } else if (isProcessDefinitionKeyConfig(camundaFormConfig)) {
         const taskForm = await getProcessDefinitionStartFormByKey(
           client,
-          config.url,
-          config.processDefinitionKey,
-          config.tenantId
+          camundaFormConfig.url,
+          camundaFormConfig.processDefinitionKey,
+          camundaFormConfig.tenantId,
         );
         if (!taskForm.key) {
           throw new AppException(AppErrorCode.INVALID_TASK_FORM_RESPONSE);
@@ -303,11 +317,8 @@ export class CamundaFormApi {
       }
     }
 
-    const { schema, schemaUrl, uischema, i18n } = await this.loadResources(
-      client,
-      result.taskForm,
-      config
-    );
+    const { schema, schemaUrl, uischema, i18n, uischemas, uidata } =
+      await this.loadResources(client, result.taskForm, camundaFormConfig);
     if (i18n) {
       result.translations = i18n;
     }
@@ -324,30 +335,30 @@ export class CamundaFormApi {
       });
     }
 
-    if (isTaskIdConfig(config)) {
+    if (isTaskIdConfig(camundaFormConfig)) {
       const variableObject = await getTaskFormVariables(
         client,
-        config.url,
-        config.taskId,
-        variableNames
+        camundaFormConfig.url,
+        camundaFormConfig.taskId,
+        variableNames,
       );
 
       result.variables = variableObject;
-    } else if (isProcessDefinitionIdConfig(config)) {
+    } else if (isProcessDefinitionIdConfig(camundaFormConfig)) {
       const variableObject = await getProcessDefinitionFormVariablesById(
         client,
-        config.url,
-        config.processDefinitionId,
-        variableNames
+        camundaFormConfig.url,
+        camundaFormConfig.processDefinitionId,
+        variableNames,
       );
       result.variables = variableObject;
-    } else if (isProcessDefinitionKeyConfig(config)) {
+    } else if (isProcessDefinitionKeyConfig(camundaFormConfig)) {
       const variableObject = await getProcessDefinitionFormVariablesByKey(
         client,
-        config.url,
-        config.processDefinitionKey,
+        camundaFormConfig.url,
+        camundaFormConfig.processDefinitionKey,
         variableNames,
-        config.tenantId
+        camundaFormConfig.tenantId,
       );
       result.variables = variableObject;
     }
@@ -367,6 +378,8 @@ export class CamundaFormApi {
     result.schemaUrl = schemaUrl;
     result.uischema = uischema;
     result.data = data;
+    result.uischemas = uischemas;
+    result.uidata = reactive<Record<string, any>>(uidata);
 
     if (!(result.schema as any).$id) {
       (result.schema as any).$id = '/';
@@ -377,15 +390,15 @@ export class CamundaFormApi {
   private async loadResources(
     client: RestClient,
     taskForm: TaskForm,
-    config: CamundaFormConfig
+    camundaFormConfig: CamundaFormConfig,
   ) {
     const deploymentLocation = getParameterByName(
       CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT,
-      taskForm.key
+      taskForm.key,
     );
     const pathLocation = getParameterByName(
       CAMUNDA_FORM_KEY_QUERY_PARAM_PATH,
-      taskForm.key
+      taskForm.key,
     );
 
     if (pathLocation) {
@@ -396,7 +409,7 @@ export class CamundaFormApi {
           {
             formKey: taskForm.key,
             CAMUNDA_FORM_KEY_QUERY_PARAM_PATH: pathLocation,
-          }
+          },
         );
       }
       // path should already start with /
@@ -413,7 +426,7 @@ export class CamundaFormApi {
           {
             formKey: taskForm.key,
             CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT: deploymentLocation,
-          }
+          },
         );
       }
 
@@ -422,19 +435,19 @@ export class CamundaFormApi {
         return await this.loadResourcesFromDeployedForm(
           client,
           deploymentLocation,
-          config
+          camundaFormConfig,
         );
       } catch (e) {
         // ignore any errors for deployed forms but rest interceptors will be notified for that.
       }
 
       // load the resources by looking into the deployed resources
-      const deploymentId = await this.getDeploymentId(client, config);
+      const deploymentId = await this.getDeploymentId(client, camundaFormConfig);
       return this.loadResourcesFromDeployment(
         client,
         deploymentLocation,
         deploymentId,
-        config
+        camundaFormConfig,
       );
     } else {
       throw new AppException(AppErrorCode.INVALID_CAMUNDA_FORM_KEY, undefined, {
@@ -458,47 +471,47 @@ export class CamundaFormApi {
     );
   }
 
-  private async getDeploymentId(client: RestClient, config: CamundaFormConfig) {
+  private async getDeploymentId(client: RestClient, camundaFormConfig: CamundaFormConfig) {
     // last check directly for resources
     let deploymentId: string | undefined = undefined;
-    if (isTaskIdConfig(config)) {
-      const task = await getTask(client, config.url, config.taskId);
+    if (isTaskIdConfig(camundaFormConfig)) {
+      const task = await getTask(client, camundaFormConfig.url, camundaFormConfig.taskId);
       if (!task.processDefinitionId) {
         throw new AppException(AppErrorCode.INVALID_TASK_RESPONSE);
       }
       const processDefinition = await getProcessDefinition(
         client,
-        config.url,
-        task.processDefinitionId
+        camundaFormConfig.url,
+        task.processDefinitionId,
       );
       if (!processDefinition.deploymentId) {
         throw new AppException(
-          AppErrorCode.INVALID_PROCESS_DEFINITION_RESPONSE
+          AppErrorCode.INVALID_PROCESS_DEFINITION_RESPONSE,
         );
       }
       deploymentId = processDefinition.deploymentId;
-    } else if (isProcessDefinitionIdConfig(config)) {
+    } else if (isProcessDefinitionIdConfig(camundaFormConfig)) {
       const processDefinition = await getProcessDefinition(
         client,
-        config.url,
-        config.processDefinitionId
+        camundaFormConfig.url,
+        camundaFormConfig.processDefinitionId,
       );
       if (!processDefinition.deploymentId) {
         throw new AppException(
-          AppErrorCode.INVALID_PROCESS_DEFINITION_RESPONSE
+          AppErrorCode.INVALID_PROCESS_DEFINITION_RESPONSE,
         );
       }
       deploymentId = processDefinition.deploymentId;
-    } else if (isProcessDefinitionKeyConfig(config)) {
+    } else if (isProcessDefinitionKeyConfig(camundaFormConfig)) {
       const processDefinition = await getProcessDefinitionByKey(
         client,
-        config.url,
-        config.processDefinitionKey,
-        config.tenantId
+        camundaFormConfig.url,
+        camundaFormConfig.processDefinitionKey,
+        camundaFormConfig.tenantId,
       );
       if (!processDefinition.deploymentId) {
         throw new AppException(
-          AppErrorCode.INVALID_PROCESS_DEFINITION_RESPONSE
+          AppErrorCode.INVALID_PROCESS_DEFINITION_RESPONSE,
         );
       }
       deploymentId = processDefinition.deploymentId;
@@ -512,23 +525,23 @@ export class CamundaFormApi {
   private async loadResourcesFromDeployedForm(
     client: RestClient,
     deploymentLocation: string,
-    config: CamundaFormConfig
+    camundaFormConfig: CamundaFormConfig,
   ) {
     let resources: Record<string, any> | undefined = undefined;
-    if (isTaskIdConfig(config)) {
-      resources = await getTaskDeployedForm(client, config.url, config.taskId);
-    } else if (isProcessDefinitionIdConfig(config)) {
+    if (isTaskIdConfig(camundaFormConfig)) {
+      resources = await getTaskDeployedForm(client, camundaFormConfig.url, camundaFormConfig.taskId);
+    } else if (isProcessDefinitionIdConfig(camundaFormConfig)) {
       resources = await getProcessDefinitionDeployedStartFormById(
         client,
-        config.url,
-        config.processDefinitionId
+        camundaFormConfig.url,
+        camundaFormConfig.processDefinitionId,
       );
-    } else if (isProcessDefinitionKeyConfig(config)) {
+    } else if (isProcessDefinitionKeyConfig(camundaFormConfig)) {
       resources = await getProcessDefinitionDeployedStartFormByKey(
         client,
-        config.url,
-        config.processDefinitionKey,
-        config.tenantId
+        camundaFormConfig.url,
+        camundaFormConfig.processDefinitionKey,
+        camundaFormConfig.tenantId,
       );
     } else {
       throw new AppException(AppErrorCode.INVALID_CAMUNDA_FORM_CONFIG);
@@ -538,9 +551,12 @@ export class CamundaFormApi {
     const uischema =
       resources[`${deploymentLocation + RESOURCE_UISCHEMA_SUFFIX}`];
     const i18n = resources[`${deploymentLocation + RESOURCE_I18N_SUFFIX}`];
+    const uischemas =
+      resources[`${deploymentLocation + RESOURCE_UISCHEMAS_SUFFIX}`];
+    const uidata = resources[`${deploymentLocation + RESOURCE_UIDATA_SUFFIX}`];
 
-    const schemaUrl = `${config.url}/${encodeURIComponent(
-      deploymentLocation + RESOURCE_SCHEMA_SUFFIX
+    const schemaUrl = `${camundaFormConfig.url}/${encodeURIComponent(
+      deploymentLocation + RESOURCE_SCHEMA_SUFFIX,
     )}`;
 
     if (!schema) {
@@ -550,12 +566,12 @@ export class CamundaFormApi {
       throw new AppException(AppErrorCode.MISSING_JSONFORMS_UISCHEMA);
     }
 
-    return { schema, schemaUrl, uischema, i18n };
+    return { schema, schemaUrl, uischema, i18n, uischemas, uidata };
   }
 
   private async loadResourcesFromPath(
     client: RestClient,
-    pathLocation: string
+    pathLocation: string,
   ) {
     const schemaUrl = `${pathLocation}${RESOURCE_SCHEMA_SUFFIX}`;
     const schemaResponse = await client.fetch(schemaUrl).catch((e) => {
@@ -564,7 +580,7 @@ export class CamundaFormApi {
     if (!schemaResponse.ok) {
       throw new AppException(
         AppErrorCode.RETRIEVE_JSONFORMS_SCHEMA,
-        new ResponseException(schemaResponse)
+        new ResponseException(schemaResponse),
       );
     }
     const schema = (await schemaResponse.json().catch((e) => {
@@ -573,6 +589,8 @@ export class CamundaFormApi {
 
     let uischema: UISchemaElement | null = null;
     let i18n: Record<string, any> | null = null;
+    let uischemas: JsonFormsUISchemaRegistryEntry[] | null = null;
+    let uidata: Record<string, any> | null = null;
 
     const uischemaResponse = await client
       .fetch(`${pathLocation}${RESOURCE_UISCHEMA_SUFFIX}`)
@@ -596,29 +614,65 @@ export class CamundaFormApi {
       });
     }
 
-    return { schema, schemaUrl, uischema, i18n };
+    const uischemasResponse = await client
+      .fetch(`${pathLocation}${RESOURCE_UISCHEMAS_SUFFIX}`)
+      .catch((e) => {
+        throw new AppException(AppErrorCode.RETRIEVE_JSONFORMS_UISCHEMAS, e);
+      });
+    if (uischemasResponse.ok) {
+      const uischemasJsonText = await uischemasResponse.text().catch((e) => {
+        throw new AppException(AppErrorCode.INVALID_JSONFORMS_UISCHEMAS, e);
+      });
+      try {
+        uischemas = parseAndTransformUISchemaRegistryEntries(uischemasJsonText);
+      } catch (e) {
+        throw new AppException(
+          AppErrorCode.INVALID_JSONFORMS_UISCHEMAS,
+          e as Error,
+        );
+      }
+    }
+
+    const uidataResponse = await client
+      .fetch(`${pathLocation}${RESOURCE_UIDATA_SUFFIX}`)
+      .catch((e) => {
+        throw new AppException(AppErrorCode.RETRIEVE_JSONFORMS_UIDATA, e);
+      });
+    if (uidataResponse.ok) {
+      uidata = await uidataResponse.json().catch((e) => {
+        throw new AppException(AppErrorCode.INVALID_JSONFORMS_UIDATA, e);
+      });
+    }
+
+    return { schema, schemaUrl, uischema, i18n, uischemas, uidata };
   }
 
   private async loadResourcesFromDeployment(
     client: RestClient,
     deploymentLocation: string,
     deploymentId: string,
-    config: CamundaFormConfig
+    camundaFormConfig: CamundaFormConfig,
   ) {
     const resources = await getDeploymentResources(
       client,
-      config.url,
-      deploymentId
+      camundaFormConfig.url,
+      deploymentId,
     );
 
     const formSchemaResource = resources.find(
-      (i) => i.name === deploymentLocation + RESOURCE_SCHEMA_SUFFIX
+      (i) => i.name === deploymentLocation + RESOURCE_SCHEMA_SUFFIX,
     );
     const formUiResource = resources.find(
-      (i) => i.name === deploymentLocation + RESOURCE_UISCHEMA_SUFFIX
+      (i) => i.name === deploymentLocation + RESOURCE_UISCHEMA_SUFFIX,
     );
     const i18nResource = resources.find(
-      (i) => i.name === deploymentLocation + RESOURCE_I18N_SUFFIX
+      (i) => i.name === deploymentLocation + RESOURCE_I18N_SUFFIX,
+    );
+    const uischemasResource = resources.find(
+      (i) => i.name === deploymentLocation + RESOURCE_UISCHEMAS_SUFFIX,
+    );
+    const uidataResource = resources.find(
+      (i) => i.name === deploymentLocation + RESOURCE_UIDATA_SUFFIX,
     );
 
     if (formSchemaResource == null) {
@@ -631,40 +685,73 @@ export class CamundaFormApi {
 
     const schema = (await getDeploymentResourceJsonData(
       client,
-      config.url,
+      camundaFormConfig.url,
       deploymentId,
       formSchemaResource.id,
       AppErrorCode.RETRIEVE_JSONFORMS_SCHEMA,
-      AppErrorCode.INVALID_JSONFORMS_SCHEMA
+      AppErrorCode.INVALID_JSONFORMS_SCHEMA,
     )) as JsonSchema;
 
-    const schemaUrl = `${config.url}/deployment/${encodeURIComponent(
-      deploymentId
+    const schemaUrl = `${camundaFormConfig.url}/deployment/${encodeURIComponent(
+      deploymentId,
     )}/resources/${encodeURIComponent(formSchemaResource.id)}/data`;
 
     const uischema = (await getDeploymentResourceJsonData(
       client,
-      config.url,
+      camundaFormConfig.url,
       deploymentId,
       formUiResource.id,
       AppErrorCode.RETRIEVE_JSONFORMS_UISCHEMA,
 
-      AppErrorCode.INVALID_JSONFORMS_UISCHEMA
+      AppErrorCode.INVALID_JSONFORMS_UISCHEMA,
     )) as UISchemaElement;
 
     let i18n: Record<string, any> | null = null;
     if (i18nResource) {
       i18n = await getDeploymentResourceJsonData(
         client,
-        config.url,
+        camundaFormConfig.url,
         deploymentId,
         i18nResource.id,
         AppErrorCode.RETRIEVE_JSONFORMS_I18N,
 
-        AppErrorCode.INVALID_JSONFORMS_I18N
+        AppErrorCode.INVALID_JSONFORMS_I18N,
       );
     }
 
-    return { schema, schemaUrl, uischema, i18n };
+    let uischemas: JsonFormsUISchemaRegistryEntry[] | null = null;
+    if (uischemasResource) {
+      const uischemasJsonText = await getDeploymentResourceTextData(
+        client,
+        camundaFormConfig.url,
+        deploymentId,
+        uischemasResource.id,
+        AppErrorCode.RETRIEVE_JSONFORMS_UISCHEMAS,
+        AppErrorCode.INVALID_JSONFORMS_UISCHEMAS,
+      );
+      try {
+        uischemas = parseAndTransformUISchemaRegistryEntries(uischemasJsonText);
+      } catch (e) {
+        throw new AppException(
+          AppErrorCode.INVALID_JSONFORMS_UISCHEMAS,
+          e as Error,
+        );
+      }
+    }
+
+    let uidata: Record<string, any> | null = null;
+    if (uidataResource) {
+      uidata = await getDeploymentResourceJsonData(
+        client,
+        camundaFormConfig.url,
+        deploymentId,
+        uidataResource.id,
+        AppErrorCode.RETRIEVE_JSONFORMS_UIDATA,
+
+        AppErrorCode.INVALID_JSONFORMS_UIDATA,
+      );
+    }
+
+    return { schema, schemaUrl, uischema, i18n, uischemas, uidata };
   }
 }

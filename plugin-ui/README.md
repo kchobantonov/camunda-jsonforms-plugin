@@ -2,14 +2,13 @@
 
 ## Developer documentation
 
-Use Node 12+
+Use Node 18+
 
 ### Initial setup
 
-- Install monorepo dependencies: `npm ci`
-- Hook up dependencies between packages: `npm run init`
+- Install monorepo dependencies: `pnpm i --frozen-lockfile`
 
 ### Scripts
 
-- Build: `npm run build`
-- Remove build artifacts: `npm run clean`
+- Build: `pnpm run build`
+- Remove build artifacts: `pnpm run clean`

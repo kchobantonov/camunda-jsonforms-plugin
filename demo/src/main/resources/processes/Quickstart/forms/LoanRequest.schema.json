@@ -20,6 +20,12 @@
       "description": "Please enter your birth date.",
       "i18n": "birthDate"
     },
+    "preferredContactTime": {
+      "type": "string",
+      "format": "time",
+      "description": "Select your preferred time to be contacted.",
+      "i18n": "preferredContactTime"
+    },
     "nationality": {
       "type": "string",
       "enum": ["DE", "IT", "JP", "US", "RU", "Other"],

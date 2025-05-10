@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -31,6 +33,19 @@
                 project.getVersion() + "." + System.currentTimeMillis() : project.getVersion();</source>
             </configuration>
           </execution>
+          <execution>
+            <id>pnpm.publish.args</id>
+            <goals>
+              <goal>bsh-property</goal>
+            </goals>
+            <configuration>
+              <properties>
+                <property>pnpm.publish.args</property>
+              </properties>
+              <source>pnpm.publish.args = project.getVersion().endsWith("-SNAPSHOT") ?
+                "--tag snapshot --no-git-checks": ""</source>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -39,42 +54,33 @@
         <version>${frontend-maven-plugin.version}</version>
         <configuration>
           <nodeVersion>${node.version}</nodeVersion>
-          <npmVersion>${npm.version}</npmVersion>
+          <pnpmVersion>${pnpm.version}</pnpmVersion>
           <workingDirectory>${frontend.working.directory}</workingDirectory>
         </configuration>
         <executions>
 
           <execution>
-            <id>install node and npm</id>
+            <id>install node and pnpm</id>
             <goals>
-              <goal>install-node-and-npm</goal>
+              <goal>install-node-and-pnpm</goal>
             </goals>
             <phase>initialize</phase>
           </execution>
           <execution>
-            <id>npm install</id>
+            <id>pnpm install</id>
             <goals>
-              <goal>npm</goal>
+              <goal>pnpm</goal>
             </goals>
             <!-- Optional configuration which provides for running any npm command -->
             <configuration>
-              <arguments>ci</arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>npm init</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>run init</arguments>
+              <arguments>i --frozen-lockfile</arguments>
             </configuration>
           </execution>
 
           <execution>
             <id>sync version to lerna</id>
             <goals>
-              <goal>npm</goal>
+              <goal>pnpm</goal>
             </goals>
             <configuration>
               <arguments>run snapshot-version -- ${project.version}</arguments>
@@ -83,27 +89,27 @@
           </execution>
 
           <execution>
-            <id>install node and npm - clean</id>
+            <id>install node and pnpm - clean</id>
             <goals>
-              <goal>install-node-and-npm</goal>
+              <goal>install-node-and-pnpm</goal>
             </goals>
             <phase>clean</phase>
           </execution>
           <execution>
-            <id>npm install - clean</id>
+            <id>pnpm install - clean</id>
             <goals>
-              <goal>npm</goal>
+              <goal>pnpm</goal>
             </goals>
             <!-- Optional configuration which provides for running any npm command -->
             <configuration>
-              <arguments>ci</arguments>
+              <arguments>i --frozen-lockfile</arguments>
             </configuration>
             <phase>clean</phase>
           </execution>
           <execution>
-            <id>npm clean</id>
+            <id>pnpm clean</id>
             <goals>
-              <goal>npm</goal>
+              <goal>pnpm</goal>
             </goals>
             <configuration>
               <arguments>run clean</arguments>
@@ -112,9 +118,9 @@
           </execution>
 
           <execution>
-            <id>npm run build</id>
+            <id>pnpm run build</id>
             <goals>
-              <goal>npm</goal>
+              <goal>pnpm</goal>
             </goals>
             <configuration>
               <arguments>run build</arguments>
@@ -122,29 +128,29 @@
           </execution>
 
           <execution>
-            <id>npm pre-publish</id>
+            <id>pnpm pre-publish</id>
             <goals>
-              <goal>npm</goal>
+              <goal>pnpm</goal>
             </goals>
             <configuration>
-              <arguments>run snapshot-version -- ${lerna.deployVersion}</arguments>
+              <arguments>run snapshot-version ${lerna.deployVersion}</arguments>
             </configuration>
             <phase>deploy</phase>
           </execution>
           <execution>
-            <id>npm publish</id>
+            <id>pnpm publish</id>
             <goals>
-              <goal>npm</goal>
+              <goal>pnpm</goal>
             </goals>
             <configuration>
-              <arguments>run lerna-publish</arguments>
+              <arguments>run publish ${pnpm.publish.args}</arguments>
             </configuration>
             <phase>deploy</phase>
           </execution>
           <execution>
-            <id>npm post-publish</id>
+            <id>pnpm post-publish</id>
             <goals>
-              <goal>npm</goal>
+              <goal>pnpm</goal>
             </goals>
             <configuration>
               <arguments>run snapshot-version -- ${project.version}</arguments>
@@ -168,41 +174,31 @@
             <version>${frontend-maven-plugin.version}</version>
             <configuration>
               <nodeVersion>${node.version}</nodeVersion>
-              <npmVersion>${npm.version}</npmVersion>
+              <pnpmVersion>${pnpm.version}</pnpmVersion>
               <workingDirectory>${frontend.working.directory}</workingDirectory>
             </configuration>
             <executions>
               <execution>
-                <id>install node and npm</id>
+                <id>install node and pnpm</id>
                 <goals>
-                  <goal>install-node-and-npm</goal>
+                  <goal>install-node-and-pnpm</goal>
                 </goals>
                 <phase>validate</phase>
               </execution>
               <execution>
-                <id>npm install</id>
+                <id>pnpm install</id>
                 <goals>
-                  <goal>npm</goal>
+                  <goal>pnpm</goal>
                 </goals>
                 <configuration>
-                  <arguments>ci</arguments>
-                </configuration>
-                <phase>validate</phase>
-              </execution>
-              <execution>
-                <id>npm init</id>
-                <goals>
-                  <goal>npm</goal>
-                </goals>
-                <configuration>
-                  <arguments>run init</arguments>
+                  <arguments>i --frozen-lockfile</arguments>
                 </configuration>
                 <phase>validate</phase>
               </execution>
               <execution>
                 <id>prepare-release - sync version to lerna</id>
                 <goals>
-                  <goal>npm</goal>
+                  <goal>pnpm</goal>
                 </goals>
                 <configuration>
                   <arguments>run snapshot-version -- ${project.version}</arguments>
@@ -223,7 +219,7 @@
                   <goal>add</goal>
                 </goals>
                 <configuration>
-                  <includes>**/package.json,**/package-lock.json,lerna.json</includes>
+                  <includes>**/package.json,pnpm-lock.yaml,lerna.json</includes>
                   <excludes>**/node/**,**/node_modules/**</excludes>
                   <message>[maven-release-plugin] prepare version for package.json</message>
                 </configuration>
