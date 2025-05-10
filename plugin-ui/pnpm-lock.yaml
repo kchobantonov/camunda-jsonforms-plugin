@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  ajv-formats: ^3.0.1
+
 importers:
 
   .:
@@ -1607,8 +1610,8 @@ packages:
     peerDependencies:
       ajv: ^8.0.1
 
-  ajv-formats@2.1.1:
-    resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
+  ajv-formats@3.0.1:
+    resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
     peerDependencies:
       ajv: ^8.0.0
     peerDependenciesMeta:
@@ -5997,7 +6000,7 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.17.1
-      ajv-formats: 2.1.1(ajv@8.17.1)
+      ajv-formats: 3.0.1(ajv@8.17.1)
       lodash: 4.17.21
 
   '@jsonforms/vue-vuetify@3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)':
@@ -7115,7 +7118,7 @@ snapshots:
     dependencies:
       ajv: 8.17.1
 
-  ajv-formats@2.1.1(ajv@8.17.1):
+  ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:
       ajv: 8.17.1
 

@@ -1,6 +1,5 @@
 {
   "name": "@chobantonov/camunda-jsonforms-webcomponent",
-  "private": true,
   "version": "0.0.1-SNAPSHOT",
   "scripts": {
     "dev": "vite",

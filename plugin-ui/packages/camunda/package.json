@@ -1,6 +1,5 @@
 {
   "name": "@chobantonov/camunda-jsonforms",
-  "private": true,
   "version": "0.0.1-SNAPSHOT",
   "main": "lib/camunda-jsonforms.cjs.js",
   "module": "lib/camunda-jsonforms.esm.js",
