@@ -83,7 +83,8 @@
               <goal>pnpm</goal>
             </goals>
             <configuration>
-              <arguments>run snapshot-version -- ${project.version}</arguments>
+              <arguments>exec -- lerna version ${project.version} --exact --no-git-tag-version
+                --no-push --force-publish="*" --yes</arguments>
             </configuration>
             <phase>generate-resources</phase>
           </execution>
@@ -133,7 +134,8 @@
               <goal>pnpm</goal>
             </goals>
             <configuration>
-              <arguments>run snapshot-version ${lerna.deployVersion}</arguments>
+              <arguments>exec -- lerna version ${lerna.deployVersion} --exact --no-git-tag-version
+                --no-push --force-publish="*" --yes</arguments>
             </configuration>
             <phase>deploy</phase>
           </execution>
@@ -153,7 +155,8 @@
               <goal>pnpm</goal>
             </goals>
             <configuration>
-              <arguments>run snapshot-version -- ${project.version}</arguments>
+              <arguments>exec -- lerna version ${project.version} --exact --no-git-tag-version
+                --no-push --force-publish="*" --yes</arguments>
             </configuration>
             <phase>deploy</phase>
           </execution>
@@ -201,7 +204,7 @@
                   <goal>pnpm</goal>
                 </goals>
                 <configuration>
-                  <arguments>run snapshot-version -- ${project.version}</arguments>
+                  <arguments>exec -- lerna version ${project.version} --exact --no-git-tag-version --no-push --force-publish="*" --yes</arguments>
                 </configuration>
                 <phase>validate</phase>
               </execution>
