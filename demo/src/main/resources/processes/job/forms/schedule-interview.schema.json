@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "interviewDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Interview Date & Time"
+    },
+    "interviewLocation": {
+      "type": "string",
+      "title": "Location or Video Call Link"
+    }
+  },
+  "required": ["interviewDateTime", "interviewLocation"]
+}

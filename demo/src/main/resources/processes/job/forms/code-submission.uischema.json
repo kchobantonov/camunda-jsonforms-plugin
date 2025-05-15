@@ -1,0 +1,45 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Control",
+      "scope": "#/properties/codeLanguage"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/codeSample",
+      "options": {
+        "format": "code",
+        ":language": "codeLanguage",
+        "vuetify": {
+          "v-monaco-editor": {
+            "options": {
+              "minimap": { "enabled": false }
+            },
+            "height": "200px",
+            "initActions": ["editor.action.formatDocument"]
+          }
+        }
+      }
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/notes",
+      "options": {
+        "multi": true
+      }
+    },
+    {
+      "type": "Button",
+      "action": "camunda:submit",
+      "label": "Submit",
+      "rule": {
+        "effect": "ENABLE",
+        "condition": {
+          "scope": "#/",
+          "schema": { "$ref": "/#" }
+        }
+      }
+    }
+  ]
+}

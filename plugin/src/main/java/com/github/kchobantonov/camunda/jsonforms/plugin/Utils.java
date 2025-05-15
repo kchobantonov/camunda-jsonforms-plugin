@@ -15,6 +15,8 @@ public final class Utils {
     public static final String RESOURCE_SCHEMA_SUFFIX = ".schema.json";
     public static final String RESOURCE_UISCHEMA_SUFFIX = ".uischema.json";
     public static final String RESOURCE_I18N_SUFFIX = ".i18n.json";
+    public static final String RESOURCE_UISCHEMAS_SUFFIX = ".uischemas.json";
+    public static final String RESOURCE_UIDATA_SUFFIX = ".uidata.json";
     public static final String CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT = "deployment";
     public static final String CAMUNDA_FORM_KEY_QUERY_PARAM_PATH = "path";
 

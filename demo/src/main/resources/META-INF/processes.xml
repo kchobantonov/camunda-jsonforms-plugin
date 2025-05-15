@@ -1,9 +1,11 @@
-<process-application xmlns="http://www.camunda.org/schema/1.0/ProcessApplication" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<process-application xmlns="http://www.camunda.org/schema/1.0/ProcessApplication"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <process-archive name="Demo">
         <properties>
             <property name="isDeleteUponUndeploy">false</property>
             <property name="isScanForProcessDefinitions">true</property>
+            <!-- <property name="resourceRootPath">BOOT-INF/classes/</property> -->
             <property name="additionalResourceSuffixes">json</property>
         </properties>
     </process-archive>

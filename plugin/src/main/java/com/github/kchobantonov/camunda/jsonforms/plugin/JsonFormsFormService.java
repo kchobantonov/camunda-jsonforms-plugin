@@ -176,17 +176,25 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
             final String schemaResourcePath = resourceName + Utils.RESOURCE_SCHEMA_SUFFIX;
             final String uischemaResourcePath = resourceName + Utils.RESOURCE_UISCHEMA_SUFFIX;
             final String i18nResourcePath = resourceName + Utils.RESOURCE_I18N_SUFFIX;
+            final String uischemasResourcePath = resourceName + Utils.RESOURCE_UISCHEMAS_SUFFIX;
+            final String uidataResourcePath = resourceName + Utils.RESOURCE_UIDATA_SUFFIX;
 
             List<ResourceEntity> resources = commandContext
                     .getResourceManager()
                     .findResourceByDeploymentIdAndResourceNames(deploymentId,
-                            schemaResourcePath, uischemaResourcePath, i18nResourcePath);
+                            schemaResourcePath, uischemaResourcePath, i18nResourcePath, uischemasResourcePath,
+                            uidataResourcePath);
 
             ResourceEntity schema = resources.stream().filter(entity -> entity.getName().equals(schemaResourcePath))
                     .findFirst().orElse(null);
             ResourceEntity uischema = resources.stream().filter(entity -> entity.getName().equals(uischemaResourcePath))
                     .findFirst().orElse(null);
             ResourceEntity i18n = resources.stream().filter(entity -> entity.getName().equals(i18nResourcePath))
+                    .findFirst().orElse(null);
+            ResourceEntity uischemas = resources.stream()
+                    .filter(entity -> entity.getName().equals(uischemasResourcePath))
+                    .findFirst().orElse(null);
+            ResourceEntity uidata = resources.stream().filter(entity -> entity.getName().equals(uidataResourcePath))
                     .findFirst().orElse(null);
 
             ensureNotNull(DeploymentResourceNotFoundException.class,
@@ -216,6 +224,20 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
                 result.append(JSONObject.quote(i18nResourcePath));
                 result.append(":");
                 result.append(new String(i18n.getBytes(), StandardCharsets.UTF_8));
+            }
+
+            if (uischemas != null) {
+                result.append(",");
+                result.append(JSONObject.quote(uischemasResourcePath));
+                result.append(":");
+                result.append(new String(uischemas.getBytes(), StandardCharsets.UTF_8));
+            }
+
+            if (uidata != null) {
+                result.append(",");
+                result.append(JSONObject.quote(uidataResourcePath));
+                result.append(":");
+                result.append(new String(uidata.getBytes(), StandardCharsets.UTF_8));
             }
 
             result.append("}");

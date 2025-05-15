@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0c2odcp" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.23.0">
+  <bpmn:process id="jobApplicationProcess" name="Job Application Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Submit Job Application" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/job/forms/job-application">
+      <bpmn:outgoing>Flow_09vxifj</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_09vxifj" sourceRef="StartEvent_1" targetRef="Task_HRReview" />
+    <bpmn:userTask id="Task_HRReview" name="HR Review Application" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/job/forms/hr-review">
+      <bpmn:incoming>Flow_09vxifj</bpmn:incoming>
+      <bpmn:outgoing>Flow_15zmg2q</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_1gjttc4" name="Shortlisted?">
+      <bpmn:incoming>Flow_15zmg2q</bpmn:incoming>
+      <bpmn:outgoing>Flow_0lldtkn</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0mfu22a</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_15zmg2q" sourceRef="Task_HRReview" targetRef="Gateway_1gjttc4" />
+    <bpmn:sequenceFlow id="Flow_0lldtkn" name="Yes" sourceRef="Gateway_1gjttc4" targetRef="Task_ScheduleInterview">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${shortlisted == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="Task_ScheduleInterview" name="Schedule Interview" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/job/forms/schedule-interview">
+      <bpmn:incoming>Flow_0lldtkn</bpmn:incoming>
+      <bpmn:outgoing>Flow_0m7qseg</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="Event_0noldtt" name="Process Completed">
+      <bpmn:incoming>Flow_1v30tmq</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0mfu22a" name="No" sourceRef="Gateway_1gjttc4" targetRef="Gateway_0xovyn6">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${shortlisted == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0m7qseg" sourceRef="Task_ScheduleInterview" targetRef="Task_CodeSubmission" />
+    <bpmn:userTask id="Task_CodeSubmission" name="Candidate Code Submission" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/job/forms/code-submission">
+      <bpmn:incoming>Flow_0m7qseg</bpmn:incoming>
+      <bpmn:outgoing>Flow_1fa4v5g</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1fa4v5g" sourceRef="Task_CodeSubmission" targetRef="Task_TechReview" />
+    <bpmn:userTask id="Task_TechReview" name="Technical Review" camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=processes/job/forms/technical-review">
+      <bpmn:incoming>Flow_1fa4v5g</bpmn:incoming>
+      <bpmn:outgoing>Flow_0rhr9co</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_0xovyn6">
+      <bpmn:incoming>Flow_0rhr9co</bpmn:incoming>
+      <bpmn:incoming>Flow_0mfu22a</bpmn:incoming>
+      <bpmn:outgoing>Flow_1v30tmq</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0rhr9co" sourceRef="Task_TechReview" targetRef="Gateway_0xovyn6" />
+    <bpmn:sequenceFlow id="Flow_1v30tmq" sourceRef="Gateway_0xovyn6" targetRef="Event_0noldtt" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="jobApplicationProcess">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="172" y="225" width="56" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_127xotg_di" bpmnElement="Task_HRReview">
+        <dc:Bounds x="270" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1gjttc4_di" bpmnElement="Gateway_1gjttc4" isMarkerVisible="true">
+        <dc:Bounds x="425" y="175" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="421" y="232" width="59" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0iaombx_di" bpmnElement="Task_ScheduleInterview">
+        <dc:Bounds x="530" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0w4vkqy_di" bpmnElement="Task_CodeSubmission">
+        <dc:Bounds x="690" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19g77rg_di" bpmnElement="Task_TechReview">
+        <dc:Bounds x="850" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0xovyn6_di" bpmnElement="Gateway_0xovyn6" isMarkerVisible="true">
+        <dc:Bounds x="995" y="175" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0noldtt_di" bpmnElement="Event_0noldtt">
+        <dc:Bounds x="1092" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1083" y="225" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_09vxifj_di" bpmnElement="Flow_09vxifj">
+        <di:waypoint x="218" y="200" />
+        <di:waypoint x="270" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15zmg2q_di" bpmnElement="Flow_15zmg2q">
+        <di:waypoint x="370" y="200" />
+        <di:waypoint x="425" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0lldtkn_di" bpmnElement="Flow_0lldtkn">
+        <di:waypoint x="450" y="175" />
+        <di:waypoint x="450" y="120" />
+        <di:waypoint x="530" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="456" y="145" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mfu22a_di" bpmnElement="Flow_0mfu22a">
+        <di:waypoint x="475" y="200" />
+        <di:waypoint x="995" y="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="728" y="182" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0m7qseg_di" bpmnElement="Flow_0m7qseg">
+        <di:waypoint x="630" y="120" />
+        <di:waypoint x="690" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1fa4v5g_di" bpmnElement="Flow_1fa4v5g">
+        <di:waypoint x="790" y="120" />
+        <di:waypoint x="850" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rhr9co_di" bpmnElement="Flow_0rhr9co">
+        <di:waypoint x="950" y="120" />
+        <di:waypoint x="1020" y="120" />
+        <di:waypoint x="1020" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1v30tmq_di" bpmnElement="Flow_1v30tmq">
+        <di:waypoint x="1045" y="200" />
+        <di:waypoint x="1092" y="200" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

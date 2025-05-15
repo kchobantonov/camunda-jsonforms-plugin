@@ -59,6 +59,7 @@
       trim: false,
       showUnfocusedDescription: false,
       hideRequiredAsterisk: true,
+      enableFilterErrorsBeforeTouch: false
     };
     const preset = { 
       blueprint: "md1",
@@ -73,6 +74,37 @@
         getParameterByName("debug", camForm.options.formUrl) === "true";
       if (debug) {
         console.log("Form state changed:" + JSON.stringify(data));
+      }
+    };
+
+    const changeLang = (event /*: ActionEvent*/) => {
+      if (event.context.appStore) {
+        // demo app
+        event.context.appStore.jsonforms.locale = event.params.lang;
+      } else if (event.$el.getRootNode() instanceof ShadowRoot) {
+        // web component
+        const form = event.$el.getRootNode() /*as ShadowRoot*/.host;
+        if (form) {
+          form.setAttribute('locale', event.params.lang);
+        }
+      }
+    };
+
+    const toggleDarkMode = (event) => {
+      event.context.vuetify.dark = !event.context.vuetify.dark;
+    };
+
+    const onHandleAction = (
+      customEvent /*: ActionEvent | CustomEvent */,
+    ) => {
+      // if the event is sent via webcomponent then it will be of type CustomEvent otherwise it will be ActionEvent
+      const event =
+        customEvent instanceof CustomEvent ? customEvent.detail[0] : customEvent;
+
+      if (event.action === 'changeLang') {
+        event.callback = changeLang;
+      } else if (event.action === 'toggleDarkMode') {
+        event.callback = toggleDarkMode;
       }
     };
 
@@ -197,6 +229,8 @@
           form.setAttribute("vuetify-options", JSON.stringify(preset));
 
           form.addEventListener("change", onChange);
+          form.addEventListener('handle-action', onHandleAction);
+
           form.addEventListener("load-request", onLoadRequest);
           form.addEventListener("load-response", onLoadResponse);
           form.addEventListener("load-error", onLoadError);

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "codeLanguage": {
+      "type": "string",
+      "enum": ["TypeScript", "JavaScript", "HTML"],
+      "title": "Code Language"
+    },
+    "codeSample": {
+      "type": "string",
+      "title": "Code Sample"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Candidate's Notes About Code"
+    }
+  },
+  "required": ["codeLanguage", "codeSample"]
+}

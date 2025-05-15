@@ -1,0 +1,27 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "Control",
+      "scope": "#/properties/interviewDateTime",
+      "label": "Interview Date & Time"
+    },
+    {
+      "type": "Control",
+      "scope": "#/properties/interviewLocation",
+      "label": "Location or Video Call Link"
+    },
+        {
+      "type": "Button",
+      "action": "camunda:submit",
+      "label": "Submit",
+      "rule": {
+        "effect": "ENABLE",
+        "condition": {
+          "scope": "#/",
+          "schema": { "$ref": "/#" }
+        }
+      }
+    }
+  ]
+}

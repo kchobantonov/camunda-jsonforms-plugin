@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "codeRating": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "title": "Code Quality Rating (1-10)"
+    },
+    "reviewerComments": {
+      "type": "string",
+      "title": "Reviewer Comments",
+      "minLength": 20
+    },
+    "feedbackJson": {
+      "type": "string",
+      "title": "Additional Feedback (as JSON)"
+    }
+  },
+  "required": ["codeRating", "reviewerComments"]
+}
