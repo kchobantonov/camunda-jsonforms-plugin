@@ -18,7 +18,7 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
-    "@chobantonov/jsonforms-vuetify-renderers": "3.5.1",
+    "@chobantonov/jsonforms-vuetify-renderers": "3.6.0",
     "ajv": "^8.6.1",
     "ajv-keywords": "^5.1.0",
     "core-js": "^3.9.1",
@@ -26,16 +26,16 @@
     "json-refs": "^3.0.15"
   },
   "peerDependencies": {
-    "@jsonforms/core": "3.5.1",
-    "@jsonforms/vue": "3.5.1",
-    "@jsonforms/vue-vuetify": "3.5.1",
+    "@jsonforms/core": "3.6.0",
+    "@jsonforms/vue": "3.6.0",
+    "@jsonforms/vue-vuetify": "3.6.0",
     "vue": "^3.4.21",
     "vuetify": "^3.7.5"
   },
   "devDependencies": {
-    "@jsonforms/core": "3.5.1",
-    "@jsonforms/vue": "3.5.1",
-    "@jsonforms/vue-vuetify": "3.5.1",
+    "@jsonforms/core": "3.6.0",
+    "@jsonforms/vue": "3.6.0",
+    "@jsonforms/vue-vuetify": "3.6.0",
     "@mdi/font": "^7.4.47",
     "@monaco-editor/loader": "^1.4.0",
     "@rushstack/eslint-patch": "^1.8.0",

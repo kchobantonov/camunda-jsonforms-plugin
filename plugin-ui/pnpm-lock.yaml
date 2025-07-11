@@ -24,8 +24,8 @@ importers:
   packages/camunda:
     dependencies:
       '@chobantonov/jsonforms-vuetify-renderers':
-        specifier: 3.5.1
-        version: 3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue-vuetify@3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4))(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(@monaco-editor/loader@1.5.0)(@vue/compiler-dom@3.5.13)(ajv-errors@3.0.0(ajv@8.17.1))(ajv-i18n@4.2.0(ajv@8.17.1))(ajv-keywords@5.1.0(ajv@8.17.1))(ajv@8.17.1)(dayjs@1.11.13)(json-refs@3.0.15)(lodash@4.17.21)(maska@2.1.11)(monaco-editor@0.49.0)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
+        specifier: 3.6.0
+        version: 3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue-vuetify@3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4))(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(@monaco-editor/loader@1.5.0)(@vue/compiler-dom@3.5.13)(ag-grid-community@34.0.1)(ag-grid-vue3@34.0.1(vue@3.5.13(typescript@5.4.5)))(ajv-errors@3.0.0(ajv@8.17.1))(ajv-i18n@4.2.0(ajv@8.17.1))(ajv-keywords@5.1.0(ajv@8.17.1))(ajv@8.17.1)(dayjs@1.11.13)(json-refs@3.0.15)(lodash@4.17.21)(maska@2.1.11)(monaco-editor@0.49.0)(splitpanes@3.2.0(vue@3.5.13(typescript@5.4.5)))(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
       ajv:
         specifier: ^8.6.1
         version: 8.17.1
@@ -43,14 +43,14 @@ importers:
         version: 3.0.15
     devDependencies:
       '@jsonforms/core':
-        specifier: 3.5.1
-        version: 3.5.1
+        specifier: 3.6.0
+        version: 3.6.0
       '@jsonforms/vue':
-        specifier: 3.5.1
-        version: 3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5))
+        specifier: 3.6.0
+        version: 3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5))
       '@jsonforms/vue-vuetify':
-        specifier: 3.5.1
-        version: 3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
+        specifier: 3.6.0
+        version: 3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
       '@mdi/font':
         specifier: ^7.4.47
         version: 7.4.47
@@ -178,8 +178,8 @@ importers:
         specifier: workspace:*
         version: link:../camunda
       '@chobantonov/jsonforms-vuetify-renderers':
-        specifier: 3.5.1
-        version: 3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue-vuetify@3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4))(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(@monaco-editor/loader@1.5.0)(@vue/compiler-dom@3.5.13)(ajv-errors@3.0.0(ajv@8.17.1))(ajv-i18n@4.2.0(ajv@8.17.1))(ajv-keywords@5.1.0(ajv@8.17.1))(ajv@8.17.1)(dayjs@1.11.13)(json-refs@3.0.15)(lodash@4.17.21)(maska@2.1.11)(monaco-editor@0.49.0)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
+        specifier: 3.6.0
+        version: 3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue-vuetify@3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4))(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(@monaco-editor/loader@1.5.0)(@vue/compiler-dom@3.5.13)(ag-grid-community@34.0.1)(ag-grid-vue3@34.0.1(vue@3.5.13(typescript@5.4.5)))(ajv-errors@3.0.0(ajv@8.17.1))(ajv-i18n@4.2.0(ajv@8.17.1))(ajv-keywords@5.1.0(ajv@8.17.1))(ajv@8.17.1)(dayjs@1.11.13)(json-refs@3.0.15)(lodash@4.17.21)(maska@2.1.11)(monaco-editor@0.49.0)(splitpanes@3.2.0(vue@3.5.13(typescript@5.4.5)))(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
       '@fontsource/roboto':
         specifier: ^4.5.8
         version: 4.5.8
@@ -187,14 +187,14 @@ importers:
         specifier: ^6.5.2
         version: 6.7.2
       '@jsonforms/core':
-        specifier: 3.5.1
-        version: 3.5.1
+        specifier: 3.6.0
+        version: 3.6.0
       '@jsonforms/vue':
-        specifier: 3.5.1
-        version: 3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5))
+        specifier: 3.6.0
+        version: 3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5))
       '@jsonforms/vue-vuetify':
-        specifier: 3.5.1
-        version: 3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
+        specifier: 3.6.0
+        version: 3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
       '@mdi/font':
         specifier: ^7.4.47
         version: 7.4.47
@@ -468,14 +468,16 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@chobantonov/jsonforms-vuetify-renderers@3.5.1':
-    resolution: {integrity: sha512-L2/E+Q7+rUuFZp6f4T4CKlOgIMNz9cXH9iglIJFy16WgO1BcFekwa3S+UpfGHdZlu/1RhlW6i7EpSi1YXX7Phw==}
+  '@chobantonov/jsonforms-vuetify-renderers@3.6.0':
+    resolution: {integrity: sha512-AzYRbLcs9MDw3ipCDMZuLI6WvXn+VIhxmQW707ybsUYaKx84YRh3TWeWC84T2TW6UTK8MJ3mDpwu4BaoG2QJFA==}
     peerDependencies:
-      '@jsonforms/core': 3.5.1
-      '@jsonforms/vue': 3.5.1
-      '@jsonforms/vue-vuetify': 3.5.1
+      '@jsonforms/core': 3.6.0
+      '@jsonforms/vue': 3.6.0
+      '@jsonforms/vue-vuetify': 3.6.0
       '@monaco-editor/loader': ^1.4.0
       '@vue/compiler-dom': ^3.4.21
+      ag-grid-community: ^34.0.0
+      ag-grid-vue3: ^34.0.0
       ajv: ^8.6.1
       ajv-errors: ^3.0.0
       ajv-i18n: ^4.2.0
@@ -485,6 +487,7 @@ packages:
       lodash: ^4.17.21
       maska: ^2.1.11
       monaco-editor: ^0.49.0
+      splitpanes: ^3.2.0
       vue: ^3.4.21
       vuetify: ^3.7.5
 
@@ -729,14 +732,14 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@jsonforms/core@3.5.1':
-    resolution: {integrity: sha512-Jrq/UcfvKsAprLJ+9TMFa8pKsfdyv3dAw85XstSNRcjDT19LreBlhVqIvTvtgZidg8Iet3yqy5xlNnB+XyrvrQ==}
+  '@jsonforms/core@3.6.0':
+    resolution: {integrity: sha512-Qz7qJPf/yP4ybqknZ500zggIDZRJfcufu+3efp/xNWf05mpXvxN9TdfmA++BdXi5Nr4UAgjos2kFmQpZpQaCDw==}
 
-  '@jsonforms/vue-vuetify@3.5.1':
-    resolution: {integrity: sha512-jOzLkyDYHMPM72Yvos3M6qYrYnPtA/MXRozWNoaAAL4XY0UkNUgH8EWpcoonraJeRNi7ZtTH7Dw+Ob8j0yr+7Q==}
+  '@jsonforms/vue-vuetify@3.6.0':
+    resolution: {integrity: sha512-3+4FxZNPmtu4Vy9pr7IEUVkaPmr7Geaq2Vlw1Z7g4IUr7Ohl0ZHoEKYUMkdvL9pcP/b7iDFvqTSsvkRZXSnjdg==}
     peerDependencies:
-      '@jsonforms/core': 3.5.1
-      '@jsonforms/vue': 3.5.1
+      '@jsonforms/core': 3.6.0
+      '@jsonforms/vue': 3.6.0
       ajv: ^8.6.1
       dayjs: ^1.10.6
       lodash: ^4.17.21
@@ -744,10 +747,10 @@ packages:
       vue: ^3.4.21
       vuetify: ^3.6.6
 
-  '@jsonforms/vue@3.5.1':
-    resolution: {integrity: sha512-mxxZ/RrvxpIyqxRXH1K4f+Zha/JJCeycx/oKC7h2w6ZsQFqLSFJuntQ1nIwNOCIR21lYQZXIt/VkmvAemnis5g==}
+  '@jsonforms/vue@3.6.0':
+    resolution: {integrity: sha512-KW74d2RBeGau15LseCXiSTiUZ+9nQEyxDgaHggD2iQssrGCBSMWHj2+tGw+hWRZrk4IK99j4j4PRT2mLdexJqw==}
     peerDependencies:
-      '@jsonforms/core': 3.5.1
+      '@jsonforms/core': 3.6.0
       vue: ^3.2.26
 
   '@lerna/child-process@7.4.2':
@@ -1541,6 +1544,17 @@ packages:
 
   add-stream@1.0.0:
     resolution: {integrity: sha512-qQLMr+8o0WC4FZGQTcJiKBVC59JylcPSrTtk6usvmIDFUOCKegapy1VHQwRbFMOFyb/inzUVqHs+eMYKDM1YeQ==}
+
+  ag-charts-types@12.0.1:
+    resolution: {integrity: sha512-AvAmoyuKG63UxrwGTU+T6f+EEE8tc4ksm7Ai9lJcaUHn9s4PU9hspAGl69GnZpAiIxzA5uCLDvG/Did5N2DB2A==}
+
+  ag-grid-community@34.0.1:
+    resolution: {integrity: sha512-EzSWOGS/zMm9cqLrJUM6T5e2fPA10c4j0ADMS7QLy6NvzeSeT+iUwoaVHz+QfIDVv69is9KwHs6EYCT87FT5eg==}
+
+  ag-grid-vue3@34.0.1:
+    resolution: {integrity: sha512-+If/GWh6WXBcK+WmazpUGX8iKa0e7xOBjetqIDR4M51AiJcRPyfxv4urmKg0DXlBg+Cq4sgO8+JeJHqL42WokQ==}
+    peerDependencies:
+      vue: ^3.5.0
 
   agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
@@ -4669,6 +4683,11 @@ packages:
   split@1.0.1:
     resolution: {integrity: sha512-mTyOoPbrivtXnwnIxZRFYRrPNtEFKlpB2fvjSnCQUiAA6qAZzqwna5envK4uk6OIeP17CsdF3rSBGYVBsU0Tkg==}
 
+  splitpanes@3.2.0:
+    resolution: {integrity: sha512-K+WKxWdqtKShV33gPjQl769wHxB3glypTOReCvYu/AJd38J+abHlpiF8rK6uBNPMrgw5thHZCI5JkEwsAqa9XA==}
+    peerDependencies:
+      vue: ^3.2.0
+
   sprintf-js@1.0.3:
     resolution: {integrity: sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==}
 
@@ -5610,13 +5629,15 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@chobantonov/jsonforms-vuetify-renderers@3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue-vuetify@3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4))(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(@monaco-editor/loader@1.5.0)(@vue/compiler-dom@3.5.13)(ajv-errors@3.0.0(ajv@8.17.1))(ajv-i18n@4.2.0(ajv@8.17.1))(ajv-keywords@5.1.0(ajv@8.17.1))(ajv@8.17.1)(dayjs@1.11.13)(json-refs@3.0.15)(lodash@4.17.21)(maska@2.1.11)(monaco-editor@0.49.0)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)':
+  '@chobantonov/jsonforms-vuetify-renderers@3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue-vuetify@3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4))(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(@monaco-editor/loader@1.5.0)(@vue/compiler-dom@3.5.13)(ag-grid-community@34.0.1)(ag-grid-vue3@34.0.1(vue@3.5.13(typescript@5.4.5)))(ajv-errors@3.0.0(ajv@8.17.1))(ajv-i18n@4.2.0(ajv@8.17.1))(ajv-keywords@5.1.0(ajv@8.17.1))(ajv@8.17.1)(dayjs@1.11.13)(json-refs@3.0.15)(lodash@4.17.21)(maska@2.1.11)(monaco-editor@0.49.0)(splitpanes@3.2.0(vue@3.5.13(typescript@5.4.5)))(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)':
     dependencies:
-      '@jsonforms/core': 3.5.1
-      '@jsonforms/vue': 3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5))
-      '@jsonforms/vue-vuetify': 3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
+      '@jsonforms/core': 3.6.0
+      '@jsonforms/vue': 3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5))
+      '@jsonforms/vue-vuetify': 3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)
       '@monaco-editor/loader': 1.5.0
       '@vue/compiler-dom': 3.5.13
+      ag-grid-community: 34.0.1
+      ag-grid-vue3: 34.0.1(vue@3.5.13(typescript@5.4.5))
       ajv: 8.17.1
       ajv-errors: 3.0.0(ajv@8.17.1)
       ajv-i18n: 4.2.0(ajv@8.17.1)
@@ -5626,6 +5647,7 @@ snapshots:
       lodash: 4.17.21
       maska: 2.1.11
       monaco-editor: 0.49.0
+      splitpanes: 3.2.0(vue@3.5.13(typescript@5.4.5))
       vue: 3.5.13(typescript@5.4.5)
       vuetify: 3.8.4(typescript@5.4.5)(vite-plugin-vuetify@2.1.1)(vue@3.5.13(typescript@5.4.5))
 
@@ -5793,17 +5815,17 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@jsonforms/core@3.5.1':
+  '@jsonforms/core@3.6.0':
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.17.1
       ajv-formats: 3.0.1(ajv@8.17.1)
       lodash: 4.17.21
 
-  '@jsonforms/vue-vuetify@3.5.1(@jsonforms/core@3.5.1)(@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)':
+  '@jsonforms/vue-vuetify@3.6.0(@jsonforms/core@3.6.0)(@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5)))(ajv@8.17.1)(dayjs@1.11.13)(lodash@4.17.21)(maska@2.1.11)(vue@3.5.13(typescript@5.4.5))(vuetify@3.8.4)':
     dependencies:
-      '@jsonforms/core': 3.5.1
-      '@jsonforms/vue': 3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5))
+      '@jsonforms/core': 3.6.0
+      '@jsonforms/vue': 3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5))
       ajv: 8.17.1
       dayjs: 1.11.13
       lodash: 4.17.21
@@ -5811,9 +5833,9 @@ snapshots:
       vue: 3.5.13(typescript@5.4.5)
       vuetify: 3.8.4(typescript@5.4.5)(vite-plugin-vuetify@2.1.1)(vue@3.5.13(typescript@5.4.5))
 
-  '@jsonforms/vue@3.5.1(@jsonforms/core@3.5.1)(vue@3.5.13(typescript@5.4.5))':
+  '@jsonforms/vue@3.6.0(@jsonforms/core@3.6.0)(vue@3.5.13(typescript@5.4.5))':
     dependencies:
-      '@jsonforms/core': 3.5.1
+      '@jsonforms/core': 3.6.0
       lodash: 4.17.21
       vue: 3.5.13(typescript@5.4.5)
 
@@ -6786,6 +6808,17 @@ snapshots:
   acorn@8.14.1: {}
 
   add-stream@1.0.0: {}
+
+  ag-charts-types@12.0.1: {}
+
+  ag-grid-community@34.0.1:
+    dependencies:
+      ag-charts-types: 12.0.1
+
+  ag-grid-vue3@34.0.1(vue@3.5.13(typescript@5.4.5)):
+    dependencies:
+      ag-grid-community: 34.0.1
+      vue: 3.5.13(typescript@5.4.5)
 
   agent-base@6.0.2:
     dependencies:
@@ -10326,6 +10359,10 @@ snapshots:
   split@1.0.1:
     dependencies:
       through: 2.3.8
+
+  splitpanes@3.2.0(vue@3.5.13(typescript@5.4.5)):
+    dependencies:
+      vue: 3.5.13(typescript@5.4.5)
 
   sprintf-js@1.0.3: {}
 

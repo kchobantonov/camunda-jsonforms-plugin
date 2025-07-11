@@ -42,7 +42,7 @@ import {
   type JsonFormsRendererRegistryEntry,
   type ValidationMode,
 } from '@jsonforms/core';
-import type { JsonFormsChangeEvent, MaybeReadonly } from '@jsonforms/vue';
+import type { JsonFormsChangeEvent } from '@jsonforms/vue';
 import { ValidationIcon } from '@jsonforms/vue-vuetify';
 import { type ErrorObject } from 'ajv';
 import _get from 'lodash/get';
@@ -110,14 +110,12 @@ const camundaResolvedJsonForms = defineComponent({
     },
     renderers: {
       required: false,
-      type: Array as PropType<MaybeReadonly<JsonFormsRendererRegistryEntry[]>>,
+      type: Array as PropType<JsonFormsRendererRegistryEntry[]>,
       default: () => camundaRenderers,
     },
     cells: {
       required: false,
-      type: Array as PropType<
-        MaybeReadonly<JsonFormsCellRendererRegistryEntry[]>
-      >,
+      type: Array as PropType<JsonFormsCellRendererRegistryEntry[]>,
       default: () => camundaRenderers,
     },
     config: {
