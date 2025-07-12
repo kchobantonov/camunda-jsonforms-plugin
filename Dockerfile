@@ -1,13 +1,13 @@
 ARG ARCH=
 
-FROM maven:3.9.6-eclipse-temurin-17 as compiler
+FROM maven:3.9.6-eclipse-temurin-17 AS compiler
 WORKDIR /usr/local/src/
 COPY . .
 RUN mvn clean install
 
-FROM ${ARCH}alpine:latest as builder
+FROM ${ARCH}alpine:3.18 AS builder
 
-ARG VERSION=7.22.0
+ARG VERSION=7.23.0
 ARG DISTRO=tomcat
 ARG SNAPSHOT=false
 
@@ -20,7 +20,10 @@ ARG MAVEN_PROXY_PORT
 ARG MAVEN_PROXY_USER
 ARG MAVEN_PROXY_PASSWORD
 
-ARG JMX_PROMETHEUS_VERSION=0.12.0
+ARG POSTGRESQL_VERSION
+ARG MYSQL_VERSION
+
+ARG JMX_PROMETHEUS_VERSION=1.0.1
 
 RUN apk add --no-cache \
         bash \
@@ -48,9 +51,9 @@ COPY --chown=camunda:camunda --from=compiler /usr/local/src/docker-camunda-bpm-p
 
 ##### FINAL IMAGE #####
 
-FROM ${ARCH}alpine:latest
+FROM ${ARCH}alpine:3.18
 
-ARG VERSION=7.22.0
+ARG VERSION=7.23.0
 
 ENV CAMUNDA_VERSION=${VERSION}
 ENV DB_DRIVER=
@@ -67,7 +70,7 @@ ENV WAIT_FOR=
 ENV WAIT_FOR_TIMEOUT=30
 ENV TZ=UTC
 ENV DEBUG=false
-ENV JAVA_OPTS="-Xmx768m -XX:MaxMetaspaceSize=256m"
+ENV JAVA_OPTS=""
 ENV JMX_PROMETHEUS=false
 ENV JMX_PROMETHEUS_CONF=/camunda/javaagent/prometheus-jmx.yml
 ENV JMX_PROMETHEUS_PORT=9404

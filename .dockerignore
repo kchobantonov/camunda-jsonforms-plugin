@@ -1,0 +1,6 @@
+plugin-ui/node/
+plugin-ui/node_modules/
+plugin-ui/camunda/lib/
+plugin-ui/camunda/node_modules/
+plugin-ui/camunda-webcomponent/dist/
+plugin-ui/camunda-webcomponent/node_modules/

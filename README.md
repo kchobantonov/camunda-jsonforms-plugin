@@ -35,24 +35,24 @@ Also if you get in the camunda cockpit the following error "The context path is 
 
 ---
 
-* With Camunda Platform 7.22.0
+* With Camunda Platform 7.23.0
 
 ```bash
 git clone https://github.com/kchobantonov/camunda-jsonforms-plugin.git
-docker build -f Dockerfile -t camunda-bpm-platform:7.22.0-jsonforms .
-docker run --rm -p 8080:8080 camunda-bpm-platform:7.22.0-jsonforms
+docker build -f Dockerfile -t camunda-bpm-platform:7.23.0-jsonforms .
+docker run --rm -p 8080:8080 camunda-bpm-platform:7.23.0-jsonforms
 ```
 
 Open <http://localhost:8080/camunda>
 
 ---
 
-* With Camunda Platform 7.22.0 and [Minimal "history plugins" for Camunda Cockpit](https://github.com/kchobantonov/camunda-cockpit-plugins) plugin clone of [Minimal "history plugins" for Camunda Cockpit](https://github.com/datakurre/camunda-cockpit-plugins) plugin
+* With Camunda Platform 7.23.0 and [Minimal "history plugins" for Camunda Cockpit](https://github.com/kchobantonov/camunda-cockpit-plugins) plugin clone of [Minimal "history plugins" for Camunda Cockpit](https://github.com/datakurre/camunda-cockpit-plugins) plugin
 
 ```bash
 git clone https://github.com/kchobantonov/camunda-jsonforms-plugin.git
-docker build -f Dockerfile-history -t camunda-bpm-platform:7.22.0-jsonforms-history .
-docker run --rm -p 8080:8080 camunda-bpm-platform:7.22.0-jsonforms-history
+docker build -f Dockerfile-history -t camunda-bpm-platform:7.23.0-jsonforms-history .
+docker run --rm -p 8080:8080 camunda-bpm-platform:7.23.0-jsonforms-history
 ```
 
 Open <http://localhost:8080/camunda>
