@@ -1,11 +1,11 @@
 package com.github.kchobantonov.camunda.jsonforms.plugin;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.camunda.bpm.engine.rest.dto.ExceptionDto;
 
 public class JsonFormsFormFieldValidatorExceptionDto extends ExceptionDto {
-  protected List<JsonFormsErrorObject> validationErrors;
+  protected Collection<JsonFormsErrorObject> validationErrors;
 
   public static JsonFormsFormFieldValidatorExceptionDto from(JsonFormsFormFieldValidatorException exception) {
     JsonFormsFormFieldValidatorExceptionDto dto = new JsonFormsFormFieldValidatorExceptionDto();
@@ -16,11 +16,11 @@ public class JsonFormsFormFieldValidatorExceptionDto extends ExceptionDto {
     return dto;
   }
 
-  public List<JsonFormsErrorObject> getValidationErrors() {
+  public Collection<JsonFormsErrorObject> getValidationErrors() {
     return validationErrors;
   }
 
-  public void setValidationErrors(List<JsonFormsErrorObject> validationErrors) {
+  public void setValidationErrors(Collection<JsonFormsErrorObject> validationErrors) {
     this.validationErrors = validationErrors;
   }
 }

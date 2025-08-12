@@ -1,22 +1,35 @@
 package com.github.kchobantonov.camunda.jsonforms.plugin;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.camunda.bpm.engine.impl.form.validator.FormFieldValidatorException;
 import org.everit.json.schema.ValidationException;
 
 public class JsonFormsFormFieldValidatorException extends FormFieldValidatorException {
+  private final Collection<JsonFormsErrorObject> errors;
+
+  public JsonFormsFormFieldValidatorException(Collection<JsonFormsErrorObject> errors) {
+    this(null, null, null,
+        errors != null && !errors.isEmpty() ? errors.iterator().next().getMessage() : "Validation Error", null, errors);
+  }
+
   public JsonFormsFormFieldValidatorException(String id, String config, Object value, String message,
-      Throwable cause) {
+      ValidationException cause) {
+    this(id, config, value, message, cause, null);
+  }
+
+  public JsonFormsFormFieldValidatorException(String id, String config, Object value, String message,
+      Throwable cause, Collection<JsonFormsErrorObject> errors) {
     super(id, "validator", config, value, message, cause);
+    this.errors = errors;
   }
 
-  public JsonFormsFormFieldValidatorException(String id, String config, Object value, String message) {
-    super(id, "validator", config, value, message);
-  }
-
-  public List<JsonFormsErrorObject> toJsonFormsErrors() {
+  public Collection<JsonFormsErrorObject> toJsonFormsErrors() {
+    if (this.errors != null) {
+      return this.errors;
+    }
     List<JsonFormsErrorObject> result = new ArrayList<>();
     if (getCause() instanceof ValidationException) {
       ValidationException cause = (ValidationException) getCause();
@@ -39,4 +52,3 @@ public class JsonFormsFormFieldValidatorException extends FormFieldValidatorExce
   }
 
 }
-
