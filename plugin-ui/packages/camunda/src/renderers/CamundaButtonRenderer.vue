@@ -19,15 +19,14 @@
 </template>
 
 <script lang="ts">
-import { useCamundaButton, useJsonFormsCamundaButton, type CamundaButtonElement } from '@/utils/composition';
 import {
-  FormContextKey,
-} from '@chobantonov/jsonforms-vuetify-renderers';
+  useCamundaButton,
+  useJsonFormsCamundaButton,
+  type CamundaButtonElement,
+} from '@/utils/composition';
+import { FormContextKey } from '@chobantonov/jsonforms-vuetify-renderers';
 import type { JsonFormsSubStates } from '@jsonforms/core';
-import {
-  rendererProps,
-  type RendererProps
-} from '@jsonforms/vue';
+import { rendererProps, type RendererProps } from '@jsonforms/vue';
 import { useTranslator } from '@jsonforms/vue-vuetify';
 import { type ErrorObject } from 'ajv';
 import isArray from 'lodash/isArray';
@@ -43,9 +42,8 @@ import {
   isTaskIdConfig,
   ResponseException,
   type CamundaFormContext,
-  type Emitter
+  type Emitter,
 } from '../core/types';
-
 
 // TODO: pass withVariablesInReturn ??
 
@@ -152,10 +150,7 @@ const camundaButtonRenderer = defineComponent({
           this.button.uischema.label,
         );
       }
-      return this.t(
-        this.button.uischema.label,
-        this.button.uischema.label,
-      );
+      return this.t(this.button.uischema.label, this.button.uischema.label);
     },
     color(): string | undefined {
       return this.button.uischema.color;
@@ -164,8 +159,11 @@ const camundaButtonRenderer = defineComponent({
   methods: {
     async click() {
       this.loading = true;
+      const readonly = this.camundaFormContext.readonly;
 
       try {
+        this.camundaFormContext.readonly = true;
+
         const payload: Record<string, any> = {};
 
         if (this.isErrorButton) {
@@ -205,6 +203,8 @@ const camundaButtonRenderer = defineComponent({
         }
         this.camundaFormEmitter('submit-error', e);
       } finally {
+        this.camundaFormContext.readonly = readonly;
+
         this.loading = false;
       }
     },

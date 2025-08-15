@@ -1,9 +1,11 @@
-package com.github.kchobantonov.camunda.jsonforms.plugin;
+package com.github.kchobantonov.camunda.jsonforms.plugin.validation;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.camunda.bpm.engine.delegate.VariableScope;
@@ -28,26 +30,35 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.util.Assert;
 
-public class JsonFormsFormFieldValidator implements FormFieldValidator {
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsErrorObject;
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsPathResourceResolver;
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsValidatorException;
+import com.github.kchobantonov.camunda.jsonforms.plugin.Utils;
+
+public class DefaultJsonFormsValidator implements JsonFormsValidator, FormFieldValidator {
     private JsonFormsPathResourceResolver resolver;
 
-    public JsonFormsFormFieldValidator(JsonFormsPathResourceResolver resolver) {
+    public DefaultJsonFormsValidator(JsonFormsPathResourceResolver resolver) {
         this.resolver = resolver;
     }
 
     @Override
-    public boolean validate(Object submittedValue,
-            FormFieldValidatorContext validatorContext) {
-
+    public boolean validate(Object submittedValue, FormFieldValidatorContext validatorContext) {
         Map<String, Object> submittedValues = validatorContext.getSubmittedValues();
+        return validate(submittedValues, validatorContext.getVariableScope());
+    }
 
-        String formKey = getFormKey(validatorContext.getVariableScope());
+    @Override
+    public boolean validate(Map<String, Object> submittedValues, VariableScope variableScope) {
+
+        String formKey = getFormKey(variableScope);
         if (formKey != null && formKey.startsWith(Utils.CAMUNDA_JSONFORMS_URL)) {
-            String deploymentId = getDeploymentId(validatorContext.getVariableScope());
+            String deploymentId = getDeploymentId(variableScope);
 
             InputStream resource = getSchema(formKey, deploymentId);
             if (resource != null) {
-                JSONObject jsonSchema = new JSONObject(new JSONTokener(new InputStreamReader(resource, StandardCharsets.UTF_8)));
+                JSONObject jsonSchema = new JSONObject(
+                        new JSONTokener(new InputStreamReader(resource, StandardCharsets.UTF_8)));
 
                 JSONObject object = new JSONObject();
                 for (Map.Entry<String, Object> entry : submittedValues.entrySet()) {
@@ -100,10 +111,7 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
                     additionalValidations(validator, schema, object);
                     return true;
                 } catch (ValidationException e) {
-                    throw new JsonFormsFormFieldValidatorException(
-                            e.getPointerToViolation(),
-                            getClass().getSimpleName(), submittedValues,
-                            e.getErrorMessage(), e);
+                    throw new JsonFormsValidatorException(toJsonFormsErrorObjects(e), e.getMessage(), e);
                 }
             }
         }
@@ -111,12 +119,26 @@ public class JsonFormsFormFieldValidator implements FormFieldValidator {
         return true;
     }
 
+    protected List<JsonFormsErrorObject> toJsonFormsErrorObjects(ValidationException exception) {
+        List<JsonFormsErrorObject> result = new ArrayList<>();
+        result.add(new JsonFormsErrorObject(exception.getKeyword(), exception.getPointerToViolation(),
+                exception.getSchemaLocation(),
+                exception.getErrorMessage()));
+
+        List<ValidationException> causingExceptions = exception.getCausingExceptions();
+        for (ValidationException e : causingExceptions) {
+            result.add(new JsonFormsErrorObject(e.getKeyword(), e.getPointerToViolation(), e.getSchemaLocation(),
+                    e.getErrorMessage()));
+        }
+        return result;
+    }
+
     protected void additionalValidations(Validator validator, Schema schema, JSONObject object)
-            throws JsonFormsFormFieldValidatorException {
+            throws JsonFormsValidatorException {
 
     }
 
-    private String getDeploymentId(VariableScope variableScope) {
+    protected String getDeploymentId(VariableScope variableScope) {
         if (variableScope instanceof TaskEntity) {
             return ((TaskEntity) variableScope)
                     .getProcessDefinition()

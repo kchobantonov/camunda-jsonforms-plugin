@@ -18,17 +18,17 @@ public class JsonFormsRestExceptionHandler implements ExceptionMapper<RestExcept
 
   @Override
   public Response toResponse(RestException exception) {
-    if (exception.getCause() instanceof JsonFormsFormFieldValidatorException) {
-      return getResponse((JsonFormsFormFieldValidatorException) exception.getCause());
+    if (exception.getCause() instanceof JsonFormsValidatorException) {
+      return getResponse((JsonFormsValidatorException) exception.getCause());
     }
     return ExceptionHandlerHelper.getInstance().getResponse(exception);
   }
 
-  protected Response getResponse(JsonFormsFormFieldValidatorException throwable) {
+  protected Response getResponse(JsonFormsValidatorException throwable) {
     LOGGER.log(throwable);
 
     Response.Status responseStatus = Response.Status.BAD_REQUEST;
-    ExceptionDto exceptionDto = JsonFormsFormFieldValidatorExceptionDto.from(throwable);
+    ExceptionDto exceptionDto = JsonFormsValidatorExceptionDto.from(throwable);
 
     return Response
         .status(responseStatus)

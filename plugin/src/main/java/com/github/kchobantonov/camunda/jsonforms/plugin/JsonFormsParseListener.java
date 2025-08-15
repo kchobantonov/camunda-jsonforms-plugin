@@ -19,7 +19,9 @@ public class JsonFormsParseListener extends AbstractBpmnParseListener {
         .getTaskDefinition();
     TaskFormHandler handler = taskDefinition.getTaskFormHandler();
     if (handler != null) {
-      taskDefinition.setTaskFormHandler(new JsonFormsFormHandler(handler));
+      JsonFormsFormHandler jsonFormsHandler = new JsonFormsFormHandler(handler);
+      jsonFormsHandler.setElement(userTaskElement);
+      taskDefinition.setTaskFormHandler(jsonFormsHandler);
     }
   }
 
@@ -30,8 +32,9 @@ public class JsonFormsParseListener extends AbstractBpmnParseListener {
       ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) scope;
       StartFormHandler handler = processDefinition.getStartFormHandler();
       if (handler != null) {
-        processDefinition.setStartFormHandler(
-            new JsonFormsFormHandler(handler));
+        JsonFormsFormHandler jsonFormsHandler = new JsonFormsFormHandler(handler);
+        jsonFormsHandler.setElement(startEventElement);
+        processDefinition.setStartFormHandler(jsonFormsHandler);
       }
     }
   }

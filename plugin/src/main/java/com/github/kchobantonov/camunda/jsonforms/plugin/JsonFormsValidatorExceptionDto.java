@@ -4,11 +4,11 @@ import java.util.Collection;
 
 import org.camunda.bpm.engine.rest.dto.ExceptionDto;
 
-public class JsonFormsFormFieldValidatorExceptionDto extends ExceptionDto {
+public class JsonFormsValidatorExceptionDto extends ExceptionDto {
   protected Collection<JsonFormsErrorObject> validationErrors;
 
-  public static JsonFormsFormFieldValidatorExceptionDto from(JsonFormsFormFieldValidatorException exception) {
-    JsonFormsFormFieldValidatorExceptionDto dto = new JsonFormsFormFieldValidatorExceptionDto();
+  public static JsonFormsValidatorExceptionDto from(JsonFormsValidatorException exception) {
+    JsonFormsValidatorExceptionDto dto = new JsonFormsValidatorExceptionDto();
     dto.message = exception.getMessage();
     dto.type = exception.getClass().getSimpleName();
     dto.validationErrors = exception.toJsonFormsErrors();

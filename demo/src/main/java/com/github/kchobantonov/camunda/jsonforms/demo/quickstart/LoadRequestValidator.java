@@ -8,12 +8,12 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsErrorObject;
-import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormFieldValidator;
-import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormFieldValidatorException;
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsValidatorException;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsPathResourceResolver;
+import com.github.kchobantonov.camunda.jsonforms.plugin.validation.DefaultJsonFormsValidator;
 
 @Component
-public class LoadRequestValidator extends JsonFormsFormFieldValidator {
+public class LoadRequestValidator extends DefaultJsonFormsValidator {
 
   public LoadRequestValidator(JsonFormsPathResourceResolver resolver) {
     super(resolver);
@@ -21,7 +21,7 @@ public class LoadRequestValidator extends JsonFormsFormFieldValidator {
 
   @Override
   protected void additionalValidations(Validator validator, Schema schema, JSONObject object)
-      throws JsonFormsFormFieldValidatorException {
+      throws JsonFormsValidatorException {
 
     if (object.has("firstName") && "TestValidation".equals(object.getString("firstName"))) {
       JsonFormsErrorObject error = JsonFormsErrorObject.builder()
@@ -30,7 +30,7 @@ public class LoadRequestValidator extends JsonFormsFormFieldValidator {
           .schemaPath("#/properties/firstName")
           .build();
 
-      throw new JsonFormsFormFieldValidatorException(Collections.singleton(error));
+      throw new JsonFormsValidatorException(Collections.singleton(error));
     }
   }
 
