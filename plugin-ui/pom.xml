@@ -2,6 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -13,26 +14,16 @@
   <artifactId>plugin-ui</artifactId>
   <packaging>pom</packaging>
   <name>Camunda JsonForms Plugin UI</name>
+
   <build>
     <plugins>
+
+      <!-- Snapshot publish args -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <version>1.10</version>
         <executions>
-          <execution>
-            <id>lernaBeforeVersion</id>
-            <goals>
-              <goal>bsh-property</goal>
-            </goals>
-            <configuration>
-              <properties>
-                <property>lerna.deployVersion</property>
-              </properties>
-              <source>lerna.deployVersion = project.getVersion().endsWith("-SNAPSHOT") ?
-                project.getVersion() + "." + System.currentTimeMillis() : project.getVersion();</source>
-            </configuration>
-          </execution>
           <execution>
             <id>pnpm.publish.args</id>
             <goals>
@@ -42,195 +33,169 @@
               <properties>
                 <property>pnpm.publish.args</property>
               </properties>
-              <source>pnpm.publish.args = project.getVersion().endsWith("-SNAPSHOT") ?
-                "--tag snapshot --no-git-checks": ""</source>
+              <source>
+                pnpm.publish.args = project.getVersion().endsWith("-SNAPSHOT")
+                ? "--tag snapshot --no-git-checks"
+                : ""
+              </source>
             </configuration>
           </execution>
         </executions>
       </plugin>
+
+      <!-- Frontend / pnpm -->
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
         <version>${frontend-maven-plugin.version}</version>
+
         <configuration>
           <nodeVersion>${node.version}</nodeVersion>
           <pnpmVersion>${pnpm.version}</pnpmVersion>
           <workingDirectory>${frontend.working.directory}</workingDirectory>
         </configuration>
+
         <executions>
 
+          <!-- install -->
           <execution>
-            <id>install node and pnpm</id>
-            <goals>
-              <goal>install-node-and-pnpm</goal>
-            </goals>
+            <id>install-node-and-pnpm</id>
             <phase>initialize</phase>
-          </execution>
-          <execution>
-            <id>pnpm install</id>
-            <goals>
-              <goal>pnpm</goal>
-            </goals>
-            <!-- Optional configuration which provides for running any npm command -->
-            <configuration>
-              <arguments>i --frozen-lockfile</arguments>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>sync version to lerna</id>
-            <goals>
-              <goal>pnpm</goal>
-            </goals>
-            <configuration>
-              <arguments>exec -- lerna version ${project.version} --exact --no-git-tag-version
-                --no-push --force-publish="*" --yes</arguments>
-            </configuration>
-            <phase>generate-resources</phase>
-          </execution>
-
-          <execution>
-            <id>install node and pnpm - clean</id>
             <goals>
               <goal>install-node-and-pnpm</goal>
             </goals>
-            <phase>clean</phase>
           </execution>
+
           <execution>
-            <id>pnpm install - clean</id>
+            <id>pnpm-install</id>
             <goals>
               <goal>pnpm</goal>
             </goals>
-            <!-- Optional configuration which provides for running any npm command -->
             <configuration>
               <arguments>i --frozen-lockfile</arguments>
             </configuration>
-            <phase>clean</phase>
-          </execution>
-          <execution>
-            <id>pnpm clean</id>
-            <goals>
-              <goal>pnpm</goal>
-            </goals>
-            <configuration>
-              <arguments>run clean</arguments>
-            </configuration>
-            <phase>clean</phase>
           </execution>
 
+          <!-- build -->
           <execution>
-            <id>pnpm run build</id>
+            <id>pnpm-build</id>
             <goals>
               <goal>pnpm</goal>
             </goals>
             <configuration>
-              <arguments>run build</arguments>
+              <arguments>-r run build</arguments>
             </configuration>
           </execution>
 
+          <!-- publish -->
           <execution>
-            <id>pnpm pre-publish</id>
+            <id>pnpm-publish</id>
+            <phase>deploy</phase>
             <goals>
               <goal>pnpm</goal>
             </goals>
             <configuration>
-              <arguments>exec -- lerna version ${lerna.deployVersion} --exact --no-git-tag-version
-                --no-push --force-publish="*" --yes</arguments>
+              <arguments>-r publish ${pnpm.publish.args}</arguments>
             </configuration>
-            <phase>deploy</phase>
           </execution>
+
+          <!-- clean -->
           <execution>
-            <id>pnpm publish</id>
+            <id>pnpm-clean</id>
+            <phase>clean</phase>
             <goals>
               <goal>pnpm</goal>
             </goals>
             <configuration>
-              <arguments>run publish ${pnpm.publish.args}</arguments>
+              <arguments>-r run clean</arguments>
             </configuration>
-            <phase>deploy</phase>
-          </execution>
-          <execution>
-            <id>pnpm post-publish</id>
-            <goals>
-              <goal>pnpm</goal>
-            </goals>
-            <configuration>
-              <arguments>exec -- lerna version ${project.version} --exact --no-git-tag-version
-                --no-push --force-publish="*" --yes</arguments>
-            </configuration>
-            <phase>deploy</phase>
           </execution>
 
         </executions>
       </plugin>
+
     </plugins>
   </build>
 
+  <!-- Release preparation -->
   <profiles>
     <profile>
       <id>prepare-release</id>
       <build>
         <plugins>
+
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
             <version>${frontend-maven-plugin.version}</version>
+
             <configuration>
               <nodeVersion>${node.version}</nodeVersion>
               <pnpmVersion>${pnpm.version}</pnpmVersion>
               <workingDirectory>${frontend.working.directory}</workingDirectory>
             </configuration>
+
             <executions>
+
+              <!-- install deps -->
               <execution>
-                <id>install node and pnpm</id>
-                <goals>
-                  <goal>install-node-and-pnpm</goal>
-                </goals>
+                <id>pnpm-install</id>
                 <phase>validate</phase>
-              </execution>
-              <execution>
-                <id>pnpm install</id>
                 <goals>
                   <goal>pnpm</goal>
                 </goals>
                 <configuration>
                   <arguments>i --frozen-lockfile</arguments>
                 </configuration>
-                <phase>validate</phase>
               </execution>
+
+              <!-- sync Maven version to ALL workspace packages -->
               <execution>
-                <id>prepare-release - sync version to lerna</id>
+                <id>sync-version-to-package-json</id>
+                <phase>validate</phase>
                 <goals>
                   <goal>pnpm</goal>
                 </goals>
                 <configuration>
-                  <arguments>exec -- lerna version ${project.version} --exact --no-git-tag-version --no-push --force-publish="*" --yes</arguments>
+                  <arguments>-r version ${project.version} --no-git-tag-version</arguments>
                 </configuration>
-                <phase>validate</phase>
               </execution>
+
             </executions>
           </plugin>
+
+          <!-- Ensure JS files are committed by Maven Release -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-scm-plugin</artifactId>
             <version>2.0.1</version>
             <executions>
               <execution>
-                <id>package.json</id>
+                <id>package-json</id>
                 <phase>validate</phase>
                 <goals>
                   <goal>add</goal>
                 </goals>
                 <configuration>
-                  <includes>**/package.json,pnpm-lock.yaml,lerna.json</includes>
-                  <excludes>**/node/**,**/node_modules/**</excludes>
-                  <message>[maven-release-plugin] prepare version for package.json</message>
+                  <includes>
+                    **/package.json,
+                    pnpm-lock.yaml
+                  </includes>
+                  <excludes>
+                    **/node/**,
+                    **/node_modules/**
+                  </excludes>
+                  <message>
+                    [maven-release-plugin] sync package.json versions
+                  </message>
                 </configuration>
               </execution>
             </executions>
           </plugin>
+
         </plugins>
       </build>
     </profile>
   </profiles>
+
 </project>

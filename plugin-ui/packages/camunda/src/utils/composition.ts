@@ -11,7 +11,7 @@ import {
   isInherentlyEnabled,
   isVisible,
   type JsonFormsState,
-  type OwnPropsOfRenderer
+  type OwnPropsOfRenderer,
 } from '@jsonforms/core';
 import { useControl, type RendererProps } from '@jsonforms/vue';
 import { useStyles } from '@jsonforms/vue-vuetify';
@@ -47,9 +47,16 @@ export const mapStateToCamundaButtonProps = (
 ) => {
   const rootData = getData(state);
   const { uischema } = ownProps;
+  const config = getConfig(state);
   const visible: boolean =
     ownProps.visible === undefined || hasShowRule(uischema)
-      ? isVisible(ownProps.uischema, rootData, ownProps.path!, getAjv(state))
+      ? isVisible(
+          ownProps.uischema,
+          rootData,
+          ownProps.path!,
+          getAjv(state),
+          config,
+        )
       : ownProps.visible;
   const label = uischema.label;
   const icon = uischema.icon;
@@ -66,7 +73,6 @@ export const mapStateToCamundaButtonProps = (
   const escalationCode = uischema.escalationCode;
   const variables = uischema.variables;
 
-  const config = getConfig(state);
   const enabled: boolean = isInherentlyEnabled(
     state,
     ownProps,
@@ -90,11 +96,13 @@ export const mapStateToCamundaButtonProps = (
     errorCode,
     errorMessage,
     escalationCode,
-    variables
+    variables,
   };
 };
 
-export const useJsonFormsCamundaButton = (props: RendererProps<CamundaButtonElement>) => {
+export const useJsonFormsCamundaButton = (
+  props: RendererProps<CamundaButtonElement>,
+) => {
   const { control, ...other } = useControl(props, mapStateToCamundaButtonProps);
   return { button: control, ...other };
 };
@@ -120,4 +128,3 @@ export const useCamundaButton = <I extends { button: any }>(input: I) => {
     styles,
   };
 };
-

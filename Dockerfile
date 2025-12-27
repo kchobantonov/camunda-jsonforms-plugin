@@ -7,7 +7,7 @@ RUN mvn clean install
 
 FROM ${ARCH}alpine:3.18 AS builder
 
-ARG VERSION=7.23.0
+ARG VERSION=7.24.0
 ARG DISTRO=tomcat
 ARG SNAPSHOT=false
 
@@ -53,7 +53,7 @@ COPY --chown=camunda:camunda --from=compiler /usr/local/src/docker-camunda-bpm-p
 
 FROM ${ARCH}alpine:3.18
 
-ARG VERSION=7.23.0
+ARG VERSION=7.24.0
 
 ENV CAMUNDA_VERSION=${VERSION}
 ENV DB_DRIVER=

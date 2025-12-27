@@ -17,7 +17,7 @@
       const taskId = undefined;
 
       const config = {"restrict":true,"trim":false,"showUnfocusedDescription":false,"hideRequiredAsterisk":true};
-      const preset = {"theme":{"dark":false}}
+      const preset = {"color-schema": "light"}
 
       const onChange = (event) => {
         let [data] = event.detail;
@@ -95,8 +95,8 @@
     <script>
       let form = document.getElementById('camunda-json-forms');
       form.setAttribute('custom-style', '.v-application--wrap { min-height: 0px; }');
-      form.setAttribute('config', JSON.stringify(config));
-      form.setAttribute('default-preset', JSON.stringify(preset));
+      form.config = config;
+      form.vuetifyOptions = preset;
       
       if (processDefinitionKey) {
         form.setAttribute('process-definition-key', processDefinitionKey);

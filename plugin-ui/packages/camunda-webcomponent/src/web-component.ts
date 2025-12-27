@@ -2,7 +2,6 @@ import { type App, defineCustomElement } from 'vue';
 import CamundaJsonForms from './web-components/CamundaJsonForms.ce.vue';
 
 import LoadScript from 'vue-plugin-load-script';
-import buildVuetify from './plugins/vuetify';
 
 import { styles } from './styles';
 
@@ -17,7 +16,6 @@ const CamundaJsonFormsElement = defineCustomElement(CamundaJsonForms, {
         };
       },
     });
-    app.use(buildVuetify());
     app.use(LoadScript);
   },
   styles,

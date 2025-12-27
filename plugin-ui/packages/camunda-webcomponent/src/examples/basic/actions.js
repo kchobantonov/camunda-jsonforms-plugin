@@ -1,24 +1,29 @@
-// selected either processDefinitionKey, processDefinitionId or taskId
-export const processDefinitionKey = 'embeddedFormsQuickstart';
-export const processDefinitionId = undefined;
-export const taskId = undefined;
+const USERNAME = 'demo';
+const PASSWORD = 'demo';
 
 export const onChange = (event) => {
   let [data] = event.detail;
   console.log('Form state changed:' + JSON.stringify(data));
 };
 
-export const onLoadRequest = (event) => {
+const onLoadRequest = (event) => {
   console.log('onLoadRequest');
   let [requestInfo, requestInit] = event.detail;
+  const headers = new Headers(requestInit.headers || {});
+
+  // Basic Auth: base64(username:password)
+  const credentials = btoa(`${USERNAME}:${PASSWORD}`);
+  headers.set('Authorization', `Basic ${credentials}`);
+
+  requestInit.headers = headers;
 };
 
-export const onLoadResponse = (event) => {
+const onLoadResponse = (event) => {
   console.log('onLoadResponse');
   let [response] = event.detail;
 };
 
-export const onLoadError = (event) => {
+const onLoadError = (event) => {
   console.log('onLoadError');
   let [error] = event.detail;
 
@@ -44,12 +49,19 @@ export const onLoadError = (event) => {
   alert('Error: ' + error.message);
 };
 
-export const onSubmitRequest = (event) => {
+const onSubmitRequest = (event) => {
   console.log('onSubmitRequest');
   let [requestInfo, requestInit] = event.detail;
+  const headers = new Headers(requestInit.headers || {});
+
+  // Basic Auth: base64(username:password)
+  const credentials = btoa(`${USERNAME}:${PASSWORD}`);
+  headers.set('Authorization', `Basic ${credentials}`);
+
+  requestInit.headers = headers;
 };
 
-export const onSubmitResponse = (event) => {
+const onSubmitResponse = (event) => {
   console.log('onSubmitResponse');
   let [response] = event.detail;
   if (response.status >= 200 && response.status < 300) {
@@ -57,7 +69,7 @@ export const onSubmitResponse = (event) => {
   }
 };
 
-export const onSubmitError = (event) => {
+const onSubmitError = (event) => {
   console.log('onSubmitError');
   let [error] = event.detail;
   if (error.name === 'AppException' && error.response) {
@@ -72,4 +84,14 @@ export const onSubmitError = (event) => {
   }
 
   alert('Error: ' + error.message);
+};
+
+export default {
+  onChange,
+  onLoadRequest,
+  onLoadResponse,
+  onLoadError,
+  onSubmitRequest,
+  onSubmitResponse,
+  onSubmitError,
 };

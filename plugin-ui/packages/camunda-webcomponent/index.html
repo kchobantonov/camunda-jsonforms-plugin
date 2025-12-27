@@ -5,61 +5,312 @@
     <link rel="icon" href="/favicon.ico" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
-    />
-    <title>Vuetify JsonForms WebComponent</title>
+    <title>Camunda JsonForms WebComponent</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      img,
+      picture,
+      video,
+      canvas,
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+
+      /* Example selector styles */
+      .example-selector {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+      }
+
+      .example-icon {
+        width: 50px;
+        height: 50px;
+        background: #1976d2;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      .example-icon:hover {
+        background: #1565c0;
+        transform: scale(1.05);
+      }
+
+      .example-icon svg {
+        width: 24px;
+        height: 24px;
+        fill: white;
+      }
+
+      .example-list {
+        position: absolute;
+        bottom: 60px;
+        left: 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        min-width: 200px;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .example-list.show {
+        display: block;
+        animation: slideUp 0.3s ease;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .example-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s ease;
+      }
+
+      .example-item:hover {
+        background-color: #f5f5f5;
+      }
+
+      .example-item:last-child {
+        border-bottom: none;
+      }
+
+      .example-item-name {
+        font-weight: 500;
+        color: #333;
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
-    <!-- <script type="module" src="./dist/vuetify-json-forms.js"></script> -->
-    <script type="module" src="./src/web-component.ts"></script>
-
-    <vuetify-json-forms> </vuetify-json-forms>
+    <camunda-json-forms>
+      <style id="input-style" slot="styles"></style>
+      <style slot="styles"></style>
+      <div class="example-selector" slot="form-footer">
+        <div class="example-icon" id="exampleIcon">
+          <svg viewBox="0 0 24 24">
+            <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" />
+          </svg>
+        </div>
+        <div class="example-list" id="exampleList">
+          <!-- Examples will be populated here -->
+        </div>
+      </div>
+    </camunda-json-forms>
 
     <script type="module">
       import { examples } from './src/examples/index.js';
 
-      const example = examples[0];
-      const input = example.input;
+      let currentExampleId = null;
+      let currentHandleChange = null;
+      let currentHandleLoadRequest = null;
+      let currentHandleLoadResponse = null;
+      let currentHandleLoadError = null;
+      let currentHandleSubmitRequest = null;
+      let currentHandleSubmitResponse = null;
+      let currentHandleSubmitError = null;
+      let currentHandleAction = null;
 
-      const form = document.querySelector('vuetify-json-forms');
+      const form = document.querySelector('camunda-json-forms');
+      const exampleIcon = document.getElementById('exampleIcon');
+      const exampleList = document.getElementById('exampleList');
 
-      if (input && input.data) {
-        form.setAttribute('data', JSON.stringify(input.data));
-      }
-      if (input && input.schema) {
-        form.setAttribute('schema', JSON.stringify(input.schema));
-      }
-      if (input && input.uischema) {
-        form.setAttribute('uischema', JSON.stringify(input.uischema));
-      }
-      if (input && input.uischemas) {
-        form.setAttribute('uischemas', JSON.stringify(input.uischemas));
-      }
-      if (input && input.config) {
-        form.setAttribute('config', JSON.stringify(input.config));
-      }
-      if (input && input.style) {
-        form.setAttribute('custom-style', input.style);
-      }
-      if (input && input.i18n) {
-        form.setAttribute('translations', JSON.stringify(input.i18n));
-      }
-      if (input && input.uidata) {
-        form.setAttribute('uidata', JSON.stringify(input.uidata));
-      }
-      if (input && input.preset) {
-        form.setAttribute('vuetify-options', JSON.stringify(input.preset));
+      // Function to find example by ID
+      function findExampleById(exampleId) {
+        if (!examples || examples.length === 0) {
+          return null;
+        }
+        return examples.find((example) => example.id === exampleId);
       }
 
-      if (input && input.actions && input.actions.onChange) {
-        form.addEventListener('change', input.actions.onChange);
+      // Function to load an example by ID
+      function loadExample(exampleId) {
+        // Check if examples array exists
+        if (!examples || examples.length === 0) {
+          console.warn('No examples available');
+          return;
+        }
+
+        const example = findExampleById(exampleId);
+        if (!example) {
+          console.warn(`Example with ID '${exampleId}' not found`);
+          return;
+        }
+
+        const input = example?.input;
+
+        // Pass props directly as JS properties
+        if (input) {
+          form.url = 'http://localhost:8080/engine-rest';
+          form.dark = 'false';
+          form.processDefinitionKey = input.processDefinitionKey;
+          form.processDefinitionId = input.processDefinitionId;
+          form.taskId = input.taskId;
+          form.config = input.config;
+
+          document.getElementById('input-style').textContent =
+            input.style || '';
+          // the old form form.customStyle that could be deprecated in favor of style slots
+          //form.customStyle = input.style;
+
+          form.vuetifyOptions = input.preset;
+
+          // Remove existing event listeners and add new ones
+          form.removeEventListener('change', currentHandleChange);
+          form.removeEventListener('load-request', currentHandleLoadRequest);
+          form.removeEventListener('load-response', currentHandleLoadResponse);
+          form.removeEventListener('load-error', currentHandleLoadError);
+          form.removeEventListener(
+            'submit-request',
+            currentHandleSubmitRequest,
+          );
+          form.removeEventListener(
+            'submit-response',
+            currentHandleSubmitResponse,
+          );
+          form.removeEventListener('submit-error', currentHandleSubmitError);
+          form.removeEventListener('handle-action', currentHandleAction);
+
+          if (input.actions?.onChange) {
+            currentHandleChange = input.actions.onChange;
+            form.addEventListener('change', currentHandleChange);
+          }
+          if (input.actions?.onLoadRequest) {
+            currentHandleLoadRequest = input.actions.onLoadRequest;
+            form.addEventListener('load-request', currentHandleLoadRequest);
+          }
+          if (input.actions?.onLoadResponse) {
+            currentHandleLoadResponse = input.actions.onLoadResponse;
+            form.addEventListener('load-response', currentHandleLoadResponse);
+          }
+          if (input.actions?.onLoadError) {
+            currentHandleLoadError = input.actions.onLoadError;
+            form.addEventListener('load-error', currentHandleLoadError);
+          }
+          if (input.actions?.onSubmitRequest) {
+            currentHandleSubmitRequest = input.actions.onSubmitRequest;
+            form.addEventListener('submit-request', currentHandleSubmitRequest);
+          }
+          if (input.actions?.onSubmitResponse) {
+            currentHandleSubmitResponse = input.actions.onSubmitResponse;
+            form.addEventListener(
+              'submit-response',
+              currentHandleSubmitResponse,
+            );
+          }
+          if (input.actions?.onSubmitError) {
+            currentHandleSubmitError = input.actions.onSubmitError;
+            form.addEventListener('submit-error', currentHandleSubmitError);
+          }
+          if (input.actions?.onHandleAction) {
+            currentHandleAction = input.actions.onHandleAction;
+            form.addEventListener('handle-action', currentHandleAction);
+          }
+        }
+
+        currentExampleId = exampleId;
+        console.log('Selected example:', example);
       }
-      if (input && input.actions && input.actions.onHandleAction) {
-        form.addEventListener('handle-action', input.actions.onHandleAction);
+
+      // Default event handlers
+      function handleChange(event) {
+        console.log('Form changed:', event);
+      }
+
+      function handleAction(event) {
+        console.log('Action handled:', event);
+      }
+
+      // Populate example list
+      function populateExampleList() {
+        if (!examples || examples.length === 0) {
+          console.warn('No examples available for list');
+          return;
+        }
+
+        exampleList.innerHTML = '';
+        examples.forEach((example, index) => {
+          const item = document.createElement('div');
+          item.className = 'example-item';
+          item.innerHTML = `<div class="example-item-name">${example.title || `Example ${index + 1}`}</div>`;
+
+          // Store the example ID in a data attribute for easier access
+          item.dataset.exampleId = example.id;
+
+          item.addEventListener('click', () => {
+            loadExample(example.id);
+            exampleList.classList.remove('show');
+          });
+
+          exampleList.appendChild(item);
+        });
+      }
+
+      // Toggle example list visibility
+      exampleIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        exampleList.classList.toggle('show');
+      });
+
+      // Close example list when clicking outside
+      document.addEventListener('click', (e) => {
+        if (
+          !exampleList.contains(e.target) &&
+          !exampleIcon.contains(e.target)
+        ) {
+          exampleList.classList.remove('show');
+        }
+      });
+
+      // Initialize
+      populateExampleList();
+
+      // Load first example by ID if available
+      if (examples && examples.length > 0) {
+        // get the demo example and if not registered get the first available
+        const example = findExampleById('basic') ?? examples[0];
+        if (example?.id) {
+          loadExample(example.id);
+        } else {
+          console.warn('First example does not have an ID');
+        }
+      } else {
+        console.warn('No examples available to load');
       }
     </script>
+
+    <script type="module" src="./src/web-component.ts"></script>
   </body>
 </html>

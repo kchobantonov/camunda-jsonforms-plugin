@@ -212,21 +212,15 @@
           let locale = navigator.language || "en";
           let form = document.getElementById("camunda-json-forms");
 
-          form.setAttribute("url", camundaUrl);
-          if (camForm.processDefinitionId) {
-            form.setAttribute(
-              "process-definition-id",
-              camForm.processDefinitionId
-            );
-          }
-          if (camForm.taskId) {
-            form.setAttribute("task-id", camForm.taskId);
-          }
-          form.setAttribute("locale", locale);
+          form.url = camundaUrl;
+          form.processDefinitionId = camForm.processDefinitionId;
+          form.taskId = camForm.taskId;
+          form.dark = 'false';
+          form.locale = locale;
 
-          form.setAttribute("custom-style", style);
-          form.setAttribute("config", JSON.stringify(config));
-          form.setAttribute("vuetify-options", JSON.stringify(preset));
+          form.customStyle = style;
+          form.config = config;
+          form.vuetifyOptions = preset;
 
           form.addEventListener("change", onChange);
           form.addEventListener('handle-action', onHandleAction);

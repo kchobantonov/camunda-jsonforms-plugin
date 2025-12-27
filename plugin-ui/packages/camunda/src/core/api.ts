@@ -282,10 +282,16 @@ export class CamundaFormApi {
     client: RestClient,
     camundaFormConfig: CamundaFormConfig,
   ): Promise<CamundaFormContext> {
-    const result: Partial<CamundaFormContext> = { camundaFormConfig: camundaFormConfig };
+    const result: Partial<CamundaFormContext> = {
+      camundaFormConfig: camundaFormConfig,
+    };
 
     if (isTaskIdConfig(camundaFormConfig)) {
-      const taskForm = await getTaskForm(client, camundaFormConfig.url, camundaFormConfig.taskId);
+      const taskForm = await getTaskForm(
+        client,
+        camundaFormConfig.url,
+        camundaFormConfig.taskId,
+      );
       if (!taskForm.key) {
         throw new AppException(AppErrorCode.INVALID_TASK_FORM_RESPONSE);
       }
@@ -417,7 +423,14 @@ export class CamundaFormApi {
         taskForm.contextPath && taskForm.contextPath !== '/'
           ? taskForm.contextPath
           : '';
-      return this.loadResourcesFromPath(client, contextPath + pathLocation);
+
+      let resourcePath = contextPath + pathLocation;
+      try {
+        resourcePath = new URL(resourcePath, camundaFormConfig.url).toString();
+      } catch {
+        // ignore if the camundaFormConfig.url is relative URL
+      }
+      return this.loadResourcesFromPath(client, resourcePath);
     } else if (deploymentLocation) {
       if (!this.validDeploymentLocation(deploymentLocation)) {
         throw new AppException(
@@ -442,7 +455,10 @@ export class CamundaFormApi {
       }
 
       // load the resources by looking into the deployed resources
-      const deploymentId = await this.getDeploymentId(client, camundaFormConfig);
+      const deploymentId = await this.getDeploymentId(
+        client,
+        camundaFormConfig,
+      );
       return this.loadResourcesFromDeployment(
         client,
         deploymentLocation,
@@ -471,11 +487,18 @@ export class CamundaFormApi {
     );
   }
 
-  private async getDeploymentId(client: RestClient, camundaFormConfig: CamundaFormConfig) {
+  private async getDeploymentId(
+    client: RestClient,
+    camundaFormConfig: CamundaFormConfig,
+  ) {
     // last check directly for resources
     let deploymentId: string | undefined = undefined;
     if (isTaskIdConfig(camundaFormConfig)) {
-      const task = await getTask(client, camundaFormConfig.url, camundaFormConfig.taskId);
+      const task = await getTask(
+        client,
+        camundaFormConfig.url,
+        camundaFormConfig.taskId,
+      );
       if (!task.processDefinitionId) {
         throw new AppException(AppErrorCode.INVALID_TASK_RESPONSE);
       }
@@ -529,7 +552,11 @@ export class CamundaFormApi {
   ) {
     let resources: Record<string, any> | undefined = undefined;
     if (isTaskIdConfig(camundaFormConfig)) {
-      resources = await getTaskDeployedForm(client, camundaFormConfig.url, camundaFormConfig.taskId);
+      resources = await getTaskDeployedForm(
+        client,
+        camundaFormConfig.url,
+        camundaFormConfig.taskId,
+      );
     } else if (isProcessDefinitionIdConfig(camundaFormConfig)) {
       resources = await getProcessDefinitionDeployedStartFormById(
         client,

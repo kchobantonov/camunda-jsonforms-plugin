@@ -5,19 +5,17 @@
     "pnpm": ">=7.13.4"
   },
   "scripts": {
-    "lerna": "lerna",
-    "clean": "lerna run clean",
-    "lint": "lerna run lint",
-    "lint:fix": "lerna run lint:fix",
-    "test": "lerna run test",
-    "build": "lerna run build",
-    "publish": "pnpm publish --recursive",
-    "camunda:build": "lerna run --scope=@chobantonov/camunda-jsonforms build",
-    "camunda:watch": "lerna run --scope=@chobantonov/camunda-jsonforms watch --stream",
-    "camunda:test": "lerna run --scope=@chobantonov/camunda-jsonforms test",
-    "camunda-wc:build": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent build",
-    "camunda-wc:serve": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent serve --stream",
-    "camunda-wc:test": "lerna run --scope=@chobantonov/camunda-jsonforms-webcomponent test"
+    "clean": "pnpm -r clean",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build",
+    "camunda:build": "pnpm --filter @chobantonov/camunda-jsonforms build",
+    "camunda:watch": "pnpm --filter @chobantonov/camunda-jsonforms watch",
+    "camunda:test": "pnpm --filter @chobantonov/camunda-jsonforms test",
+    "camunda-wc:build": "pnpm --filter @chobantonov/camunda-jsonforms-webcomponent build",
+    "camunda-wc:dev": "pnpm --filter @chobantonov/camunda-jsonforms-webcomponent dev",
+    "camunda-wc:test": "pnpm --filter @chobantonov/camunda-jsonforms-webcomponent test"
   },
   "pnpm": {
     "overrides": {
@@ -25,7 +23,6 @@
     }
   },
   "devDependencies": {
-    "lerna": "^7.4.2",
     "rimraf": "^5.0.10",
     "typescript": "~5.4.0"
   }
