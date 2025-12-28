@@ -49,6 +49,9 @@ const vuetifyResetStyles = `
   --v-theme-on-surface: #000;
   --v-theme-overlay-multiplier: 1;
   --v-scrollbar-offset: 0px;
+
+  font-family: var(--v-body-font-family, 'Roboto', sans-serif);
+  font-size: var(--v-font-size-root, '1rem');
 }`;
 
 export const styles = [
