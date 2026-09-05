@@ -14,6 +14,7 @@ import org.camunda.bpm.engine.impl.el.ExpressionManager;
 import org.camunda.bpm.engine.impl.form.FormDataImpl;
 import org.camunda.bpm.engine.impl.form.handler.StartFormHandler;
 import org.camunda.bpm.engine.impl.form.handler.TaskFormHandler;
+import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.persistence.entity.DeploymentEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
@@ -84,7 +85,7 @@ public class JsonFormsFormHandler implements TaskFormHandler, StartFormHandler {
         formKey.startsWith(Utils.CAMUNDA_JSONFORMS_URL + "?") &&
         data instanceof FormDataImpl) {
 
-      formKey = transformFormKey(formKey);
+      formKey = transformFormKey(formKey, deploymentName(processDefinition.getDeploymentId()));
 
       ((FormDataImpl) data).setFormKey(formKey);
     }
@@ -98,17 +99,33 @@ public class JsonFormsFormHandler implements TaskFormHandler, StartFormHandler {
     if (formKey != null &&
         formKey.startsWith(Utils.CAMUNDA_JSONFORMS_URL + "?") &&
         data instanceof FormDataImpl) {
-      formKey = transformFormKey(formKey);
+      formKey = transformFormKey(formKey,
+          deploymentName(task.getProcessDefinition().getDeploymentId()));
       ((FormDataImpl) data).setFormKey(formKey);
     }
     return data;
   }
 
-  protected String transformFormKey(String formKey) {
-    String path = System.getProperty(
+  /**
+   * Rewrites a {@code ?deployment=} key to the {@code ?path=} one that serves the same form off
+   * disk, when {@link Utils#CAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH} says to.
+   *
+   * The two parameters are alternatives, never both: the rewritten key carries {@code path}
+   * alone, so everything downstream reads the form from the path and nothing falls back to a
+   * deployment the developer is deliberately bypassing.
+   *
+   * A key that already names a {@code path} is left as it is - authored that way in the BPMN, it
+   * always resolves from the path - and so is one this cannot build a unique path for; see
+   * {@link Utils#toPathLocation}.
+   *
+   * @param deploymentName the deployment holding the form, for a mount that asks for it with
+   *                       {@link Utils#CAMUNDA_FORM_KEY_PATH_DEPLOYMENT_PLACEHOLDER}
+   */
+  protected String transformFormKey(String formKey, String deploymentName) {
+    String mount = System.getProperty(
         Utils.CAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH);
 
-    if (path != null && path.startsWith("/")) {
+    if (mount != null && mount.startsWith("/")) {
 
       int queryStart = formKey.indexOf("?");
       if (queryStart == -1 && queryStart < formKey.length() - 1) {
@@ -116,16 +133,19 @@ public class JsonFormsFormHandler implements TaskFormHandler, StartFormHandler {
       }
 
       Map<String, List<String>> parameters = Utils.parseQueryString(formKey.substring(queryStart + 1));
-      List<String> deployment = parameters.remove(Utils.CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT);
+      List<String> deployment = parameters.get(Utils.CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT);
       if (deployment == null || deployment.isEmpty()) {
         return formKey;
       }
 
-      String fullPath = path + (path.endsWith("/") ? "" : "/") + deployment.get(0);
-      parameters.put(Utils.CAMUNDA_FORM_KEY_QUERY_PARAM_PATH,
-          Collections.singletonList(fullPath));
+      String fullPath = Utils.toPathLocation(mount, deploymentName, deployment.get(0));
+      if (fullPath != null) {
+        parameters.remove(Utils.CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT);
+        parameters.put(Utils.CAMUNDA_FORM_KEY_QUERY_PARAM_PATH,
+            Collections.singletonList(fullPath));
 
-      formKey = formKey.substring(0, queryStart) + "?" + Utils.toQueryString(parameters);
+        formKey = formKey.substring(0, queryStart) + "?" + Utils.toQueryString(parameters);
+      }
     }
 
     if (debugLogEnabled()) {
@@ -133,6 +153,25 @@ public class JsonFormsFormHandler implements TaskFormHandler, StartFormHandler {
     }
 
     return formKey;
+  }
+
+  /**
+   * The name of a deployment - which for a process application is the process archive's name.
+   * Null when it cannot be read, which leaves the form key alone rather than building a path
+   * that could address another archive's form.
+   */
+  protected String deploymentName(String deploymentId) {
+    if (deploymentId == null) {
+      return null;
+    }
+
+    CommandContext commandContext = Context.getCommandContext();
+    if (commandContext == null) {
+      return null;
+    }
+
+    DeploymentEntity deployment = commandContext.getDeploymentManager().findDeploymentById(deploymentId);
+    return deployment == null ? null : deployment.getName();
   }
 
   protected boolean debugLogEnabled() {

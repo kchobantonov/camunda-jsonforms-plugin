@@ -3,6 +3,7 @@ package com.github.kchobantonov.camunda.jsonforms.plugin;
 import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotNull;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -10,6 +11,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.camunda.bpm.engine.BadUserRequestException;
 import org.camunda.bpm.engine.exception.DeploymentResourceNotFoundException;
@@ -131,28 +133,10 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
             super(processDefinitionId);
         }
 
-        protected InputStream getJsonFormsDeploymentResource(String deploymentId, String resourceName) {
-            JsonFormsGetDeploymentResourceCmd getDeploymentResourceCmd = new JsonFormsGetDeploymentResourceCmd(
-                    deploymentId, resourceName);
-            try {
-                return commandContext.runWithoutAuthorization(getDeploymentResourceCmd);
-            } catch (DeploymentResourceNotFoundException e) {
-                throw new NotFoundException("The form with the resource name '" + resourceName
-                        + "' cannot be found in deployment with id " + deploymentId, e);
-            }
-        }
-
         @Override
         protected InputStream getResourceForFormKey(FormData formData, String formKey) {
-
             if (formKey.startsWith(Utils.CAMUNDA_JSONFORMS_URL)) {
-                String location = Utils.getDeploymentLocation(formKey);
-                if (location == null) {
-                    throw new BadUserRequestException(
-                            "The form key '" + formKey + "' is missing deployment query parameter.");
-                }
-
-                return getJsonFormsDeploymentResource(formData.getDeploymentId(), location);
+                return getJsonFormsResource(formKey, formData.getDeploymentId(), commandContext);
             }
             return super.getResourceForFormKey(formData, formKey);
         }
@@ -173,76 +157,21 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
                 checker.checkReadDeployment(deploymentId);
             }
 
-            final String schemaResourcePath = resourceName + Utils.RESOURCE_SCHEMA_SUFFIX;
-            final String uischemaResourcePath = resourceName + Utils.RESOURCE_UISCHEMA_SUFFIX;
-            final String i18nResourcePath = resourceName + Utils.RESOURCE_I18N_SUFFIX;
-            final String uischemasResourcePath = resourceName + Utils.RESOURCE_UISCHEMAS_SUFFIX;
-            final String uidataResourcePath = resourceName + Utils.RESOURCE_UIDATA_SUFFIX;
-
             List<ResourceEntity> resources = commandContext
                     .getResourceManager()
                     .findResourceByDeploymentIdAndResourceNames(deploymentId,
-                            schemaResourcePath, uischemaResourcePath, i18nResourcePath, uischemasResourcePath,
-                            uidataResourcePath);
+                            resourceName + Utils.RESOURCE_SCHEMA_SUFFIX,
+                            resourceName + Utils.RESOURCE_UISCHEMA_SUFFIX,
+                            resourceName + Utils.RESOURCE_I18N_SUFFIX,
+                            resourceName + Utils.RESOURCE_UISCHEMAS_SUFFIX,
+                            resourceName + Utils.RESOURCE_UIDATA_SUFFIX);
 
-            ResourceEntity schema = resources.stream().filter(entity -> entity.getName().equals(schemaResourcePath))
-                    .findFirst().orElse(null);
-            ResourceEntity uischema = resources.stream().filter(entity -> entity.getName().equals(uischemaResourcePath))
-                    .findFirst().orElse(null);
-            ResourceEntity i18n = resources.stream().filter(entity -> entity.getName().equals(i18nResourcePath))
-                    .findFirst().orElse(null);
-            ResourceEntity uischemas = resources.stream()
-                    .filter(entity -> entity.getName().equals(uischemasResourcePath))
-                    .findFirst().orElse(null);
-            ResourceEntity uidata = resources.stream().filter(entity -> entity.getName().equals(uidataResourcePath))
-                    .findFirst().orElse(null);
-
-            ensureNotNull(DeploymentResourceNotFoundException.class,
-                    "no resource found with name '" + schemaResourcePath + "' in deployment '" + deploymentId + "'",
-                    "resource", schema);
-            ensureNotNull(DeploymentResourceNotFoundException.class,
-                    "no resource found with name '" + uischemaResourcePath + "' in deployment '"
-                            + deploymentId + "'",
-                    "resource", uischema);
-
-            StringBuilder result = new StringBuilder();
-            result.append("{");
-
-            result.append(JSONObject.quote(schemaResourcePath));
-            result.append(":");
-            result.append(new String(schema.getBytes(), StandardCharsets.UTF_8));
-
-            if (uischema != null) {
-                result.append(",");
-                result.append(JSONObject.quote(uischemaResourcePath));
-                result.append(":");
-                result.append(new String(uischema.getBytes(), StandardCharsets.UTF_8));
-            }
-
-            if (i18n != null) {
-                result.append(",");
-                result.append(JSONObject.quote(i18nResourcePath));
-                result.append(":");
-                result.append(new String(i18n.getBytes(), StandardCharsets.UTF_8));
-            }
-
-            if (uischemas != null) {
-                result.append(",");
-                result.append(JSONObject.quote(uischemasResourcePath));
-                result.append(":");
-                result.append(new String(uischemas.getBytes(), StandardCharsets.UTF_8));
-            }
-
-            if (uidata != null) {
-                result.append(",");
-                result.append(JSONObject.quote(uidataResourcePath));
-                result.append(":");
-                result.append(new String(uidata.getBytes(), StandardCharsets.UTF_8));
-            }
-
-            result.append("}");
-
-            return new ByteArrayInputStream(result.toString().getBytes(StandardCharsets.UTF_8));
+            return bundle(resourceName, name -> resources.stream()
+                    .filter(entity -> entity.getName().equals(name))
+                    .findFirst()
+                    .map(entity -> (InputStream) new ByteArrayInputStream(entity.getBytes()))
+                    .orElse(null),
+                    "deployment '" + deploymentId + "'");
         }
 
     }
@@ -252,33 +181,130 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
             super(taskId);
         }
 
-        protected InputStream getJsonFormsDeploymentResource(String deploymentId, String resourceName) {
-            JsonFormsGetDeploymentResourceCmd getDeploymentResourceCmd = new JsonFormsGetDeploymentResourceCmd(
-                    deploymentId, resourceName);
-            try {
-                return commandContext.runWithoutAuthorization(getDeploymentResourceCmd);
-            } catch (DeploymentResourceNotFoundException e) {
-                throw new NotFoundException("The form with the resource name '" + resourceName
-                        + "' cannot be found in deployment with id " + deploymentId, e);
-            }
-        }
-
         @Override
         protected InputStream getResourceForFormKey(FormData formData, String formKey) {
             if (formKey.startsWith(Utils.CAMUNDA_JSONFORMS_URL)) {
-                String location = Utils.getDeploymentLocation(formKey);
-                if (location == null) {
-                    throw new BadUserRequestException(
-                            "The form key '" + formKey + "' is missing deployment query parameter.");
-                }
-
-                return getJsonFormsDeploymentResource(formData.getDeploymentId(), location);
+                return getJsonFormsResource(formKey, formData.getDeploymentId(), commandContext);
             }
 
             return super.getResourceForFormKey(formData, formKey);
 
         }
 
+    }
+
+    /**
+     * The form the key names, as the bundle of sibling resources the renderer expects, read from
+     * wherever the key says.
+     *
+     * {@code path} and {@code deployment} are alternatives rather than a preference order: a key
+     * carries one or the other, and which one it carries is the whole statement of where the form
+     * lives. A {@code path} key is either authored that way in the BPMN or was rewritten from a
+     * {@code deployment} one by {@link JsonFormsFormHandler#transformFormKey} because the forms
+     * are being served off disk - and in both cases the deployment is deliberately not the
+     * source, so it is not consulted.
+     *
+     * That second case is why this has to handle {@code path} at all: the rewrite happens in the
+     * form data this command reads its key from, so a service that only understood
+     * {@code deployment} refused the very key the plugin had just produced.
+     */
+    protected InputStream getJsonFormsResource(String formKey, String deploymentId,
+            CommandContext commandContext) {
+        String pathLocation = Utils.getPathLocation(formKey);
+        if (pathLocation != null && pathLocation.startsWith("/")) {
+            return getJsonFormsPathResource(pathLocation);
+        }
+
+        String location = Utils.getDeploymentLocation(formKey);
+        if (location == null) {
+            throw new BadUserRequestException(
+                    "The form key '" + formKey + "' is missing deployment or path query parameter.");
+        }
+        return getJsonFormsDeploymentResource(deploymentId, location, commandContext);
+    }
+
+    protected InputStream getJsonFormsDeploymentResource(String deploymentId, String resourceName,
+            CommandContext commandContext) {
+        JsonFormsGetDeploymentResourceCmd getDeploymentResourceCmd = new JsonFormsGetDeploymentResourceCmd(
+                deploymentId, resourceName);
+        try {
+            return commandContext.runWithoutAuthorization(getDeploymentResourceCmd);
+        } catch (DeploymentResourceNotFoundException e) {
+            throw new NotFoundException("The form with the resource name '" + resourceName
+                    + "' cannot be found in deployment with id " + deploymentId, e);
+        }
+    }
+
+    /** The same bundle, assembled from the resources the path resolver hands back. */
+    protected InputStream getJsonFormsPathResource(String pathLocation) {
+        Assert.notNull(resolver, "Resolver not setup correctly");
+        try {
+            return bundle(pathLocation, resolver::resolve, "path '" + pathLocation + "'");
+        } catch (DeploymentResourceNotFoundException e) {
+            throw new NotFoundException("The form with the path '" + pathLocation + "' cannot be found", e);
+        }
+    }
+
+    /**
+     * The sibling resources of one form as a single JSON object keyed by resource name - what
+     * {@code loadResourcesFromDeployedForm} in {@code @chobantonov/camunda-jsonforms} reads.
+     *
+     * The schema and the layout are required, because nothing can be rendered without them;
+     * {@code i18n}, {@code uischemas} and {@code uidata} are optional and simply left out when
+     * absent.
+     *
+     * @param location the form's location, which the resource names are suffixes of
+     * @param lookup   opens one resource by name, returning null when it does not exist
+     * @param source   where the resources are being read from, for the not-found message
+     */
+    protected InputStream bundle(String location, Function<String, InputStream> lookup, String source) {
+        String schemaResourcePath = location + Utils.RESOURCE_SCHEMA_SUFFIX;
+        String uischemaResourcePath = location + Utils.RESOURCE_UISCHEMA_SUFFIX;
+        String i18nResourcePath = location + Utils.RESOURCE_I18N_SUFFIX;
+        String uischemasResourcePath = location + Utils.RESOURCE_UISCHEMAS_SUFFIX;
+        String uidataResourcePath = location + Utils.RESOURCE_UIDATA_SUFFIX;
+
+        String schema = read(lookup, schemaResourcePath);
+        String uischema = read(lookup, uischemaResourcePath);
+
+        ensureNotNull(DeploymentResourceNotFoundException.class,
+                "no resource found with name '" + schemaResourcePath + "' in " + source, "resource", schema);
+        ensureNotNull(DeploymentResourceNotFoundException.class,
+                "no resource found with name '" + uischemaResourcePath + "' in " + source, "resource", uischema);
+
+        StringBuilder result = new StringBuilder();
+        result.append("{");
+        result.append(JSONObject.quote(schemaResourcePath));
+        result.append(":");
+        result.append(schema);
+
+        appendIfPresent(result, uischemaResourcePath, uischema);
+        appendIfPresent(result, i18nResourcePath, read(lookup, i18nResourcePath));
+        appendIfPresent(result, uischemasResourcePath, read(lookup, uischemasResourcePath));
+        appendIfPresent(result, uidataResourcePath, read(lookup, uidataResourcePath));
+
+        result.append("}");
+
+        return new ByteArrayInputStream(result.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void appendIfPresent(StringBuilder result, String resourcePath, String content) {
+        if (content == null) {
+            return;
+        }
+        result.append(",");
+        result.append(JSONObject.quote(resourcePath));
+        result.append(":");
+        result.append(content);
+    }
+
+    /** One resource as a string, or null when it is not there or cannot be read. */
+    private static String read(Function<String, InputStream> lookup, String resourceName) {
+        try (InputStream resource = lookup.apply(resourceName)) {
+            return resource == null ? null : new String(resource.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     protected InputStream getSchema(TaskEntity task, DeploymentEntity deploymentEntity) {
@@ -292,7 +318,10 @@ public class JsonFormsFormService extends org.camunda.bpm.engine.impl.FormServic
 
         String pathLocation = Utils.getPathLocation(task.getFormKey());
         if (pathLocation != null && pathLocation.startsWith("/")) {
-            return resolver.resolve(pathLocation);
+            // the resolver takes a resource name, so the suffix has to be on it: asking for the
+            // bare location finds nothing, and this method returning null silently switches off
+            // the schema-scoping of form variables
+            return resolver.resolve(pathLocation + Utils.RESOURCE_SCHEMA_SUFFIX);
         }
 
         return null;

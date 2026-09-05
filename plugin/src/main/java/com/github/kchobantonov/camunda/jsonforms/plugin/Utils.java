@@ -20,8 +20,39 @@ public final class Utils {
     public static final String CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT = "deployment";
     public static final String CAMUNDA_FORM_KEY_QUERY_PARAM_PATH = "path";
 
+    /**
+     * Placeholder for the deployment name inside
+     * {@link #CAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH}, substituted when a
+     * {@code ?deployment=} form key is rewritten to {@code ?path=}.
+     *
+     * A deployment location is only unique within its deployment. With one process archive per
+     * process - each with its own {@code resourceRootPath} - two archives can hold the same
+     * {@code forms/Start}, and the deployment id in a {@code ?deployment=} lookup tells them
+     * apart. A URL has no such scope, so a path built as {@code mount + "/" + location} would
+     * address both and serve whichever the folder happens to hold.
+     *
+     * Putting {@code {deployment\}} in the mount puts the deployment name - which is the
+     * process archive's name - into the path, making it unique again:
+     *
+     * <pre>
+     * -DCAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH=/forms/{deployment\}
+     * ?deployment=forms/Start  -&gt;  ?path=/forms/Invoices/forms/Start
+     * </pre>
+     *
+     * A mount without the placeholder behaves as it always has, which is what a single archive
+     * with no {@code resourceRootPath} wants: its locations are already full paths.
+     */
+    public static final String CAMUNDA_FORM_KEY_PATH_DEPLOYMENT_PLACEHOLDER = "{deployment}";
+
     public static final String CAMUNDA_JSONFORMS_ENABLE_JS_CONSOLE_LOG = "CAMUNDA_JSONFORMS_ENABLE_JS_CONSOLE_LOG";
     public static final String CAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH = "CAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH";
+
+    /**
+     * The folder {@link JsonFormsFolderResources} reads form resources from, the other half of
+     * {@link #CAMUNDA_JSONFORMS_LOAD_RESOURCES_FROM_PATH}: that one says what URL the resources
+     * are served under, this one says where they are read from.
+     */
+    public static final String CAMUNDA_JSONFORMS_RESOURCES_FOLDER = "CAMUNDA_JSONFORMS_RESOURCES_FOLDER";
 
     private Utils() {
     }
@@ -59,6 +90,34 @@ public final class Utils {
             }
         }
         return ht;
+    }
+
+    /**
+     * The URL path a {@code ?deployment=} location is served under, or null when the mount is
+     * unusable - not an absolute path, or naming a deployment that cannot be identified.
+     *
+     * @param mount          the configured mount, which may contain
+     *                       {@link #CAMUNDA_FORM_KEY_PATH_DEPLOYMENT_PLACEHOLDER}
+     * @param deploymentName the deployment holding the form, needed only when the mount asks
+     *                       for it
+     * @param location       the deployment location from the form key, e.g. {@code forms/Start}
+     */
+    public static String toPathLocation(String mount, String deploymentName, String location) {
+        if (mount == null || !mount.startsWith("/") || location == null) {
+            return null;
+        }
+
+        String resolved = mount;
+        if (resolved.contains(CAMUNDA_FORM_KEY_PATH_DEPLOYMENT_PLACEHOLDER)) {
+            if (deploymentName == null || deploymentName.isEmpty()) {
+                // the mount asks for a segment we cannot supply; serving the path without it
+                // would address another archive's form of the same name
+                return null;
+            }
+            resolved = resolved.replace(CAMUNDA_FORM_KEY_PATH_DEPLOYMENT_PLACEHOLDER, deploymentName);
+        }
+
+        return resolved + (resolved.endsWith("/") ? "" : "/") + location;
     }
 
     public static String getDeploymentLocation(String formKey) {

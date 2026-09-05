@@ -186,7 +186,9 @@ public class DefaultJsonFormsValidator implements JsonFormsValidator, FormFieldV
         String pathLocation = Utils.getPathLocation(formKey);
         if (pathLocation != null && pathLocation.startsWith("/")) {
             Assert.notNull(resolver, "Resolver not setup correctly");
-            return resolver.resolve(pathLocation);
+            // the resolver takes a resource name, so the suffix has to be on it: asking for the
+            // bare location finds nothing, and validate() then passes every submission
+            return resolver.resolve(pathLocation + Utils.RESOURCE_SCHEMA_SUFFIX);
         }
 
         return null;
