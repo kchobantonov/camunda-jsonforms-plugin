@@ -49,10 +49,35 @@
       <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--
+        Only so the tests can run a real in-memory process engine. What JsonFormsTaskService
+        changes is which engine command path reaches the validator, and that is not something a
+        test with stand-ins can show - it needs the engine deciding.
+    -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!--
+        Only so the tests can build a real SpinJsonNode. The validator has a branch for one -
+        structured form values arrive as Spin JSON and nothing else - and spin-core alone has no
+        JSON dataformat provider, so without this that branch cannot be exercised at all.
+    -->
+    <dependency>
+      <groupId>org.camunda.spin</groupId>
+      <artifactId>camunda-spin-dataformat-json-jackson</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <scope>provided</scope>
+    </dependency>
+    <!-- arrives transitively with the engine; declared because this module logs directly -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
     </dependency>
   </dependencies>
 

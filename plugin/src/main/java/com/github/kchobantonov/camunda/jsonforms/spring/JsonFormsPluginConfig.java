@@ -2,6 +2,7 @@ package com.github.kchobantonov.camunda.jsonforms.spring;
 
 import org.camunda.bpm.spring.boot.starter.rest.CamundaJerseyResourceConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,6 +10,7 @@ import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsCamundaJerseyRe
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsFormServicePlugin;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsParseListenerProcessEnginePlugin;
 import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsPathResourceResolver;
+import com.github.kchobantonov.camunda.jsonforms.plugin.JsonFormsTaskServicePlugin;
 import com.github.kchobantonov.camunda.jsonforms.plugin.validation.DefaultJsonFormsValidator;
 import com.github.kchobantonov.camunda.jsonforms.plugin.validation.JsonFormsValidator;
 
@@ -40,6 +42,23 @@ public class JsonFormsPluginConfig {
     @ConditionalOnMissingBean(JsonFormsFormServicePlugin.class)
     public JsonFormsFormServicePlugin jsonFormsFormServicePlugin(JsonFormsPathResourceResolver resolver) {
         return new JsonFormsFormServicePlugin(resolver);
+    }
+
+    /**
+     * Registers the task service that holds {@code TaskService.complete} to the form's schema.
+     *
+     * <strong>Opt-in</strong>, with
+     * {@code camunda.jsonforms.validate-on-complete=true}, and off by default. The others on
+     * this class add a capability; this one changes the behaviour of an engine API an
+     * application may already be calling, so taking the form rendering must not silently take
+     * that too. See {@link JsonFormsTaskServicePlugin} for what it closes and why it is a
+     * separate plugin.
+     */
+    @Bean
+    @ConditionalOnProperty(name = "camunda.jsonforms.validate-on-complete", havingValue = "true")
+    @ConditionalOnMissingBean(JsonFormsTaskServicePlugin.class)
+    public JsonFormsTaskServicePlugin jsonFormsTaskServicePlugin() {
+        return new JsonFormsTaskServicePlugin();
     }
 
     /**

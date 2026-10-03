@@ -12,6 +12,9 @@ public final class Utils {
     public static final String CAMUNDA_JSONFORMS_URL = "embedded:app:webjars/forms/jsonforms.html";
     public static final String CUSTOM_FORM_FIELD_VALIDATOR_NAME = "jsonforms";
 
+    /** The {@code name} of the form-field constraint that names a JsonForms validator. */
+    public static final String CUSTOM_FORM_FIELD_VALIDATOR_CONSTRAINT = "validator";
+
     public static final String RESOURCE_SCHEMA_SUFFIX = ".schema.json";
     public static final String RESOURCE_UISCHEMA_SUFFIX = ".uischema.json";
     public static final String RESOURCE_I18N_SUFFIX = ".i18n.json";

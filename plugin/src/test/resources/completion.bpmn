@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="completionDefinitions"
+                  targetNamespace="http://github.com/kchobantonov/camunda-jsonforms-plugin/test"
+                  exporter="Camunda Modeler" exporterVersion="5.0.0">
+  <bpmn:process id="CompletionTest" name="Completion Test" isExecutable="true" camunda:historyTimeToLive="P1D">
+    <bpmn:startEvent id="Start">
+      <bpmn:outgoing>ToDecide</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="ToDecide" sourceRef="Start" targetRef="Decide" />
+
+    <!-- the validator the way every BPMN in practice declares it: a form field constraint -->
+    <bpmn:userTask id="Decide" name="Decide"
+                   camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=forms/Decision">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="decisionForm" type="string">
+            <camunda:validation>
+              <camunda:constraint name="validator" config="${jsonFormsValidator}" />
+            </camunda:validation>
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>ToDecide</bpmn:incoming>
+      <bpmn:outgoing>ToEnd</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:sequenceFlow id="ToEnd" sourceRef="Decide" targetRef="End" />
+    <bpmn:endEvent id="End">
+      <bpmn:incoming>ToEnd</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_CompletionTest">
+    <bpmndi:BPMNPlane id="BPMNPlane_CompletionTest" bpmnElement="CompletionTest">
+      <bpmndi:BPMNShape id="Start_di" bpmnElement="Start">
+        <dc:Bounds x="172" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Decide_di" bpmnElement="Decide">
+        <dc:Bounds x="260" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_di" bpmnElement="End">
+        <dc:Bounds x="412" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="ToDecide_di" bpmnElement="ToDecide">
+        <di:waypoint x="208" y="120" />
+        <di:waypoint x="260" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="ToEnd_di" bpmnElement="ToEnd">
+        <di:waypoint x="360" y="120" />
+        <di:waypoint x="412" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

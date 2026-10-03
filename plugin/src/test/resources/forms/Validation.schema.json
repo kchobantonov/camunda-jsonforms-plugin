@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "subjectId":  { "type": "string", "readOnly": true },
+    "secret":     { "type": "string", "writeOnly": true },
+    "password":   { "type": "string", "format": "password" },
+    "email":      { "type": "string", "format": "email" },
+    "attachment": { "type": "string", "format": "binary" },
+    "count":      { "type": "integer" },
+    "notes":      { "type": "string", "minLength": 1 },
+    "details": {
+      "type": "object",
+      "properties": { "code": { "type": "string", "pattern": "^[A-Z]{3}$" } },
+      "required": ["code"],
+      "additionalProperties": false
+    },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["notes"],
+  "additionalProperties": false
+}

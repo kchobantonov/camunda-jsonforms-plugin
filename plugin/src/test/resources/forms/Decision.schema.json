@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "subjectId":   { "type": "string", "readOnly": true },
+    "confirmed":   { "type": "boolean" },
+    "notes":       { "type": "string" },
+    "action":      { "type": "string", "enum": ["accept", "decline"] }
+  },
+  "required": ["action"],
+  "allOf": [
+    {
+      "if": { "required": ["action"], "properties": { "action": { "const": "accept" } } },
+      "then": {
+        "required": ["confirmed", "notes"],
+        "properties": {
+          "confirmed": { "const": true },
+          "notes": { "minLength": 1 }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
