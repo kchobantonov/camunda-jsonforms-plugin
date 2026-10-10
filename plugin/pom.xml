@@ -38,6 +38,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-engine-plugin-spin</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.github.kchobantonov</groupId>
       <artifactId>plugin-ui</artifactId>
       <version>0.0.1-SNAPSHOT</version>
@@ -83,6 +89,16 @@
 
 
   <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+      </testResource>
+      <testResource>
+        <directory>../plugin-ui/packages/camunda/spec</directory>
+        <targetPath>variable-spec</targetPath>
+        <includes><include>variable-mapping.json</include></includes>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

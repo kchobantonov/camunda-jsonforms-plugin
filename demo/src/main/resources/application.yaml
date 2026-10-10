@@ -23,6 +23,9 @@ server:
     # Compress the response only if the response size is at least 1KB
     min-response-size: 1024
 camunda:
+  jsonforms:
+    # Apply the form JSON Schema when a task is completed through TaskService or REST.
+    validate-on-complete: true
   bpm:
     generic-properties.properties:
       historyTimeToLive: P180D

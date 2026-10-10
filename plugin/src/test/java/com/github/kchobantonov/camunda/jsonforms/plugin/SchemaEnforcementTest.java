@@ -188,31 +188,31 @@ class SchemaEnforcementTest {
 
   // ---- the shape of the data ---------------------------------------------------------------
 
-  /**
-   * Structured values are understood as Spin JSON and as nothing else.
-   *
-   * A plain {@code Map} is refused for not being the JSON library's own object type, whatever it
-   * contains - so this is not a rule about the data but about how it arrived. It is pinned
-   * because it is a sharp edge and because a validator built on a different JSON library would
-   * very likely accept a {@code Map} instead, which is a behaviour change worth making on
-   * purpose rather than discovering.
-   */
+  /** Java collections are normalized before applying the same JSON schema rules. */
   @Test
-  void aNestedObjectSubmittedAsAPlainMapIsRefused() {
-    JsonFormsValidatorException refusal = assertThrows(JsonFormsValidatorException.class,
-        () -> complete(submission().with("details", Map.of("code", "ABC"))));
-
-    assertEquals(List.of("/details"), paths(refusal));
-    assertEquals("type", refusal.toJsonFormsErrors().iterator().next().getKeyword());
+  void aNestedObjectSubmittedAsAPlainMapIsAccepted() {
+    complete(submission().with("details", Map.of("code", "ABC")));
+    assertNull(task());
   }
 
-  /** The same for a list. */
   @Test
-  void anArraySubmittedAsAPlainListIsRefused() {
-    JsonFormsValidatorException refusal = assertThrows(JsonFormsValidatorException.class,
-        () -> complete(submission().with("tags", List.of("a", "b"))));
+  void anArraySubmittedAsAPlainListIsAccepted() {
+    complete(submission().with("tags", List.of("a", "b")));
+    assertNull(task());
+  }
 
-    assertEquals(List.of("/tags"), paths(refusal));
+  @Test
+  void invalidItemsInAPlainJavaListAreStillRefused() {
+    JsonFormsValidatorException refusal = assertThrows(JsonFormsValidatorException.class,
+        () -> complete(submission().with("tags", List.of(2))));
+    assertEquals(List.of("/tags/0"), paths(refusal));
+  }
+
+  @Test
+  void invalidPropertiesInAPlainJavaMapAreStillRefused() {
+    JsonFormsValidatorException refusal = assertThrows(JsonFormsValidatorException.class,
+        () -> complete(submission().with("details", Map.of("code", "abc"))));
+    assertEquals(List.of("/details/code"), paths(refusal));
   }
 
   /** A rule inside a nested object reports the nested path, or it lands on no control at all. */
@@ -315,6 +315,44 @@ class SchemaEnforcementTest {
     assertTrue(refusal.getMessage().contains("notes"), refusal.getMessage());
   }
 
+  @Test
+  void aRestObjectArrayIsValidatedAndStoredAsAnArrayList() {
+    Object value = restArray("[\"rush\",\"normal\"]", "java.util.ArrayList<java.lang.String>");
+    complete(submission().with("tags", value));
+    Object stored = engine.getHistoryService().createHistoricVariableInstanceQuery()
+        .variableName("tags").singleResult().getValue();
+    assertEquals(ArrayList.class, stored.getClass());
+    assertTrue(((List<?>) stored).contains("rush"));
+  }
+
+  @Test
+  void submitFormAlsoAcceptsARestObjectArray() {
+    submitForm(submission().with("tags", restArray("[]", "java.util.ArrayList<java.lang.String>")));
+    assertNull(task());
+  }
+
+  @Test
+  void anInvalidRestObjectArrayIsRefusedBeforeDeserializingItsClass() {
+    JsonFormsValidatorException refusal = assertThrows(JsonFormsValidatorException.class,
+        () -> complete(submission().with("tags", restArray("[2]", "missing.application.CustomList"))));
+    assertEquals(List.of("/tags/0"), paths(refusal));
+  }
+
+  @Test
+  void malformedSerializedJsonIsAValidationError() {
+    JsonFormsValidatorException refusal = assertThrows(JsonFormsValidatorException.class,
+        () -> complete(submission().with("tags", restArray("[", "java.util.ArrayList<java.lang.String>"))));
+    assertEquals(List.of("/tags"), paths(refusal));
+  }
+
+  private Object restArray(String json, String typeName) {
+    org.camunda.bpm.engine.rest.dto.VariableValueDto dto = new org.camunda.bpm.engine.rest.dto.VariableValueDto();
+    dto.setType("Object");
+    dto.setValue(json);
+    dto.setValueInfo(Map.of("objectTypeName", typeName, "serializationDataFormat", "application/json"));
+    return dto.toTypedValue(engine, new com.fasterxml.jackson.databind.ObjectMapper());
+  }
+
   // ---- fixture -------------------------------------------------------------------------------
 
   private void complete(Map<String, Object> submitted) {
@@ -375,6 +413,7 @@ class SchemaEnforcementTest {
     configuration.setBeans(beans);
 
     List<ProcessEnginePlugin> plugins = new ArrayList<>(Arrays.asList(
+        new org.camunda.spin.plugin.impl.SpinProcessEnginePlugin(),
         new JsonFormsParseListenerProcessEnginePlugin(), new JsonFormsTaskServicePlugin()));
     configuration.setProcessEnginePlugins(plugins);
 

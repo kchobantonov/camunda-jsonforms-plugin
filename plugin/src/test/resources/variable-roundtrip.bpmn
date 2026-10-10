@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             targetNamespace="http://example.org/variable-tests">
+  <process id="variableRoundTrip" isExecutable="true" camunda:historyTimeToLive="P1D">
+    <startEvent id="start" />
+    <sequenceFlow id="toInput" sourceRef="start" targetRef="input" />
+    <userTask id="input" name="Enter values"
+              camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=forms/Variables">
+      <extensionElements>
+        <camunda:properties>
+          <camunda:property name="jsonFormsValidator" value="${jsonFormsValidator}" />
+        </camunda:properties>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="toReview" sourceRef="input" targetRef="review" />
+    <userTask id="review" name="Inspect stored variables" />
+    <sequenceFlow id="toEnd" sourceRef="review" targetRef="end" />
+    <endEvent id="end" />
+  </process>
+  <process id="variableExpressions" isExecutable="true" camunda:historyTimeToLive="P1D">
+    <startEvent id="expressionStart" />
+    <sequenceFlow id="toExpressionInput" sourceRef="expressionStart" targetRef="expressionInput" />
+    <userTask id="expressionInput" name="Enter values"
+              camunda:formKey="embedded:app:webjars/forms/jsonforms.html?deployment=forms/Variables">
+      <extensionElements>
+        <camunda:properties>
+          <camunda:property name="jsonFormsValidator" value="${jsonFormsValidator}" />
+        </camunda:properties>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="toCapture" sourceRef="expressionInput" targetRef="capture" />
+    <serviceTask id="capture" name="Observe transient value"
+                 camunda:expression="${execution.setVariable('observedAction', action)}" />
+    <sequenceFlow id="toChoice" sourceRef="capture" targetRef="choice" />
+    <exclusiveGateway id="choice" default="unmatchedFlow" />
+    <sequenceFlow id="matchedFlow" sourceRef="choice" targetRef="matched">
+      <conditionExpression xsi:type="tFormalExpression">${tags.contains('alpha') &amp;&amp; tags.size() == 2 &amp;&amp; settings.prop('enabled').boolValue()}</conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="unmatchedFlow" sourceRef="choice" targetRef="unmatched" />
+    <userTask id="matched" name="Expression matched" />
+    <userTask id="unmatched" name="Expression did not match" />
+    <sequenceFlow id="matchedEndFlow" sourceRef="matched" targetRef="expressionEnd" />
+    <sequenceFlow id="unmatchedEndFlow" sourceRef="unmatched" targetRef="expressionEnd" />
+    <endEvent id="expressionEnd" />
+  </process>
+  <collaboration id="variableExamples">
+    <participant id="roundTripPool" name="Variable round trip" processRef="variableRoundTrip" />
+    <participant id="expressionPool" name="Variable expressions" processRef="variableExpressions" />
+  </collaboration>
+  <bpmndi:BPMNDiagram id="variableExamplesDiagram">
+    <bpmndi:BPMNPlane id="variableExamplesPlane" bpmnElement="variableExamples">
+      <bpmndi:BPMNShape id="roundTripPool_di" bpmnElement="roundTripPool" isHorizontal="true">
+        <dc:Bounds x="80" y="80" width="1100" height="180" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="expressionPool_di" bpmnElement="expressionPool" isHorizontal="true">
+        <dc:Bounds x="80" y="300" width="1100" height="330" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="start_di" bpmnElement="start">
+        <dc:Bounds x="140" y="152" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="input_di" bpmnElement="input">
+        <dc:Bounds x="230" y="130" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="review_di" bpmnElement="review">
+        <dc:Bounds x="440" y="130" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="end_di" bpmnElement="end">
+        <dc:Bounds x="650" y="152" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="expressionStart_di" bpmnElement="expressionStart">
+        <dc:Bounds x="140" y="447" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="expressionInput_di" bpmnElement="expressionInput">
+        <dc:Bounds x="230" y="425" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="capture_di" bpmnElement="capture">
+        <dc:Bounds x="410" y="425" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="choice_di" bpmnElement="choice">
+        <dc:Bounds x="610" y="440" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="matched_di" bpmnElement="matched">
+        <dc:Bounds x="730" y="350" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="unmatched_di" bpmnElement="unmatched">
+        <dc:Bounds x="730" y="520" width="150" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="expressionEnd_di" bpmnElement="expressionEnd">
+        <dc:Bounds x="990" y="447" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="toInput_di" bpmnElement="toInput">
+        <di:waypoint x="176" y="170" />
+        <di:waypoint x="230" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toReview_di" bpmnElement="toReview">
+        <di:waypoint x="350" y="170" />
+        <di:waypoint x="440" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toEnd_di" bpmnElement="toEnd">
+        <di:waypoint x="580" y="170" />
+        <di:waypoint x="650" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toExpressionInput_di" bpmnElement="toExpressionInput">
+        <di:waypoint x="176" y="465" />
+        <di:waypoint x="230" y="465" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toCapture_di" bpmnElement="toCapture">
+        <di:waypoint x="350" y="465" />
+        <di:waypoint x="410" y="465" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toChoice_di" bpmnElement="toChoice">
+        <di:waypoint x="550" y="465" />
+        <di:waypoint x="610" y="465" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="matchedFlow_di" bpmnElement="matchedFlow">
+        <di:waypoint x="635" y="440" />
+        <di:waypoint x="635" y="390" />
+        <di:waypoint x="730" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="unmatchedFlow_di" bpmnElement="unmatchedFlow">
+        <di:waypoint x="635" y="490" />
+        <di:waypoint x="635" y="560" />
+        <di:waypoint x="730" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="matchedEndFlow_di" bpmnElement="matchedEndFlow">
+        <di:waypoint x="880" y="390" />
+        <di:waypoint x="1008" y="390" />
+        <di:waypoint x="1008" y="447" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="unmatchedEndFlow_di" bpmnElement="unmatchedEndFlow">
+        <di:waypoint x="880" y="560" />
+        <di:waypoint x="1008" y="560" />
+        <di:waypoint x="1008" y="483" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

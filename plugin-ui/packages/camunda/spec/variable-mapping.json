@@ -1,0 +1,929 @@
+{
+  "description": "Shared UI and Camunda engine conformance cases. Each schema, form value and REST payload is checked independently by both suites.",
+  "write": [
+    {
+      "name": "root properties name independent variables; nested fields stay nested",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "profile": {
+            "type": "object",
+            "properties": {
+              "displayName": {
+                "type": "string"
+              }
+            },
+            "required": ["displayName"]
+          }
+        },
+        "required": ["firstName", "active", "profile"],
+        "additionalProperties": false
+      },
+      "data": {
+        "firstName": "Alex",
+        "active": false,
+        "profile": {
+          "displayName": "A"
+        }
+      },
+      "variables": {
+        "firstName": {
+          "type": "String",
+          "value": "Alex",
+          "valueInfo": {}
+        },
+        "active": {
+          "type": "Boolean",
+          "value": false,
+          "valueInfo": {}
+        },
+        "profile": {
+          "type": "Json",
+          "value": "{\"displayName\":\"A\"}",
+          "valueInfo": {}
+        }
+      }
+    },
+    {
+      "name": "empty text",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ""
+      },
+      "variables": {
+        "sample": {
+          "type": "String",
+          "value": "",
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "java.lang.String"
+    },
+    {
+      "name": "zero integer",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": 0
+      },
+      "variables": {
+        "sample": {
+          "type": "Integer",
+          "value": 0,
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "java.lang.Integer"
+    },
+    {
+      "name": "fraction",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": 1.25
+      },
+      "variables": {
+        "sample": {
+          "type": "Double",
+          "value": 1.25,
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "java.lang.Double"
+    },
+    {
+      "name": "false boolean",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": false
+      },
+      "variables": {
+        "sample": {
+          "type": "Boolean",
+          "value": false,
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "java.lang.Boolean"
+    },
+    {
+      "name": "JSON object",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": {
+          "enabled": false
+        }
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": "{\"enabled\":false}",
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "org.camunda.spin.impl.json.jackson.JacksonJsonNode"
+    },
+    {
+      "name": "JSON array",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["alpha", "beta"]
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": "[\"alpha\",\"beta\"]",
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "org.camunda.spin.impl.json.jackson.JacksonJsonNode"
+    },
+    {
+      "name": "empty JSON array",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": []
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": "[]",
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "org.camunda.spin.impl.json.jackson.JacksonJsonNode"
+    },
+    {
+      "name": "JSON union string",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": ["string", "number"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": "hello"
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": "\"hello\"",
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "org.camunda.spin.impl.json.jackson.JacksonJsonNode"
+    },
+    {
+      "name": "JSON union number",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": ["string", "number"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": 0
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": "0",
+          "valueInfo": {}
+        }
+      },
+      "javaClass": "org.camunda.spin.impl.json.jackson.JacksonJsonNode"
+    },
+    {
+      "name": "ArrayList of string",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["alpha", "beta"]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[\"alpha\",\"beta\"]",
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.lang.String>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.ArrayList",
+      "itemClass": "java.lang.String"
+    },
+    {
+      "name": "ArrayList of integer",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": [0, 2]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[0,2]",
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.lang.Integer>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.ArrayList",
+      "itemClass": "java.lang.Integer"
+    },
+    {
+      "name": "ArrayList of number",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": [1.25, 2.5]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[1.25,2.5]",
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.lang.Double>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.ArrayList",
+      "itemClass": "java.lang.Double"
+    },
+    {
+      "name": "ArrayList of boolean",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "boolean"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": [false, true]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[false,true]",
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.lang.Boolean>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.ArrayList",
+      "itemClass": "java.lang.Boolean"
+    },
+    {
+      "name": "empty ArrayList",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": []
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[]",
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.lang.String>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.ArrayList"
+    },
+    {
+      "name": "ordered set",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-camunda": {
+              "type": "Object"
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["beta", "alpha"]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[\"beta\",\"alpha\"]",
+          "valueInfo": {
+            "objectTypeName": "java.util.LinkedHashSet<java.lang.String>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.LinkedHashSet"
+    },
+    {
+      "name": "explicit list over unique array",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-camunda": {
+              "type": "Object",
+              "valueInfo": {
+                "objectTypeName": "java.util.ArrayList<java.lang.String>"
+              }
+            },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["beta", "alpha"]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[\"beta\",\"alpha\"]",
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.lang.String>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.ArrayList"
+    },
+    {
+      "name": "typed map",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": {
+          "first": 1,
+          "second": 0
+        }
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "{\"first\":1,\"second\":0}",
+          "valueInfo": {
+            "objectTypeName": "java.util.LinkedHashMap<java.lang.String,java.lang.Integer>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.LinkedHashMap",
+      "itemClass": "java.lang.Integer"
+    },
+    {
+      "name": "explicit nested maps",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "x-camunda": {
+              "type": "Object",
+              "valueInfo": {
+                "objectTypeName": "java.util.ArrayList<java.util.LinkedHashMap<java.lang.String,java.lang.String>>"
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": [
+          {
+            "label": "alpha"
+          }
+        ]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[{\"label\":\"alpha\"}]",
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.util.LinkedHashMap<java.lang.String,java.lang.String>>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "java.util.ArrayList",
+      "itemClass": "java.util.LinkedHashMap"
+    },
+    {
+      "name": "JVM array descriptor",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-camunda": {
+              "type": "Object",
+              "valueInfo": {
+                "objectTypeName": "[Ljava.lang.String;"
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["alpha"]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[\"alpha\"]",
+          "valueInfo": {
+            "objectTypeName": "[Ljava.lang.String;",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "javaClass": "[Ljava.lang.String;"
+    },
+    {
+      "name": "optional nullable string",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": null
+      },
+      "variables": {
+        "sample": {
+          "type": "String",
+          "value": null,
+          "valueInfo": {}
+        }
+      }
+    },
+    {
+      "name": "optional null JSON",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": ["array", "null"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": null
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": null,
+          "valueInfo": {}
+        }
+      }
+    },
+    {
+      "name": "optional null Object",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": null
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": null,
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.lang.String>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      }
+    },
+    {
+      "name": "file bytes and metadata",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": "data:text/plain;filename=sample.txt;base64,aGVsbG8="
+      },
+      "variables": {
+        "sample": {
+          "type": "File",
+          "value": "aGVsbG8=",
+          "valueInfo": {
+            "filename": "sample.txt",
+            "mimeType": "text/plain"
+          }
+        }
+      }
+    }
+  ],
+  "unsupportedFormats": [
+    "application/xml",
+    "application/x-java-serialized-object",
+    "text/plain"
+  ],
+  "reject": [
+    {
+      "name": "Json array with wrong item type",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["sample"],
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["alpha", 2]
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": "[\"alpha\",2]",
+          "valueInfo": {}
+        }
+      },
+      "path": "/sample/1"
+    },
+    {
+      "name": "Json unique array with duplicates",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": ["sample"],
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["alpha", "alpha"]
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": "[\"alpha\",\"alpha\"]",
+          "valueInfo": {}
+        }
+      },
+      "path": "/sample"
+    },
+    {
+      "name": "Object array with wrong item type",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "required": ["sample"],
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["alpha", 2]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[\"alpha\",2]",
+          "valueInfo": {
+            "objectTypeName": "java.util.ArrayList<java.lang.String>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "path": "/sample/1"
+    },
+    {
+      "name": "Object unique array with duplicates",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-camunda": {
+              "type": "Object"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": ["sample"],
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ["alpha", "alpha"]
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "[\"alpha\",\"alpha\"]",
+          "valueInfo": {
+            "objectTypeName": "java.util.LinkedHashSet<java.lang.String>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "path": "/sample"
+    },
+    {
+      "name": "JSON nested value violates schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer"
+              }
+            },
+            "required": ["count"]
+          }
+        },
+        "required": ["sample"],
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": {
+          "count": "invalid"
+        }
+      },
+      "variables": {
+        "sample": {
+          "type": "Json",
+          "value": "{\"count\":\"invalid\"}",
+          "valueInfo": {}
+        }
+      },
+      "path": "/sample/count"
+    },
+    {
+      "name": "Object map values violate schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "x-camunda": {
+              "type": "Object"
+            }
+          }
+        },
+        "required": ["sample"],
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": {
+          "count": "invalid"
+        }
+      },
+      "variables": {
+        "sample": {
+          "type": "Object",
+          "value": "{\"count\":\"invalid\"}",
+          "valueInfo": {
+            "objectTypeName": "java.util.LinkedHashMap<java.lang.String,java.lang.Integer>",
+            "serializationDataFormat": "application/json"
+          }
+        }
+      },
+      "path": "/sample/count"
+    },
+    {
+      "name": "empty required text",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "sample": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["sample"],
+        "additionalProperties": false
+      },
+      "data": {
+        "sample": ""
+      },
+      "variables": {
+        "sample": {
+          "type": "String",
+          "value": "",
+          "valueInfo": {}
+        }
+      },
+      "path": "/sample"
+    }
+  ]
+}

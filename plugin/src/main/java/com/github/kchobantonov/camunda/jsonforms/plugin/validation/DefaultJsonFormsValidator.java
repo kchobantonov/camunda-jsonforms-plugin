@@ -9,6 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.camunda.bpm.engine.delegate.VariableScope;
+import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.value.TypedValue;
+import org.camunda.bpm.engine.variable.value.ObjectValue;
+import org.camunda.spin.plugin.variable.value.JsonValue;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.form.validator.FormFieldConfigurationException;
 import org.camunda.bpm.engine.impl.form.validator.FormFieldValidator;
@@ -25,7 +30,6 @@ import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.Validator;
 import org.everit.json.schema.loader.SchemaLoader;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.util.Assert;
@@ -76,36 +80,19 @@ public class DefaultJsonFormsValidator implements JsonFormsValidator, FormFieldV
                         new JSONTokener(new InputStreamReader(resource, StandardCharsets.UTF_8)));
 
                 JSONObject object = new JSONObject();
-                for (Map.Entry<String, Object> entry : submittedValues.entrySet()) {
-                    if ((entry.getValue() instanceof SpinJsonNode)) {
-                        SpinJsonNode node = (SpinJsonNode) entry.getValue();
-
-                        if (node.isObject()) {
-                            object.put(entry.getKey(),
-                                    new JSONObject(new JSONTokener(node.toString())));
-                        } else if (node.isArray()) {
-                            object.put(entry.getKey(),
-                                    new JSONArray(new JSONTokener(node.toString())));
-                        } else {
-                            object.put(entry.getKey(), entry.getValue());
+                VariableMap variables = Variables.fromMap(submittedValues);
+                for (String name : variables.keySet()) {
+                    TypedValue typed = variables.getValueTyped(name);
+                    Object value = validationValue(typed, name);
+                    if (value instanceof InputStream) {
+                        JSONObject properties = jsonSchema.optJSONObject("properties");
+                        JSONObject property = properties == null ? null : properties.optJSONObject(name);
+                        if (property != null && "string".equals(property.optString("type"))
+                                && "binary".equals(property.optString("format"))) {
+                            property.remove("type");
                         }
-                    } else {
-                        Object value = entry.getValue();
-                        if (value instanceof InputStream) {
-                            JSONObject propertySchema = jsonSchema.getJSONObject("properties")
-                                    .getJSONObject(entry.getKey());
-                            if (propertySchema != null) {
-                                if ("string".equals(propertySchema.getString("type")) &&
-                                        "binary".equals(propertySchema.getString("format"))) {
-                                    // remove the type so that the validator won't require that
-                                    // the value of type InputStream be compatible with the type
-                                    // StringF
-                                    propertySchema.remove("type");
-                                }
-                            }
-                        }
-                        object.put(entry.getKey(), value);
                     }
+                    object.put(name, value);
                 }
 
                 SchemaLoader loader = SchemaLoader.builder()
@@ -132,6 +119,42 @@ public class DefaultJsonFormsValidator implements JsonFormsValidator, FormFieldV
         }
 
         return true;
+    }
+
+    /** Validate serialized JSON without loading application classes from the engine. */
+    private Object validationValue(TypedValue typed, String name) {
+        if (typed instanceof ObjectValue) {
+            ObjectValue object = (ObjectValue) typed;
+            if ("application/json".equals(object.getSerializationDataFormat())) {
+                String serialized = object.getValueSerialized();
+                if (serialized != null) return parseSerializedJson(serialized, name);
+                if (!object.isDeserialized()) return null;
+            } else if (!object.isDeserialized()) {
+                throw new JsonFormsValidatorException(List.of(new JsonFormsErrorObject(
+                        "type", "/" + name.replace("~", "~0").replace("/", "~1"), null,
+                        "Object variables must use application/json serialization")));
+            }
+        }
+        if (typed instanceof JsonValue) {
+            String serialized = ((JsonValue) typed).getValueSerialized();
+            return serialized == null ? null : parseSerializedJson(serialized, name);
+        }
+        Object value = typed.getValue();
+        if (value instanceof SpinJsonNode) return new JSONTokener(value.toString()).nextValue();
+        return value == null || value instanceof InputStream ? value : JSONObject.wrap(value);
+    }
+
+    private Object parseSerializedJson(String serialized, String name) {
+        try {
+            JSONTokener tokener = new JSONTokener(serialized);
+            Object value = tokener.nextValue();
+            if (tokener.nextClean() != 0) throw new org.json.JSONException("Trailing JSON content");
+            return value;
+        } catch (org.json.JSONException exception) {
+            throw new JsonFormsValidatorException(List.of(new JsonFormsErrorObject(
+                    "type", "/" + name.replace("~", "~0").replace("/", "~1"), null,
+                    "Variable must contain serialized JSON")), "Invalid serialized JSON variable", exception);
+        }
     }
 
     /**

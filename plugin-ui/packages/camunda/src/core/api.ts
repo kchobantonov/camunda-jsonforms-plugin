@@ -30,7 +30,6 @@ import {
   type CamundaFormContext,
   CAMUNDA_FORM_KEY_QUERY_PARAM_DEPLOYMENT,
   CAMUNDA_FORM_KEY_QUERY_PARAM_PATH,
-  type FileValueInfo,
   isProcessDefinitionIdConfig,
   isProcessDefinitionKeyConfig,
   isTaskIdConfig,
@@ -39,13 +38,18 @@ import {
   RESOURCE_UISCHEMA_SUFFIX,
   ResponseException,
   type TaskForm,
-  type ValueInfo,
   type VariableValue,
   RESOURCE_UISCHEMAS_SUFFIX,
   RESOURCE_UIDATA_SUFFIX,
 } from './types';
 import { parseAndTransformUISchemaRegistryEntries } from '@chobantonov/jsonforms-vuetify-renderers';
 import { reactive } from 'vue';
+import {
+  attachCamundaVariable,
+  decodeCamundaVariable,
+  resolveVariableDescriptor,
+  encodeButtonVariables,
+} from './variables';
 
 export const getParameterByName = (
   name: string,
@@ -61,79 +65,6 @@ export const getParameterByName = (
   }
 
   return null;
-};
-
-const getCamundaType = (schema: JsonSchema): string => {
-  switch (schema.type) {
-    case 'string':
-      return (schema as any).format === 'binary' ? 'File' : 'String';
-    case 'integer':
-      return 'Integer';
-    case 'number':
-      return 'Double';
-    case 'object':
-      return 'Json';
-    case 'array':
-      return 'Json';
-    case 'boolean':
-      return 'Boolean';
-    case 'null':
-      return 'Null';
-  }
-  return 'Json';
-};
-
-const attachCamundaVariable = (
-  variables: Record<string, any>,
-  variableName: string,
-  variableSchema: JsonSchema,
-  variableData: any,
-): void => {
-  if ((variableSchema as any).readOnly !== true) {
-    const type = getCamundaType(variableSchema);
-
-    let value = variableData;
-    const valueInfo: ValueInfo = {};
-
-    if (type === 'Json') {
-      value = value ? JSON.stringify(value) : value;
-    } else if (type === 'File') {
-      if (!value) {
-        // invalid value
-        return;
-      }
-
-      const dataUrl = value as string;
-
-      const base64Index = dataUrl.indexOf(';base64,');
-
-      const header = dataUrl.substring(0, base64Index); // data header without the base64
-      value = dataUrl.substring(base64Index + ';base64,'.length); // get only the base64 value
-
-      const fileNameIndex = header.indexOf(';filename=');
-
-      const fileName =
-        fileNameIndex !== -1
-          ? decodeURIComponent(
-              header.substring(fileNameIndex + ';filename='.length),
-            )
-          : variableName;
-
-      const mimeType = header.substring(
-        'data:'.length,
-        fileNameIndex !== -1 ? fileNameIndex : header.length,
-      );
-
-      (valueInfo as FileValueInfo).filename = fileName;
-      (valueInfo as FileValueInfo).mimeType = mimeType;
-    }
-
-    variables[variableName] = {
-      value: value,
-      type: type,
-      valueInfo: valueInfo,
-    };
-  }
 };
 
 export class CamundaFormApi {
@@ -169,6 +100,11 @@ export class CamundaFormApi {
     if (!payload) {
       payload = {};
     }
+
+    payload = {
+      ...payload,
+      variables: encodeButtonVariables(schema, payload.variables ?? {}),
+    };
 
     const includeDataVariables =
       action == 'camunda:submit' ||
@@ -329,6 +265,10 @@ export class CamundaFormApi {
       result.translations = i18n;
     }
 
+    forOwn(schema?.properties, (property) =>
+      resolveVariableDescriptor(property),
+    );
+
     const data: any = {};
 
     const variableNames: string[] = [];
@@ -370,14 +310,10 @@ export class CamundaFormApi {
     }
 
     forOwn(result.variables, function (value: VariableValue, key: string) {
-      if (value.type === 'Json') {
-        value.value = value.value ? JSON.parse(value.value) : value.value;
-      }
-
-      if (value.value) {
-        // set only when the value is not undefined or null
-        data[key] = value.value;
-      }
+      const property = schema?.properties?.[key];
+      if (!property || (property as JsonSchema7).writeOnly) return;
+      const decoded = decodeCamundaVariable(value, property);
+      if (decoded !== undefined) data[key] = decoded;
     });
 
     result.schema = schema;
